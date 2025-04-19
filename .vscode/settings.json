@@ -1,0 +1,14 @@
+{
+    "Lua.workspace.library": [
+        "typedef/reframework/dist/library/*",
+        "typedef/ace/*"
+    ],
+    "Lua.workspace.ignoreSubmodules": false,
+    "editor.rulers": [
+        120,
+    ],
+    "editor.formatOnSave": true,
+    "[lua]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    },
+}
