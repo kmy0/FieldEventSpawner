@@ -250,6 +250,9 @@ function this.draw()
         imgui.indent(3)
         imgui.text_colored(lang.tr("wait_text.name"), gui.colors.bad)
         imgui.unindent(3)
+        if lang.font then
+            imgui.pop_font()
+        end
         imgui.end_window()
         return
     end
