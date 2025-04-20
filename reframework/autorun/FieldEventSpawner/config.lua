@@ -55,6 +55,7 @@
 ---@field name string
 ---@field config_path string
 ---@field cache_path string
+---@field default_lang_path string
 ---@field spawn_cooldown SpawnCooldown
 ---@field default Settings
 ---@field current Settings
@@ -71,10 +72,11 @@ local util = require("FieldEventSpawner.util")
 ---@class Config
 local this = {}
 
-this.version = "0.0.1"
+this.version = "0.0.2"
 this.name = "FieldEventSpawner"
 this.config_path = this.name .. "/config.json"
 this.cache_path = this.name .. "/cache.json"
+this.default_lang_path = this.name .. "/lang/en-us.json"
 this.font = {
     size = 16,
 }
