@@ -67,12 +67,6 @@ function this:new(
     setmetatable(o, self)
     ---@cast o SwarmEventFactory
     o.swarm_count = swarm_count
-
-    if pop_em_type == rl(ace.enum.pop_em_fixed, "LEGENDARY") then
-        o.monster_role = rl(ace.enum.em_role, "BOSS")
-    elseif monster_role == rl(ace.enum.em_role, "BOSS") then
-        o.pop_em_type = rl(ace.enum.pop_em_fixed, "SWARM")
-    end
     return o
 end
 
@@ -124,10 +118,6 @@ function this:_build_leader(out)
         out.area = event.event_data._FreeMiniValue3
         out.groupid = event.event_data._FreeMiniValue4
         out.route_hash = event.event_data._FreeValue3
-
-        if self.pop_em_type == rl(ace.enum.pop_em_fixed, "LEGENDARY") then
-            event.event_data._FreeMiniValue1 = rt.get_environ(self.stage) | (0x10 * rl(ace.enum.pop_em_fixed, "SWARM"))
-        end
     end
     return res, event
 end
@@ -188,7 +178,7 @@ end
 ---@param em_pop_param  app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
 ---@return System.Guid
 function this:_get_difficulty(em_pop_param)
-    if self.pop_em_type == ace.enum.pop_em_fixed["SWARM"] then
+    if self.monster_role == rl(ace.enum.em_role, "BOSS") then
         return em_pop_param:lotDifficultyID_Boss(self.legendary_id, true)
     end
     return monster_factory._get_difficulty(self, em_pop_param)
