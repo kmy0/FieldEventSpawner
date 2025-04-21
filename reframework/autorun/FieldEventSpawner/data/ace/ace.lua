@@ -97,7 +97,8 @@ local this = {
             NORMAL = "normal",
             NUSHI = "nushi",
             SWARM = "swarm",
-            BATTLEFIELD = "battlefield",
+            BATTLEFIELD = "battlefield_slay",
+            BF_POP_BELONGING = "battlefield_repel",
         },
     },
 }

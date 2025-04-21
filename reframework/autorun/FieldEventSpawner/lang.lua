@@ -48,7 +48,8 @@ local default = {
             swarm = "Swarm",
             boss = "Alpha",
             nushi = "Apex",
-            battlefield = "Battlefield",
+            battlefield_repel = "Battlefield Repel",
+            battlefield_slay = "Battlefield Slay",
         },
     },
     em_param_mod_combo = {
@@ -129,13 +130,6 @@ local default = {
     event_table_tree_node = {
         name = "My Events",
     },
-    battlefield_state_combo = {
-        name = "Battlefield State",
-        values = {
-            repel = "Repel",
-            slay = "Slay",
-        },
-    },
     em_swarm_suffix = {
         name = "Swarm",
     },
@@ -182,6 +176,12 @@ local default = {
     reward_builder = {
         name = "Reward Builder",
     },
+    force_difficulty = {
+        name = "Force Difficulty",
+    },
+    em_param_difficulty_combo = {
+        name = "Difficulty",
+    },
 }
 
 function this.init()
@@ -195,9 +195,7 @@ function this.init()
 end
 
 function this.load()
-    if not json.load_file(config.default_lang_path) then
-        json.dump_file(config.default_lang_path, default)
-    end
+    json.dump_file(config.default_lang_path, default)
 
     local files = fs.glob(string.format([[%s\\lang\\.*json]], config.name))
     for i = 1, #files do

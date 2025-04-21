@@ -1,5 +1,6 @@
 local cache = require("FieldEventSpawner.schedule.cache")
 local data = require("FieldEventSpawner.data")
+local special_offer = require("FieldEventSpawner.events.special_offer")
 local util = require("FieldEventSpawner.util")
 
 local ace = data.ace
@@ -142,8 +143,28 @@ function this.create_spoffer_pre(args)
     if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.spoffer then
         local spoffer_stage = sdk.to_managed_object(args[3])
         ---@cast spoffer_stage app.cExSpOfferFactory.cSpOfferByStage
-        spoffer_stage:get_SpOfferList():Clear()
+        thread.get_hook_storage()["spoffer_stage"] = spoffer_stage
+        local spoffer_array = spoffer_stage:get_SpOfferList()
+        spoffer_array:Clear()
     end
+end
+
+function this.create_spoffer_post(retval)
+    if
+        this.state.force_spawn_flag
+        and this.state.em_args
+        and this.state.em_args.spoffer
+        and this.state.em_args.spoffer_rewards
+    then
+        local spoffer_stage = thread.get_hook_storage()["spoffer_stage"]
+        local spoffer_array = spoffer_stage:get_SpOfferList() --[[@as System.Array<app.cExSpOfferFactory.SpOfferInfo>]]
+        if spoffer_array:get_Count() == 1 then
+            local spoffer_info = spoffer_array:get_Item(0)
+            ---@cast spoffer_info app.cExSpOfferFactory.SpOfferInfo
+            special_offer.swap_rewards(spoffer_info, this.state.em_args.spoffer_rewards)
+        end
+    end
+    return retval
 end
 
 function this.force_check_spoffer_pre(args)

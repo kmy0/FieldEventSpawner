@@ -66,8 +66,8 @@ this.enum.spawn_result = {
 }
 ---@enum BattlefieldState
 this.enum.battlefield_state = {
-    repel = 1,
-    slay = 2,
+    battlefield_repel = 1,
+    battlefield_slay = 2,
 }
 ---@enum EventCollisionFlag
 this.enum.event_collision_flag = {

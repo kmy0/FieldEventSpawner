@@ -60,10 +60,11 @@ setmetatable(this, { __index = monster_factory })
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param battlefield_state BattlefieldState
 ---@param area integer?
 ---@param rewards GuiRewardData[]?
+---@param difficulty System.Guid[]?
+---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return BattlefieldEventFactory
 function this:new(
     monster_data,
@@ -72,10 +73,11 @@ function this:new(
     stage,
     time,
     is_yummy,
-    ignore_environ_type,
     battlefield_state,
     area,
-    rewards
+    rewards,
+    difficulty,
+    environ
 )
     local o = monster_factory.new(
         self,
@@ -87,15 +89,21 @@ function this:new(
         time,
         false,
         is_yummy,
-        ignore_environ_type,
         area,
         nil,
-        rewards
+        rewards,
+        difficulty,
+        environ
     )
     setmetatable(o, self)
     ---@cast o BattlefieldEventFactory
     o.battlefield_state = battlefield_state
     o.pop_em_type = o:_get_em_pop_type_bf()
+    o._area_array = monster_data:get_area_array(
+        stage,
+        not environ and rt.get_environ(stage) or nil,
+        ace.map.pop_em_to_em_param_key[ace.enum.pop_em_fixed[o.pop_em_type]]
+    )
     return o
 end
 
@@ -114,8 +122,8 @@ function this:build()
     ---@cast em_pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
 
     local difficulty_guid, option_value
-    local is_repel = self.battlefield_state == rt.enum.battlefield_state.repel
-    local environ_type = rt.get_environ(self.stage)
+    local is_repel = self.battlefield_state == rt.enum.battlefield_state.battlefield_repel
+    local environ_type = self.environ and self.environ[math.random(#self.environ)] or rt.get_environ(self.stage)
     local stage_param = self:_get_repel_param(em_pop_param, area)
 
     if stage_param then
@@ -125,10 +133,14 @@ function this:build()
         option_value = 0
     end
 
-    if is_repel then
-        difficulty_guid = em_pop_param:lotDifficultyID_PopBelonging(self.legendary_id)
+    if self.difficulty then
+        difficulty_guid = self.difficulty[math.random(#self.difficulty)]
     else
-        difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+        if is_repel then
+            difficulty_guid = em_pop_param:lotDifficultyID_PopBelonging(self.legendary_id)
+        else
+            difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+        end
     end
 
     if not difficulty_guid then
@@ -193,7 +205,7 @@ end
 ---@return app.cExFieldScheduleExportData.cEventData
 function this:_get_battlefield_data(em_pop_param, now, em_pop_index)
     local route_guid, area, option_value
-    local is_repel = self.battlefield_state == rt.enum.battlefield_state.repel
+    local is_repel = self.battlefield_state == rt.enum.battlefield_state.battlefield_repel
 
     if is_repel then
         route_guid = em_pop_param:get_RouteID_AfterPopBelongingStage()
@@ -247,7 +259,7 @@ end
 ---@protected
 ---@return app.ExDef.POP_EM_TYPE_Fixed
 function this:_get_em_pop_type_bf()
-    if self.battlefield_state == rt.enum.battlefield_state.slay then
+    if self.battlefield_state == rt.enum.battlefield_state.battlefield_slay then
         return rl(ace.enum.pop_em_fixed, "BATTLEFIELD")
     end
     return rl(ace.enum.pop_em_fixed, "BF_POP_BELONGING")

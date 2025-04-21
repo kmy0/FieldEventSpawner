@@ -5,7 +5,9 @@
 ---@field stage app.FieldDef.STAGE
 ---@field em_param string
 ---@field em_param_struct MonsterParam
+---@field em_difficulty_struct table<string, MonsterDifficulty>
 ---@field em_param_mod string
+---@field em_difficulty string
 ---@field lang string
 ---@field environ app.EnvironmentType.ENVIRONMENT
 ---@field ignore_environ boolean
@@ -18,7 +20,7 @@
 ---@field event_type GuiItemData
 ---@field em_param GuiItemData
 ---@field em_param_mod GuiItemData
----@field battlefield_state GuiItemData
+---@field em_difficulty GuiItemData
 ---@field spoffer GuiItemData
 ---@field current CurrentData
 
@@ -48,7 +50,7 @@ local this = {
     event_type = item_data:new(),
     em_param = item_data:new(),
     em_param_mod = item_data:new(),
-    battlefield_state = item_data:new(),
+    em_difficulty = item_data:new(),
     spoffer = item_data:new(),
     ---@diagnostic disable-next-line: missing-fields
     current = {
@@ -145,7 +147,6 @@ local function switch_type(event_type, stage)
 
     if not this.event_table then
         this.event_table = {}
-        this.event:clear()
         return
     end
 
@@ -178,11 +179,6 @@ local function switch_area_array(event_key, em_param, stage, environ, ignore_env
             or this.current.event_type ~= "monster"
         )
     then
-        return
-    end
-
-    if table_util.empty(this.event_table) then
-        this.area:clear()
         return
     end
 
@@ -277,6 +273,58 @@ local function switch_em_param_mod_array(event_key, em_param, stage, environ, ig
     end
 end
 
+---@param event_key string
+---@param em_param string
+---@param em_param_mod string
+---@param stage app.FieldDef.STAGE
+---@param environ app.EnvironmentType.ENVIRONMENT
+---@param ignore_environ boolean
+local function switch_em_difficulty_array(event_key, em_param, em_param_mod, stage, environ, ignore_environ)
+    if
+        this.current.event_type ~= "monster"
+        or not em_param_mod
+        or (
+            event_key == this.current.event
+            and stage == this.current.stage
+            and environ == this.current.environ
+            and ignore_environ == this.current.ignore_environ
+            and em_param == this.current.em_param
+            and em_param_mod == this.current.em_param_mod
+        )
+    then
+        return
+    end
+
+    local current_value = this.em_difficulty.array and this.em_difficulty.array[config.current.mod.em_difficulty] or nil
+    local event = this.event_table[event_key]
+
+    if not event then
+        return
+    end
+    ---@cast event MonsterData
+
+    local diff_table = event:get_difficulty_table(stage, not ignore_environ and environ or nil, em_param, em_param_mod)
+        or {}
+    no_tr_update_combo(
+        "em_difficulty",
+        table_util.map_array(table_util.keys(diff_table), function(o)
+            return diff_table[o]
+        end, function(o)
+            return tostring(o)
+        end),
+        nil,
+        function(a, b)
+            ---@diagnostic disable-next-line: undefined-field
+            return tonumber(util.split_string(a.text, "##")[1]) < tonumber(util.split_string(b.text, "##")[1])
+        end
+    )
+
+    local index = table_util.index(this.em_difficulty.array, current_value)
+    if index then
+        config.current.mod.em_difficulty = index
+    end
+end
+
 local function switch_spoffer_array()
     if this.current.event_type ~= "monster" then
         return
@@ -299,21 +347,6 @@ local function switch_spoffer_array()
     if index then
         config.current.mod.spoffer = index
     end
-end
-
----@param language string
-function this.switch_lang(language)
-    if language == this.current.lang then
-        return
-    end
-
-    this.current.event_type = nil
-    this.current.lang = language
-
-    tr_update_combo("event_type")
-    tr_update_combo("battlefield_state")
-    tr_em_param_array()
-    tr_em_param_mod_array()
 end
 
 ---@param query string
@@ -362,24 +395,52 @@ function this.switch_reward_array(query)
     end
 end
 
+---@param language string
+function this.switch_lang(language)
+    if language == this.current.lang then
+        return
+    end
+
+    this.current.event_type = nil
+    this.current.lang = language
+
+    tr_update_combo("event_type")
+    tr_em_param_array()
+    tr_em_param_mod_array()
+end
+
 ---@param event_type string
 ---@param event string
 ---@param em_param string
+---@param em_param_mod string
 ---@param stage app.FieldDef.STAGE
 ---@param environ app.EnvironmentType.ENVIRONMENT
 ---@param ignore_environ boolean
-function this.switch_event_arrays(event_type, event, em_param, stage, environ, ignore_environ)
+function this.switch_event_arrays(event_type, event, em_param, em_param_mod, stage, environ, ignore_environ)
     switch_type(event_type, stage)
-    switch_area_array(event, em_param, stage, environ, ignore_environ)
-    switch_em_param_array(event, stage, environ, ignore_environ)
-    switch_em_param_mod_array(event, em_param, stage, environ, ignore_environ)
-    switch_spoffer_array()
+
+    if table_util.empty(this.event_table) then
+        this.event:clear()
+        this.em_param:clear()
+        this.area:clear()
+        this.em_param:clear()
+        this.em_param_mod:clear()
+        this.em_difficulty:clear()
+    else
+        switch_area_array(event, em_param, stage, environ, ignore_environ)
+        switch_em_param_array(event, stage, environ, ignore_environ)
+        switch_em_param_mod_array(event, em_param, stage, environ, ignore_environ)
+        switch_em_difficulty_array(event, em_param, em_param_mod, stage, environ, ignore_environ)
+        switch_spoffer_array()
+    end
 
     this.current.stage = stage
     this.current.event_type = event_type
     this.current.event = event
     this.current.environ = environ
     this.current.ignore_environ = ignore_environ
+    this.current.em_param = em_param
+    this.current.em_param_mod = em_param_mod
 end
 
 ---@param key string

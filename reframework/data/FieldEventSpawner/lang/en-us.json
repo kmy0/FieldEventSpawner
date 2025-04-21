@@ -37,7 +37,8 @@
             "swarm": "Swarm",
             "boss": "Alpha",
             "nushi": "Apex",
-            "battlefield": "Battlefield"
+            "battlefield_repel": "Battlefield Repel",
+            "battlefield_slay": "Battlefield Slay"
         }
     },
     "em_param_mod_combo": {
@@ -170,5 +171,11 @@
     },
     "reward_builder": {
         "name": "Reward Builder"
+    },
+    "force_difficulty": {
+        "name": "Force Difficulty"
+    },
+    "em_param_difficulty_combo": {
+        "name": "Difficulty"
     }
 }

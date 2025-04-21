@@ -32,10 +32,11 @@ setmetatable(this, { __index = monster_factory })
 ---@param time integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param swarm_count integer
 ---@param area integer?
 ---@param rewards GuiRewardData[]?
+---@param difficulty System.Guid[]?
+---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return SwarmEventFactory
 function this:new(
     monster_data,
@@ -46,10 +47,11 @@ function this:new(
     time,
     is_village_boost,
     is_yummy,
-    ignore_environ_type,
     swarm_count,
     area,
-    rewards
+    rewards,
+    difficulty,
+    environ
 )
     local o = monster_factory.new(
         self,
@@ -61,20 +63,15 @@ function this:new(
         time,
         is_village_boost,
         is_yummy,
-        ignore_environ_type,
         area,
         nil,
-        rewards
+        rewards,
+        difficulty,
+        environ
     )
     setmetatable(o, self)
     ---@cast o SwarmEventFactory
     o.swarm_count = swarm_count
-
-    if pop_em_type == rl(ace.enum.pop_em_fixed, "LEGENDARY") then
-        o.monster_role = rl(ace.enum.em_role, "BOSS")
-    elseif monster_role == rl(ace.enum.em_role, "BOSS") then
-        o.pop_em_type = rl(ace.enum.pop_em_fixed, "SWARM")
-    end
     return o
 end
 
@@ -126,10 +123,6 @@ function this:_build_leader(out)
         out.area = event.event_data._FreeMiniValue3
         out.groupid = event.event_data._FreeMiniValue4
         out.route_hash = event.event_data._FreeValue3
-
-        if self.pop_em_type == rl(ace.enum.pop_em_fixed, "LEGENDARY") then
-            event.event_data._FreeMiniValue1 = rt.get_environ(self.stage) | (0x10 * rl(ace.enum.pop_em_fixed, "SWARM"))
-        end
     end
     return res, event
 end
@@ -148,12 +141,23 @@ function this:_build_member(swarm_data)
         return rt.enum.spawn_result.NO_EM_PARAM
     end
 
-    local difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+    local difficulty_guid, reward_data
+    if swarm_data.has_boss then
+        difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+        reward_data = self:_get_game_reward_data(difficulty_guid, false, false)
+    else
+        difficulty_guid = self.difficulty and self.difficulty[math.random(#self.difficulty)]
+            or em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+        reward_data = self:_get_reward_data(difficulty_guid, false, false)
+    end
+
     if not difficulty_guid then
         return rt.enum.spawn_result.NO_DIFFICULTY
     end
 
-    local reward_data = self:_get_game_reward_data(difficulty_guid, false, false)
+    if not reward_data then
+        return rt.enum.spawn_result.NO_REWARDS
+    end
 
     local event_data = sched.util.create_event_data()
     event_data._EventType = rl(ace.enum.ex_event, "POP_EM")
@@ -180,9 +184,9 @@ end
 
 ---@protected
 ---@param em_pop_param  app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
----@return System.Guid
+---@return System.Guid?
 function this:_get_difficulty(em_pop_param)
-    if self.pop_em_type == ace.enum.pop_em_fixed["SWARM"] then
+    if self.monster_role == rl(ace.enum.em_role, "BOSS") then
         return em_pop_param:lotDifficultyID_Boss(self.legendary_id, true)
     end
     return monster_factory._get_difficulty(self, em_pop_param)

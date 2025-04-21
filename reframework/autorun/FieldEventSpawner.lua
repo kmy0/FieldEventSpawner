@@ -68,7 +68,8 @@ sdk.hook(
     sdk.find_type_definition("app.cExSpOfferFactory"):get_method(
         "createSpOffer(app.cExSpOfferFactory.cSpOfferByStage, System.Int32, System.Boolean, app.FieldDef.STAGE, System.Boolean, System.Int32, app.cExFieldEvent_PopEnemy)"
     ) --[[@as REMethodDefinition]],
-    sched.hook.create_spoffer_pre
+    sched.hook.create_spoffer_pre,
+    sched.hook.create_spoffer_post
 )
 sdk.hook(
     sdk.find_type_definition("app.cExSpOfferFactory")

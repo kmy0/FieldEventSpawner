@@ -28,11 +28,13 @@
 ---@field is_village_boost boolean
 ---@field is_force_area boolean
 ---@field is_spoffer boolean
+---@field is_force_difficulty boolean
 ---@field time integer
 ---@field swarm_count integer
 ---@field spawn_timer integer
 ---@field is_force_rewards boolean
 ---@field reward_config RewardSettings
+---@field em_difficulty integer
 
 ---@class (exact) SpawnCooldown
 ---@field normal integer
@@ -72,7 +74,7 @@ local util = require("FieldEventSpawner.util")
 ---@class Config
 local this = {}
 
-this.version = "0.0.2"
+this.version = "0.0.3"
 this.name = "FieldEventSpawner"
 this.config_path = this.name .. "/config.json"
 this.cache_path = this.name .. "/cache.json"
@@ -115,12 +117,14 @@ this.default = {
         battlefield_state = 1,
         swarm_count = 2,
         spoffer = 1,
+        em_difficulty = 1,
         is_ignore_environ = false,
         is_yummy = false,
         is_village_boost = false,
         is_force_area = false,
         is_spoffer = false,
         is_force_rewards = false,
+        is_force_difficulty = false,
         time = 30,
         reward_config = {
             array = {},
