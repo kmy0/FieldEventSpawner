@@ -2,7 +2,7 @@
 ---@field event_data GimmickData
 ---@field protected __index AreaEventFactory
 
---[[
+--[[ app.cExFieldEvent_GimmickEvent
     _FreeValue0 = app.FieldDef.STAGE_Fixed
     _FreeValue1 = app.ExDef.GIMMICK_EVENT_Fixed
     _FreeValue2 = app.FieldDef.AREAD_ID_Fixed

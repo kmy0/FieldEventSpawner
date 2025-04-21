@@ -12,7 +12,7 @@
 ---@class (exact) EditedRewardData : RewardData
 ---@field reward_array app.cExFieldScheduleExportData.cEventData[]
 
---[[
+--[[ app.cExFieldEvent_EmReward
     _FreeValue0 = app.ItemDef.ID_Fixed
     _FreeValue1 = app.ItemDef.ID_Fixed
     _FreeValue2 = app.ItemDef.ID_Fixed

@@ -2,7 +2,7 @@
 ---@field event_data AnimalData
 ---@field protected __index AnimalEventFactory
 
---[[
+--[[ app.cExFieldEvent_AnimalEvent
     _FreeValue0 = app.FieldDef.STAGE_Fixed
     _FreeValue1 = app.ExDef.ANIMAL_EVENT_Fixed
     _FreeValue2 = app.FieldDef.AREAD_ID_Fixed
