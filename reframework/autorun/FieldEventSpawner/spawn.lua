@@ -10,10 +10,10 @@ local this = {}
 ---@param time integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param area integer?
 ---@param spoffer integer?
 ---@param rewards GuiRewardData[]?
+---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return SpawnResult
 function this.monster(
@@ -25,9 +25,10 @@ function this.monster(
     time,
     is_village_boost,
     is_yummy,
-    ignore_environ_type,
     area,
     spoffer,
+    rewards,
+    difficulty,
     environ
 )
     local fac = event.monster:new(
@@ -39,9 +40,10 @@ function this.monster(
         time,
         is_village_boost,
         is_yummy,
-        ignore_environ_type,
         area,
         spoffer,
+        rewards,
+        difficulty,
         environ
     )
     return fac:spawn()
@@ -53,10 +55,10 @@ end
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param battlefield_state BattlefieldState
 ---@param area integer?
 ---@param rewards GuiRewardData[]?
+---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return SpawnResult
 function this.battlefield(
@@ -66,9 +68,10 @@ function this.battlefield(
     stage,
     time,
     is_yummy,
-    ignore_environ_type,
     battlefield_state,
     area,
+    rewards,
+    difficulty,
     environ
 )
     local fac = event.battlefield:new(
@@ -78,9 +81,10 @@ function this.battlefield(
         stage,
         time,
         is_yummy,
-        ignore_environ_type,
         battlefield_state,
         area,
+        rewards,
+        difficulty,
         environ
     )
     return fac:spawn()
@@ -94,10 +98,10 @@ end
 ---@param time integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param swarm_count integer
 ---@param area integer?,
 ---@param rewards GuiRewardData[]?
+---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return SpawnResult
 function this.swarm(
@@ -109,9 +113,10 @@ function this.swarm(
     time,
     is_village_boost,
     is_yummy,
-    ignore_environ_type,
     swarm_count,
     area,
+    rewards,
+    difficulty,
     environ
 )
     local fac = event.swarm:new(
@@ -123,9 +128,10 @@ function this.swarm(
         time,
         is_village_boost,
         is_yummy,
-        ignore_environ_type,
         swarm_count,
         area,
+        rewards,
+        difficulty,
         environ
     )
     return fac:spawn()

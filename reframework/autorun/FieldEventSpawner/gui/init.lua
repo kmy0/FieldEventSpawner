@@ -64,6 +64,7 @@ function state.callbacks.spawn()
         local legendary = gui.map.em_param_mod_to_legendary[item.em_param_mod:value()]
         local legendary_id = rl(ace.enum.legendary, legendary)
         local pop_em_type = gui.map.em_param_to_pop_em[em_param]
+        local rewards = item.is_force_rewards:value() and config.current.mod.reward_config.array or nil
         local environ = item.is_ignore_environ:value()
                 and event.map[
                     rt.state.stage --[[@as app.FieldDef.STAGE]]
@@ -80,12 +81,13 @@ function state.callbacks.spawn()
                 item.time:value(),
                 item.is_village_boost:value(),
                 item.is_yummy:value(),
-                item.is_ignore_environ:value(),
                 item.swarm_count:value(),
                 item.area:value(),
+                rewards,
+                item.em_difficulty:value(),
                 environ
             )
-        elseif em_param == "battlefield" then
+        elseif em_param == "battlefield_repel" or em_param == "battlefield_slay" then
             return spawn.battlefield(
                 event,
                 role_id,
@@ -93,9 +95,10 @@ function state.callbacks.spawn()
                 rt.state.stage,
                 item.time:value(),
                 item.is_yummy:value(),
-                item.is_ignore_environ:value(),
-                rt.enum.battlefield_state[item.battlefield:value()],
+                rt.enum.battlefield_state[em_param],
                 item.area:value(),
+                rewards,
+                item.em_difficulty:value(),
                 environ
             )
         else
@@ -108,9 +111,10 @@ function state.callbacks.spawn()
                 item.time:value(),
                 item.is_village_boost:value(),
                 item.is_yummy:value(),
-                item.is_ignore_environ:value(),
                 item.area:value(),
                 item.spoffer:value(),
+                rewards,
+                item.em_difficulty:value(),
                 environ
             )
         end
@@ -274,7 +278,7 @@ function this.draw()
     if item.event_type:value() == "monster" then
         item.em_param:draw(gui_util.tr("em_param_combo"))
         item.em_param_mod:draw(gui_util.tr("em_param_mod_combo"))
-        item.battlefield:draw(gui_util.tr("battlefield_state_combo"))
+        item.em_difficulty:draw(gui_util.tr("em_param_difficulty_combo"))
         item.swarm_count:draw(gui_util.tr("swarm_count_slider"))
         gui_util.tooltip(lang.tr("swarm_count_slider.tooltip.name"))
         item.spoffer:draw(gui_util.tr("spoffer_combo"))
@@ -296,6 +300,7 @@ function this.draw()
         if not rt.is_spoffer_unlocked(rt.state.stage) then
             gui_util.tooltip(lang.tr("not_available_tooltip.name"), true)
         end
+        item.is_force_difficulty:draw(gui_util.tr("force_difficulty"))
         item.is_force_rewards:draw(gui_util.tr("force_rewards_box"))
         imgui.same_line()
         item.edit_rewards:draw(gui_util.tr("open_rewards_builder_button"))

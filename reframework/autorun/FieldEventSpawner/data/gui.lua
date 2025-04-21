@@ -3,8 +3,8 @@
 
 ---@class (exact) GuiCombo
 ---@field event_type string[]
----@field battlefield_state string[]
 ---@field em_param string[]
+---@field em_param_mod string[]
 
 ---@class GuiData
 local this = {
@@ -14,10 +14,6 @@ local this = {
             "gimmick",
             "animal",
         },
-        battlefield_state = {
-            "repel",
-            "slay",
-        },
         em_param = {
             "legendary",
             "frenzy",
@@ -25,7 +21,8 @@ local this = {
             "normal",
             "swarm",
             "nushi",
-            "battlefield",
+            "battlefield_repel",
+            "battlefield_slay",
         },
         em_param_mod = {
             "none",
@@ -43,7 +40,8 @@ local this = {
             normal = "NORMAL",
             nushi = "NORMAL",
             swarm = "NORMAL",
-            battlefield = "NORMAL",
+            battlefield_repel = "NORMAL",
+            battlefield_slay = "NORMAL",
             cocoon = "COCOON",
         },
         ---@enum EmParamModToLeg
@@ -60,8 +58,9 @@ local this = {
             normal = "NORMAL",
             nushi = "NUSHI",
             swarm = "SWARM",
-            battlefield = "BATTLEFIELD",
-            boss = "NORMAL",
+            battlefield_repel = "BATTLEFIELD",
+            battlefield_slay = "BATTLEFIELD",
+            boss = "SWARM",
         },
         ---@enum EventTypeToExEvent
         event_type_to_ex_event = {

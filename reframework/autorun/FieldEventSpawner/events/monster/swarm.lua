@@ -35,6 +35,7 @@ setmetatable(this, { __index = monster_factory })
 ---@param swarm_count integer
 ---@param area integer?
 ---@param rewards GuiRewardData[]?
+---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return SwarmEventFactory
 function this:new(
@@ -48,6 +49,8 @@ function this:new(
     is_yummy,
     swarm_count,
     area,
+    rewards,
+    difficulty,
     environ
 )
     local o = monster_factory.new(
@@ -62,6 +65,8 @@ function this:new(
         is_yummy,
         area,
         nil,
+        rewards,
+        difficulty,
         environ
     )
     setmetatable(o, self)
@@ -138,8 +143,11 @@ function this:_build_member(swarm_data)
 
     local difficulty_guid, reward_data
     if swarm_data.has_boss then
+        difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
         reward_data = self:_get_game_reward_data(difficulty_guid, false, false)
     else
+        difficulty_guid = self.difficulty and self.difficulty[math.random(#self.difficulty)]
+            or em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
         reward_data = self:_get_reward_data(difficulty_guid, false, false)
     end
 
@@ -176,7 +184,7 @@ end
 
 ---@protected
 ---@param em_pop_param  app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
----@return System.Guid
+---@return System.Guid?
 function this:_get_difficulty(em_pop_param)
     if self.monster_role == rl(ace.enum.em_role, "BOSS") then
         return em_pop_param:lotDifficultyID_Boss(self.legendary_id, true)

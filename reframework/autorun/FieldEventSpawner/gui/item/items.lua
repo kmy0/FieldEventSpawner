@@ -19,6 +19,7 @@ function this.switch_arrays()
         this.event_type:value(),
         this.event:value(),
         this.em_param:value(),
+        this.em_param_mod:value(),
         rt.state.stage,
         rt.state.environ,
         this.is_ignore_environ:value()
@@ -38,6 +39,11 @@ local function is_combo_changed(self, value)
     ---@diagnostic disable-next-line: inject-field
     self.previous_array = table.concat(array, ",") -- might be a bit too much?
     return previous_value ~= array[value] or previous_array ~= self.previous_array
+end
+
+local function is_battlefield()
+    local bf = this.em_param:value()
+    return bf == "battlefield_slay" or bf == "battlefield_repel"
 end
 
 this.event_type = item.config:new(
@@ -95,16 +101,16 @@ this.em_param_mod = item.config:new(
     is_combo_changed
 )
 
-this.battlefield = item.config:new(
-    "mod.battlefield_state",
+this.em_difficulty = item.config:new(
+    "mod.em_difficulty",
     imgui.combo,
-    { iv.battlefield_state.array },
+    { iv.em_difficulty.array },
     nil,
     function(config_value)
-        return iv.battlefield_state.map[config_value]
+        return iv.em_difficulty.map[config_value]
     end,
     function()
-        return this.em_param:value() ~= "battlefield"
+        return iv.em_difficulty:empty() or not this.is_force_difficulty:value()
     end,
     function(self)
         this.switch_arrays()
@@ -129,12 +135,7 @@ end)
 this.time = item.config:new("mod.time", imgui.slider_int, { 1, 60 })
 this.is_ignore_environ = item.config:new("mod.is_ignore_environ", imgui.checkbox)
 this.is_force_area = item.config:new("mod.is_force_area", imgui.checkbox, nil, false, nil, function()
-    return iv.area:empty()
-        or (
-            this.event_type:value() == "monster"
-            and this.em_param:value() == "battlefield"
-            and this.battlefield:value() == "slay"
-        )
+    return iv.area:empty() or (this.event_type:value() == "monster" and this.em_param:value() == "battlefield_slay")
 end)
 
 this.is_yummy = item.config:new("mod.is_yummy", imgui.checkbox, nil, false, nil, function()
@@ -146,7 +147,7 @@ end)
 this.is_village_boost = item.config:new("mod.is_village_boost", imgui.checkbox, nil, false, nil, function()
     return rt.is_in_quest()
         or not rt.is_village_boost_unlocked(rt.state.stage)
-        or this.em_param:value() == "battlefield"
+        or is_battlefield()
         or (this.swarm_count:value() > 0 and this.em_param:value() ~= "boss")
 end)
 
@@ -158,10 +159,14 @@ this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, 
     local em_param = this.em_param:value()
     return rt.is_in_quest()
         or not rt.is_spoffer_unlocked(rt.state.stage)
-        or em_param == "battlefield"
+        or is_battlefield()
         or em_param == "swarm"
         or this.swarm_count:value() > 0
         or iv.spoffer:empty()
+end)
+
+this.is_force_difficulty = item.config:new("mod.is_force_difficulty", imgui.checkbox, nil, false, nil, function()
+    return iv.em_difficulty:empty()
 end)
 
 this.spawn = item.callback:new(
@@ -179,10 +184,7 @@ this.spawn = item.callback:new(
         return state.spawn_button.state ~= rt.enum.spawn_button_state.OK
             or state.spawn_button.cooldown > 0
             or not this.event:value()
-            or (
-                this.em_param:value() == "battlefield"
-                and (rt.is_in_quest() or (iv.area.map[1] == -1 and this.battlefield:value() == "repel"))
-            )
+            or (this.em_param:value() == "battlefield_repel" and (rt.is_in_quest() or (iv.area.map[1] == -1)))
     end
 )
 

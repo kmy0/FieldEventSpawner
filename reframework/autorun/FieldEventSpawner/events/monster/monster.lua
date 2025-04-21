@@ -7,6 +7,7 @@
 ---@field is_yummy boolean
 ---@field spoffer integer?
 ---@field rewards GuiRewardData[]?
+---@field difficulty System.Guid[]?
 ---@field environ app.EnvironmentType.ENVIRONMENT[]?
 ---@field protected _field_director app.cExFieldDirector
 ---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
@@ -68,6 +69,7 @@ setmetatable(this, { __index = factory })
 ---@param area integer?
 ---@param spoffer integer?
 ---@param rewards GuiRewardData[]?
+---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return MonsterEventFactory
 function this:new(
@@ -81,6 +83,8 @@ function this:new(
     is_yummy,
     area,
     spoffer,
+    rewards,
+    difficulty,
     environ
 )
     local o = factory.new(self, monster_data, stage, time, area)
@@ -94,6 +98,7 @@ function this:new(
     o.spoffer = spoffer
     o.pop_em_type = pop_em_type
     o.rewards = rewards
+    o.difficulty = difficulty
     o.environ = environ
     o._field_director, o._schedule_timeline = rt.get_field_director()
     o._area_array = monster_data:get_area_array(
@@ -125,7 +130,8 @@ function this:build()
         return rt.enum.spawn_result.NO_EM_PARAM
     end
 
-    local difficulty_guid = self:_get_difficulty(em_pop_param)
+    local difficulty_guid = self.difficulty and self.difficulty[math.random(#self.difficulty)]
+        or self:_get_difficulty(em_pop_param)
     if not difficulty_guid then
         return rt.enum.spawn_result.NO_DIFFICULTY
     end
@@ -174,7 +180,7 @@ end
 
 ---@protected
 ---@param em_pop_param  app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
----@return System.Guid
+---@return System.Guid?
 function this:_get_difficulty(em_pop_param)
     return em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
 end

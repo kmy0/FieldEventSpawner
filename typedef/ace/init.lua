@@ -78,12 +78,15 @@
 
 -- some pop_param inheritance things are wrong, not sure if this mess can be translated properly to luals
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base : app.cParamByEnvBase
+---@field get_RandomWeight fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base): System.Byte
+
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_EnvStart : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm : app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_EnvStart
 ---@field get_IsBossSpawned fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Boolean
 ---@field lotDifficultyID_Boss fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm, legendary_id: app.EnemyDef.LEGENDARY_ID, suitable_only: System.Boolean): System.Guid
 ---@field get_BossLegendaryProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Boolean
+---@field _BossDifficultyParams System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
 ---@field get_BossProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary): System.Byte
@@ -346,6 +349,7 @@
 
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
 ---@field _PopBelongingStageParam System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam>
+---@field _DifficultyParams_PopBelonging System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 ---@field get_RouteID fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Guid
 ---@field get_AreaNo fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Byte
 ---@field get_RouteID_AfterPopBelongingStage fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Guid
@@ -404,3 +408,17 @@
 ---@class app.user_data.ItemData.cData : ace.user_data.ExcelUserData.cData
 ---@field get_RawName fun(self: app.user_data.ItemData.cData): System.Guid
 ---@field get_ItemId fun(self: app.user_data.ItemData.cData): app.ItemDef.ID_Fixed
+
+---@class app.EnemyManager : ace.GAElement
+---@field get_Setting fun(self: app.EnemyManager): app.user_data.EnemyManagerSetting
+
+---@class app.user_data.EnemyManagerSetting : via.UserData
+---@field get_Difficulty2 fun(self: app.user_data.EnemyManagerSetting): app.user_data.EmParamDifficulty2
+
+---@class app.user_data.EmParamDifficulty2
+---@field getDifficultyRate fun(self: app.user_data.EmParamDifficulty2, guid: System.Guid): app.user_data.EmParamDifficulty2.cDifficultyRate
+
+---@class app.user_data.EmParamDifficulty2.cDifficultyRate : via.clr.ManagedObject
+---@field get_RewardGrade fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Int32
+
+---@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
