@@ -32,10 +32,10 @@ setmetatable(this, { __index = monster_factory })
 ---@param time integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param swarm_count integer
 ---@param area integer?
 ---@param rewards GuiRewardData[]?
+---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return SwarmEventFactory
 function this:new(
     monster_data,
@@ -46,10 +46,9 @@ function this:new(
     time,
     is_village_boost,
     is_yummy,
-    ignore_environ_type,
     swarm_count,
     area,
-    rewards
+    environ
 )
     local o = monster_factory.new(
         self,
@@ -61,10 +60,9 @@ function this:new(
         time,
         is_village_boost,
         is_yummy,
-        ignore_environ_type,
         area,
         nil,
-        rewards
+        environ
     )
     setmetatable(o, self)
     ---@cast o SwarmEventFactory

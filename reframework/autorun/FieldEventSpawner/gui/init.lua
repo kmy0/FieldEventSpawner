@@ -64,6 +64,11 @@ function state.callbacks.spawn()
         local legendary = gui.map.em_param_mod_to_legendary[item.em_param_mod:value()]
         local legendary_id = rl(ace.enum.legendary, legendary)
         local pop_em_type = gui.map.em_param_to_pop_em[em_param]
+        local environ = item.is_ignore_environ:value()
+                and event.map[
+                    rt.state.stage --[[@as app.FieldDef.STAGE]]
+                ].env_by_param[em_param]
+            or nil
 
         if item.swarm_count:value() > 0 then
             return spawn.swarm(
@@ -78,7 +83,7 @@ function state.callbacks.spawn()
                 item.is_ignore_environ:value(),
                 item.swarm_count:value(),
                 item.area:value(),
-                item.is_force_rewards:value() and config.current.mod.reward_config.array or nil
+                environ
             )
         elseif em_param == "battlefield" then
             return spawn.battlefield(
@@ -91,7 +96,7 @@ function state.callbacks.spawn()
                 item.is_ignore_environ:value(),
                 rt.enum.battlefield_state[item.battlefield:value()],
                 item.area:value(),
-                item.is_force_rewards:value() and config.current.mod.reward_config.array or nil
+                environ
             )
         else
             return spawn.monster(
@@ -106,7 +111,7 @@ function state.callbacks.spawn()
                 item.is_ignore_environ:value(),
                 item.area:value(),
                 item.spoffer:value(),
-                item.is_force_rewards:value() and config.current.mod.reward_config.array or nil
+                environ
             )
         end
     elseif event_type == "gimmick" then

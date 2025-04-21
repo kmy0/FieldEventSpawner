@@ -18,6 +18,7 @@
 ---@field param_by_env table<app.EnvironmentType.ENVIRONMENT, MonsterParam>
 ---@field area_by_param table<string, integer[]>
 ---@field area_by_env_by_param table<app.EnvironmentType.ENVIRONMENT, table<string, integer[]>>
+---@field env_by_param table<string, app.EnvironmentType.ENVIRONMENT[]>
 
 ---@class (exact) MonsterData : AreaEventData
 ---@field id app.EnemyDef.ID
@@ -61,6 +62,7 @@ function MonsterData.monster_map_data_ctor(stage)
     ret.param_by_env = {}
     ret.area_by_param = {}
     ret.area_by_env_by_param = {}
+    ret.env_by_param = {}
     return ret
 end
 
@@ -241,13 +243,22 @@ local function get_param_data(em_id, map_data)
 
             local leg_prob = pop_param:get_LegendaryProbability()
             local pop_param_by_env = pop_param._ParamsByEnv
+            local env_check = pop_param_by_env
+                    and function(env)
+                        local param_by_env_base = pop_param_by_env:getParamByEnv(env)
+                        if not param_by_env_base then
+                            return false
+                        end
+                        return param_by_env_base:get_RandomWeight() > 0
+                    end
+                or nil
 
             if not pop_param_by_env then
                 iter(md, param_key, {
                     none = leg_prob < 100,
                     legendary = leg_prob > 0,
                     legendary_king = false,
-                })
+                }, env_check)
             elseif pop_em == "SWARM" then
                 ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
                 if pop_param:get_IsBossSpawned() then
@@ -256,34 +267,26 @@ local function get_param_data(em_id, map_data)
                         none = boss_leg_prob < 100,
                         legendary = boss_leg_prob > 0,
                         legendary_king = false,
-                    }, function(env)
-                        return pop_param_by_env:getParamByEnv(env) ~= nil
-                    end)
+                    }, env_check)
                 end
 
                 iter(md, param_key, {
                     none = leg_prob < 100,
                     legendary = leg_prob > 0,
                     legendary_king = false,
-                }, function(env)
-                    return pop_param_by_env:getParamByEnv(env) ~= nil
-                end)
+                }, env_check)
             elseif pop_em == "LEGENDARY" then
                 iter(md, param_key, {
                     none = false,
                     legendary = true,
                     legendary_king = false,
-                }, function(env)
-                    return pop_param_by_env:getParamByEnv(env) ~= nil
-                end)
+                }, env_check)
             else
                 iter(md, param_key, {
                     none = leg_prob < 100,
                     legendary = leg_prob > 0,
                     legendary_king = false,
-                }, function(env)
-                    return pop_param_by_env:getParamByEnv(env) ~= nil
-                end)
+                }, env_check)
             end
             ::continue::
         end

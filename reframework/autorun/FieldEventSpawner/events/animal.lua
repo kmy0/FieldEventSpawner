@@ -39,7 +39,7 @@ setmetatable(this, { __index = factory })
 ---@param area integer?
 ---@return AnimalEventFactory
 function this:new(animal_data, stage, time, ignore_environ_type, area)
-    local o = factory.new(self, animal_data, stage, time, ignore_environ_type, area)
+    local o = factory.new(self, animal_data, stage, time, area)
     setmetatable(o, self)
     o._area_array = animal_data:get_area_array(stage, not ignore_environ_type and rt.get_environ(stage) or nil)
     ---@cast o AnimalEventFactory

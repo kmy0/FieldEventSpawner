@@ -60,10 +60,10 @@ setmetatable(this, { __index = monster_factory })
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param battlefield_state BattlefieldState
 ---@param area integer?
 ---@param rewards GuiRewardData[]?
+---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return BattlefieldEventFactory
 function this:new(
     monster_data,
@@ -72,10 +72,9 @@ function this:new(
     stage,
     time,
     is_yummy,
-    ignore_environ_type,
     battlefield_state,
     area,
-    rewards
+    environ
 )
     local o = monster_factory.new(
         self,
@@ -87,15 +86,19 @@ function this:new(
         time,
         false,
         is_yummy,
-        ignore_environ_type,
         area,
         nil,
-        rewards
+        environ
     )
     setmetatable(o, self)
     ---@cast o BattlefieldEventFactory
     o.battlefield_state = battlefield_state
     o.pop_em_type = o:_get_em_pop_type_bf()
+    o._area_array = monster_data:get_area_array(
+        stage,
+        not environ and rt.get_environ(stage) or nil,
+        ace.map.pop_em_to_em_param_key[ace.enum.pop_em_fixed[o.pop_em_type]]
+    )
     return o
 end
 
@@ -115,7 +118,7 @@ function this:build()
 
     local difficulty_guid, option_value
     local is_repel = self.battlefield_state == rt.enum.battlefield_state.repel
-    local environ_type = rt.get_environ(self.stage)
+    local environ_type = self.environ and self.environ[math.random(#self.environ)] or rt.get_environ(self.stage)
     local stage_param = self:_get_repel_param(em_pop_param, area)
 
     if stage_param then

@@ -7,6 +7,7 @@
 ---@field is_yummy boolean
 ---@field spoffer integer?
 ---@field rewards GuiRewardData[]?
+---@field environ app.EnvironmentType.ENVIRONMENT[]?
 ---@field protected _field_director app.cExFieldDirector
 ---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
 ---@field protected __index MonsterEventFactory
@@ -64,10 +65,10 @@ setmetatable(this, { __index = factory })
 ---@param time integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
----@param ignore_environ_type boolean
 ---@param area integer?
 ---@param spoffer integer?
 ---@param rewards GuiRewardData[]?
+---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@return MonsterEventFactory
 function this:new(
     monster_data,
@@ -78,12 +79,11 @@ function this:new(
     time,
     is_village_boost,
     is_yummy,
-    ignore_environ_type,
     area,
     spoffer,
-    rewards
+    environ
 )
-    local o = factory.new(self, monster_data, stage, time, ignore_environ_type, area)
+    local o = factory.new(self, monster_data, stage, time, area)
     setmetatable(o, self)
     ---@cast o MonsterEventFactory
 
@@ -94,10 +94,11 @@ function this:new(
     o.spoffer = spoffer
     o.pop_em_type = pop_em_type
     o.rewards = rewards
+    o.environ = environ
     o._field_director, o._schedule_timeline = rt.get_field_director()
     o._area_array = monster_data:get_area_array(
         stage,
-        not ignore_environ_type and rt.get_environ(stage) or nil,
+        not environ and rt.get_environ(stage) or nil,
         ace.map.pop_em_to_em_param_key[ace.enum.pop_em_fixed[pop_em_type]]
     )
     return o
@@ -105,11 +106,11 @@ end
 
 ---@return SpawnResult, MonsterSpawnEvent?
 function this:build()
-    local environ_type = rt.get_environ(self.stage)
+    local environ_type = self.environ and self.environ[math.random(#self.environ)] or rt.get_environ(self.stage)
     local other_monsters = self._field_director:findExecutedPopEms(true)
     local other_monsters_lua = util.system_array_to_lua(other_monsters)
     local route_guid, areas = self:_get_route_data(other_monsters, environ_type)
-    if not areas or self.ignore_environ_type then
+    if not areas or self.environ then
         areas = self._area_array
     end
     ---@cast areas integer[]

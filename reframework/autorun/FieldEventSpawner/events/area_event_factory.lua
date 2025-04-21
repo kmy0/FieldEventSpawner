@@ -2,7 +2,6 @@
 ---@field event_data AreaEventData
 ---@field stage app.FieldDef.STAGE
 ---@field time integer
----@field ignore_environ_type boolean
 ---@field area integer?
 ---@field protected __index AreaEventFactory
 ---@field protected _area_array integer[]?
@@ -22,14 +21,12 @@ this.__index = this
 ---@param event_data AreaEventData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param ignore_environ_type boolean
 ---@param area integer?
 ---@return AreaEventFactory
-function this:new(event_data, stage, time, ignore_environ_type, area)
+function this:new(event_data, stage, time, area)
     local o = {
         event_data = event_data,
         stage = stage,
-        ignore_environ_type = ignore_environ_type,
         area = area,
         time = time,
     }
