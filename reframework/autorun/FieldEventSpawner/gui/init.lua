@@ -44,6 +44,9 @@ local state = {
             size.x = size.x + 6
             size.y = size.y + 6
             cb_item.imgui_draw_args[1] = size
+            if self.cooldown == 0 then
+                self.result = rt.enum.spawn_result.OK
+            end
             return self.cooldown > 0 and self.cooldown or text
         end,
     },
