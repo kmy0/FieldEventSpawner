@@ -136,13 +136,14 @@ function this:build()
         return rt.enum.spawn_result.NO_DIFFICULTY
     end
 
+    local spoffer_rewards = (self.rewards and self.spoffer) and self:_get_edited_reward_data() or nil
     local reward_data = self:_get_reward_data(
         difficulty_guid,
         self.pop_em_type == rl(ace.enum.pop_em_fixed, "FRENZY"),
         self.legendary_id == rl(ace.enum.legendary, "NORMAL")
     )
 
-    if not reward_data then
+    if not reward_data or (self.rewards and self.spoffer and not spoffer_rewards) then
         return rt.enum.spawn_result.NO_REWARDS
     end
 
@@ -173,7 +174,8 @@ function this:build()
         self.spoffer,
         nil,
         nil,
-        sched.spawn_event.subevent_ctor(reward_data.reward_array)
+        sched.spawn_event.subevent_ctor(reward_data.reward_array),
+        spoffer_rewards
     )
     return rt.enum.spawn_result.OK, ret
 end
@@ -240,7 +242,7 @@ end
 ---@return EditedRewardData?
 function this:_get_reward_data(difficulty_guid, is_frenzy, is_legendary)
     local ret
-    if self.rewards then
+    if self.rewards and not self.spoffer then
         ret = self:_get_edited_reward_data()
     else
         local reward_data = self:_get_game_reward_data(difficulty_guid, is_frenzy, is_legendary)
