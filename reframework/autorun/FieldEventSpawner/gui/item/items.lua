@@ -184,7 +184,7 @@ this.spawn = item.callback:new(
         return state.spawn_button.state ~= rt.enum.spawn_button_state.OK
             or state.spawn_button.cooldown > 0
             or not this.event:value()
-            or (this.em_param:value() == "battlefield_repel" and (rt.is_in_quest() or (iv.area.map[1] == -1)))
+            or (is_battlefield() and (rt.is_in_quest() or (iv.area.map[1] == -1)))
     end
 )
 
