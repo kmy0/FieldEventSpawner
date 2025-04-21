@@ -18,20 +18,19 @@
     _FreeValue2 = app.ItemDef.ID_Fixed
     _FreeValue3 = app.ItemDef.ID_Fixed
     _FreeValue4 = app.ItemDef.ID_Fixed
-    _FreeValue5 = unused
+    _FreeValue5 = app.ItemDef.ID_Fixed
     _FreeMiniValue0 = Item Count
     _FreeMiniValue1 = Item Count
     _FreeMiniValue2 = Item Count
     _FreeMiniValue3 = Item Count
     _FreeMiniValue4 = Item Count
-    _FreeMiniValue5 = unused
+    _FreeMiniValue5 = Item Count
     _FreeMiniValue6 = Bit array, eg. if there is an item in _FreeValue3, you set bit 3 to 1 etc.
 ]]
 
 local data = require("FieldEventSpawner.data")
 local sched = require("FieldEventSpawner.schedule")
 local table_util = require("FieldEventSpawner.table_util")
-local util = require("FieldEventSpawner.util")
 
 local rl = data.util.reverse_lookup
 local rt = data.runtime
@@ -59,8 +58,8 @@ function this:build()
     ---@type app.cExFieldScheduleExportData.cEventData[]
     local packs = {}
     for _, pack in ipairs({
-        table_util.slice(self.reward_array, 1, 5, true),
-        table_util.slice(self.reward_array, 6, 10, true),
+        table_util.slice(self.reward_array, 1, 6, true),
+        table_util.slice(self.reward_array, 7, 10, true),
     }) do
         if pack then
             table.insert(packs, self:_build(pack))
