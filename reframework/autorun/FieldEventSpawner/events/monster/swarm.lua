@@ -146,12 +146,20 @@ function this:_build_member(swarm_data)
         return rt.enum.spawn_result.NO_EM_PARAM
     end
 
-    local difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+    local difficulty_guid, reward_data
+    if swarm_data.has_boss then
+        reward_data = self:_get_game_reward_data(difficulty_guid, false, false)
+    else
+        reward_data = self:_get_reward_data(difficulty_guid, false, false)
+    end
+
     if not difficulty_guid then
         return rt.enum.spawn_result.NO_DIFFICULTY
     end
 
-    local reward_data = self:_get_game_reward_data(difficulty_guid, false, false)
+    if not reward_data then
+        return rt.enum.spawn_result.NO_REWARDS
+    end
 
     local event_data = sched.util.create_event_data()
     event_data._EventType = rl(ace.enum.ex_event, "POP_EM")
