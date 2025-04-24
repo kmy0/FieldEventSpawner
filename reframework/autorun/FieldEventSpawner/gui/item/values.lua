@@ -92,16 +92,21 @@ end
 ---@param t table<any, string>
 ---@param predicate (fun(o: string): boolean)?
 ---@param sort (fun(a: SortStruct, b: SortStruct): boolean)?
-local function no_tr_update_combo(key, t, predicate, sort)
+---@param unique_key boolean?
+local function no_tr_update_combo(key, t, predicate, sort, unique_key)
     local gui_item = this[key]
     ---@cast gui_item GuiItemData
     gui_item:clear()
+
+    if unique_key == nil then
+        unique_key = true
+    end
 
     ---@type SortStruct[]
     local sorted = {}
     for k, v in pairs(t) do
         if predicate and predicate(v) or not predicate then
-            table.insert(sorted, { key = k, text = string.format("%s##%s_%s", v, key, k) })
+            table.insert(sorted, { key = k, text = string.format("%s##%s_%s", v, key, unique_key and k or "unique") })
         end
     end
     table.sort(sorted, sort and sort or function(a, b)
@@ -316,7 +321,8 @@ local function switch_em_difficulty_array(event_key, em_param, em_param_mod, sta
         function(a, b)
             ---@diagnostic disable-next-line: undefined-field
             return tonumber(util.split_string(a.text, "##")[1]) < tonumber(util.split_string(b.text, "##")[1])
-        end
+        end,
+        false
     )
 
     local index = table_util.index(this.em_difficulty.array, current_value)
