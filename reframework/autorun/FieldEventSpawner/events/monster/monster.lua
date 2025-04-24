@@ -11,7 +11,6 @@
 ---@field environ app.EnvironmentType.ENVIRONMENT[]?
 ---@field protected _field_director app.cExFieldDirector
 ---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
----@field protected __index MonsterEventFactory
 
 --[[ app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -55,6 +54,7 @@ local ace = data.ace
 
 ---@class MonsterEventFactory
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 setmetatable(this, { __index = factory })
 

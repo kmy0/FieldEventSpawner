@@ -1,6 +1,5 @@
 ---@class (exact) SwarmEventFactory : MonsterEventFactory
 ---@field swarm_count integer
----@field protected __index SwarmEventFactory
 
 ---@class (exact) SwarmData
 ---@field groupid integer
@@ -21,6 +20,7 @@ local ace = data.ace
 
 ---@class SwarmEventFactory
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 setmetatable(this, { __index = monster_factory })
 

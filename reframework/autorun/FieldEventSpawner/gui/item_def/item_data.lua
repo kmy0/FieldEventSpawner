@@ -1,12 +1,12 @@
 ---@class (exact) GuiItemData
 ---@field array string[]
 ---@field map string[]
----@field protected __index GuiItemData
 
 local table_util = require("FieldEventSpawner.table_util")
 
 ---@class GuiItemData
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 
 function this:new()

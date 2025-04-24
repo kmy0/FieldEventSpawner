@@ -3,7 +3,6 @@
 ---@field stage app.FieldDef.STAGE
 ---@field time integer
 ---@field area integer?
----@field protected __index AreaEventFactory
 ---@field protected _area_array integer[]?
 ---@field build fun(): SpawnResult, SpawnEvent?
 
@@ -16,6 +15,7 @@ local rt = data.runtime
 
 ---@class AreaEventFactory
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 
 ---@param event_data AreaEventData
@@ -31,6 +31,7 @@ function this:new(event_data, stage, time, area)
         time = time,
     }
     setmetatable(o, self)
+    ---@cast o AnimalEventFactory
     return o
 end
 

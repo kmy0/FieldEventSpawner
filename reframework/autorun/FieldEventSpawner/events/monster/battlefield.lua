@@ -1,6 +1,5 @@
 ---@class (exact) BattlefieldEventFactory : MonsterEventFactory
 ---@field battlefield_state BattlefieldState
----@field protected __index BattlefieldEventFactory
 
 --[[
     app.cExFieldEvent_PopEnemy
@@ -51,6 +50,7 @@ local ace = data.ace
 
 ---@class BattlefieldEventFactory
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 setmetatable(this, { __index = monster_factory })
 

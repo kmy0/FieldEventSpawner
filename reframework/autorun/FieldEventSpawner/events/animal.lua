@@ -1,6 +1,5 @@
 ---@class (exact) AnimalEventFactory : AreaEventFactory
 ---@field event_data AnimalData
----@field protected __index AnimalEventFactory
 
 --[[ app.cExFieldEvent_AnimalEvent
     _FreeValue0 = app.FieldDef.STAGE_Fixed
@@ -29,6 +28,7 @@ local ace = data.ace
 
 ---@class AnimalEventFactory
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 setmetatable(this, { __index = factory })
 

@@ -12,11 +12,11 @@
 ---@class (exact) AreaEventData : EventData
 ---@field map table<app.FieldDef.STAGE, MapData>
 ---@field type app.EX_FIELD_EVENT_TYPE
----@field protected __index AreaEventData
 ---@field map_data_ctor fun(stage: app.FieldDef.STAGE): MapData
 
 ---@class AreaEventData
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 
 ---@param name_english string
@@ -31,6 +31,7 @@ function this:new(name_english, name_local, type)
         type = type,
     }
     setmetatable(o, self)
+    ---@cast o AreaEventData
     return o
 end
 

@@ -5,13 +5,13 @@
 ---@field on_changed_callback (fun())?
 ---@field is_changed (fun(self: ConfigItem, value: any): boolean)?
 ---@field protected _getter (fun(config_value): any)?
----@field protected __index ConfigItem
 
 local config = require("FieldEventSpawner.config")
 local item_base = require("FieldEventSpawner.gui.item_def.item_base")
 
 ---@class ConfigItem
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 setmetatable(this, { __index = item_base })
 

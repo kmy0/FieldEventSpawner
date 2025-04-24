@@ -1,8 +1,7 @@
----@class RewardFactory
+---@class (exact) RewardFactory
 ---@field reward_array GuiRewardData[]
 ---@field stage app.FieldDef.STAGE
 ---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
----@field protected __index RewardFactory
 
 ---@class (exact) RewardData
 ---@field reward_array System.Array<app.cExFieldEvent_EmReward>
@@ -38,6 +37,7 @@ local ace = data.ace
 
 ---@class RewardFactory
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 
 ---@param reward_array GuiRewardData[]
@@ -50,6 +50,7 @@ function this:new(reward_array, stage)
     }
     setmetatable(o, self)
     _, o._schedule_timeline = rt.get_field_director()
+    ---@cast o RewardFactory
     return o
 end
 

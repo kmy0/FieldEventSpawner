@@ -43,6 +43,7 @@ local util = require("FieldEventSpawner.util")
 local this = {}
 ---@class MonsterData
 local MonsterData = {}
+---@diagnostic disable-next-line: inject-field
 MonsterData.__index = MonsterData
 setmetatable(MonsterData, { __index = event })
 
@@ -374,39 +375,42 @@ local function get_param_data(em_id, map_data)
     end
 end
 
----@param map_data MonsterMapData
----@param battlefield_data MonsterMapData
----@return MonsterMapData
-local function merge_map_data(map_data, battlefield_data)
-    map_data.param.battlefield_slay = battlefield_data.param.battlefield_slay
-    map_data.param.battlefield_repel = battlefield_data.param.battlefield_repel
-    map_data.area_by_param.battlefield_repel = battlefield_data.area_by_param.battlefield_repel
-    map_data.area_by_param.battlefield_slay = battlefield_data.area_by_param.battlefield_slay
-    map_data.env_by_param.battlefield_slay = battlefield_data.env_by_param.battlefield_slay
-    map_data.env_by_param.battlefield_repel = battlefield_data.env_by_param.battlefield_repel
-    map_data.difficulty_by_param.battlefield_slay = battlefield_data.difficulty_by_param.battlefield_slay
-    map_data.difficulty_by_param.battlefield_repel = battlefield_data.difficulty_by_param.battlefield_repel
+---@param md table<app.FieldDef.STAGE, MonsterMapData>
+---@param battlefield_data table<app.FieldDef.STAGE, MonsterMapData>
+---@return table<app.FieldDef.STAGE, MonsterMapData>
+local function merge_map_data(md, battlefield_data)
+    for stage, mmd in pairs(battlefield_data) do
+        local map_data = md[stage]
+        map_data.param.battlefield_slay = mmd.param.battlefield_slay
+        map_data.param.battlefield_repel = mmd.param.battlefield_repel
+        map_data.area_by_param.battlefield_repel = mmd.area_by_param.battlefield_repel
+        map_data.area_by_param.battlefield_slay = mmd.area_by_param.battlefield_slay
+        map_data.env_by_param.battlefield_slay = mmd.env_by_param.battlefield_slay
+        map_data.env_by_param.battlefield_repel = mmd.env_by_param.battlefield_repel
+        map_data.difficulty_by_param.battlefield_slay = mmd.difficulty_by_param.battlefield_slay
+        map_data.difficulty_by_param.battlefield_repel = mmd.difficulty_by_param.battlefield_repel
 
-    for env, param in pairs(battlefield_data.param_by_env) do
-        map_data.param_by_env[env].battlefield_slay = param.battlefield_slay
-        map_data.param_by_env[env].battlefield_repel = param.battlefield_repel
+        for env, param in pairs(mmd.param_by_env) do
+            map_data.param_by_env[env].battlefield_slay = param.battlefield_slay
+            map_data.param_by_env[env].battlefield_repel = param.battlefield_repel
+        end
+
+        for env, param in pairs(mmd.area_by_env_by_param) do
+            map_data.area_by_env_by_param[env].battlefield_slay = param.battlefield_slay
+            map_data.area_by_env_by_param[env].battlefield_repel = param.battlefield_repel
+        end
+
+        for env, param in pairs(mmd.difficulty_by_env_by_param) do
+            map_data.difficulty_by_env_by_param[env].battlefield_slay = param.battlefield_slay
+            map_data.difficulty_by_env_by_param[env].battlefield_repel = param.battlefield_repel
+        end
     end
 
-    for env, param in pairs(battlefield_data.area_by_env_by_param) do
-        map_data.area_by_env_by_param[env].battlefield_slay = param.battlefield_slay
-        map_data.area_by_env_by_param[env].battlefield_repel = param.battlefield_repel
-    end
-
-    for env, param in pairs(battlefield_data.difficulty_by_env_by_param) do
-        map_data.difficulty_by_env_by_param[env].battlefield_slay = param.battlefield_slay
-        map_data.difficulty_by_env_by_param[env].battlefield_repel = param.battlefield_repel
-    end
-
-    return map_data
+    return md
 end
 
----@param map_data MonsterMapData
----@return MonsterMapData?
+---@param map_data table<app.FieldDef.STAGE, MonsterMapData>
+---@return table<app.FieldDef.STAGE, MonsterMapData>?
 local function filter_map_data(map_data)
     for stage, md in pairs(map_data) do
         if table_util.all(md.param, function(o)

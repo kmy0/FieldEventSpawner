@@ -54,7 +54,7 @@
 ---@field MoveNext fun(self: System.ArrayEnumerator): System.Boolean
 ---@field get_Current fun(self: System.ArrayEnumerator): any
 
----@class System.Array<T> : { [integer]: T }, System.Object
+---@class System.Array<T> : System.Object
 ---@field get_Count fun(self: System.Array): integer
 ---@field get_Item fun(self: System.Array, i: integer): any
 ---@field set_Item fun(self: System.Array, i: integer, item: any)

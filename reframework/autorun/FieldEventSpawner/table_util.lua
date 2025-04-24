@@ -62,9 +62,10 @@ function this.join_table(t)
     return str
 end
 
----@param original table
+---@generic T
+---@param original T
 ---@param copies table?
----@return table
+---@return T
 function this.table_deep_copy(original, copies)
     copies = copies or {}
     local original_type = type(original)

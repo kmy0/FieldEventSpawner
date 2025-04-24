@@ -1,13 +1,13 @@
----@class FilterGuiItemData : GuiItemData
+---@class (exact) FilterGuiItemData : GuiItemData
 ---@field filtered_array string[]
 ---@field filtered_map string[]
----@field protected __index FilterGuiItemData
 
 local item_data = require("FieldEventSpawner.gui.item_def.item_data")
 local table_util = require("FieldEventSpawner.table_util")
 
 ---@class FilterGuiItemData
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 setmetatable(this, { __index = item_data })
 
@@ -17,6 +17,7 @@ function this:new()
     o.filtered_array = {}
     o.filtered_map = {}
     setmetatable(o, self)
+    ---@cast o FilterGuiItemData
     return o
 end
 

@@ -1,6 +1,5 @@
 ---@class (exact) GimmickEventFactory : AreaEventFactory
 ---@field event_data GimmickData
----@field protected __index AreaEventFactory
 
 --[[ app.cExFieldEvent_GimmickEvent
     _FreeValue0 = app.FieldDef.STAGE_Fixed
@@ -40,6 +39,7 @@ local ace = data.ace
 
 ---@class GimmickEventFactory
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 setmetatable(this, { __index = factory })
 

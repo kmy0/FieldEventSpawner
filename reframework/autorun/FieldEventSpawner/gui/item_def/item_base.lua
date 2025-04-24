@@ -3,10 +3,10 @@
 ---@field imgui_draw_args any[]
 ---@field protected _draw fun(self: ConfigItem, label: string): any
 ---@field protected _imgui_draw fun(...)
----@field protected __index ItemBase
 
 ---@class ItemBase
 local this = {}
+---@diagnostic disable-next-line: inject-field
 this.__index = this
 
 ---@param draw_func fun(...)
@@ -20,6 +20,7 @@ function this:new(draw_func, draw_args, is_disabled_func)
         imgui_draw_args = draw_args and draw_args or {},
     }
     setmetatable(o, self)
+    ---@cast o ItemBase
     return o
 end
 
