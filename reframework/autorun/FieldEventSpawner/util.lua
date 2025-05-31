@@ -94,7 +94,7 @@ function this.deref_ptr(ptr)
 end
 
 ---@param stage app.FieldDef.STAGE
----@return integer
+---@return app.FieldDef.STAGE_Fixed
 function this.get_stage_id_fixed(stage)
     local o = ValueType.new(sdk.find_type_definition("app.FieldDef.STAGE_Fixed") --[[@as RETypeDefinition]])
     this.getFixedFromSTAGE:call(nil, stage, o)
@@ -102,7 +102,7 @@ function this.get_stage_id_fixed(stage)
 end
 
 ---@param gimmick_event app.ExDef.GIMMICK_EVENT
----@return integer
+---@return app.ExDef.GIMMICK_EVENT_Fixed
 function this.get_gimmick_event_id_fixed(gimmick_event)
     local o = ValueType.new(sdk.find_type_definition("app.ExDef.GIMMICK_EVENT_Fixed") --[[@as RETypeDefinition]])
     this.getFixedFromGIMMICK_EVENT:call(nil, gimmick_event, o)
@@ -110,7 +110,7 @@ function this.get_gimmick_event_id_fixed(gimmick_event)
 end
 
 ---@param animal_event app.ExDef.ANIMAL_EVENT
----@return integer
+---@return app.ExDef.ANIMAL_EVENT_Fixed
 function this.get_animal_event_id_fixed(animal_event)
     local o = ValueType.new(sdk.find_type_definition("app.ExDef.ANIMAL_EVENT_Fixed") --[[@as RETypeDefinition]])
     this.getFixedFromANIMAL_EVENT:call(nil, animal_event, o)
@@ -118,7 +118,7 @@ function this.get_animal_event_id_fixed(animal_event)
 end
 
 ---@param gimmick_fixed app.ExDef.GIMMICK_EVENT_Fixed
----@return integer
+---@return app.ExDef.GIMMICK_EVENT
 function this.get_gimmick_event_id(gimmick_fixed)
     local o = ValueType.new(sdk.find_type_definition("app.ExDef.GIMMICK_EVENT") --[[@as RETypeDefinition]])
     this.getGIMMICK_EVENTFromFixed:call(nil, gimmick_fixed, o)

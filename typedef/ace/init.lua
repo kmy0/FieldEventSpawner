@@ -422,3 +422,4 @@
 ---@field get_RewardGrade fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Int32
 
 ---@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
+---@class app.FieldDef.STAGE_Fixed : System.Enum
