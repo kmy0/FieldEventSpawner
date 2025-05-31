@@ -4,9 +4,9 @@
 ---@field legendary_king boolean
 
 ---@class (exact) MonsterDifficulty
----@field legendary table<integer, System.Guid[]>?
----@field none table<integer, System.Guid[]>?
----@field legendary_king table<integer, System.Guid[]>?
+---@field legendary table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
+---@field none table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
+---@field legendary_king table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
 
 ---@class (exact) MonsterParam
 ---@field frenzy MonsterParamModifier?
@@ -97,7 +97,7 @@ end
 ---@param environ app.EnvironmentType.ENVIRONMENT?
 ---@param em_param string
 ---@param em_param_mod string
----@return table<integer, System.Guid>?
+---@return table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
 function MonsterData:get_difficulty_table(stage, environ, em_param, em_param_mod)
     local map = self.map[stage]
     if not map then
@@ -110,6 +110,22 @@ function MonsterData:get_difficulty_table(stage, environ, em_param, em_param_mod
 
     local t = map.difficulty_by_param[em_param] or {}
     return t[em_param_mod]
+end
+
+---@param stage app.FieldDef.STAGE
+---@param environ app.EnvironmentType.ENVIRONMENT?
+---@param em_param string
+---@param em_param_mod string
+---@param em_difficulty integer
+---@return table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>?
+function MonsterData:get_difficulty_rank_table(stage, environ, em_param, em_param_mod, em_difficulty)
+    local difficulty_table = self:get_difficulty_table(stage, environ, em_param, em_param_mod)
+
+    if not difficulty_table then
+        return
+    end
+
+    return difficulty_table[em_difficulty]
 end
 
 ---@param stage app.FieldDef.STAGE
@@ -270,21 +286,34 @@ local function get_param_data(em_id, map_data)
     ---@param difficulty_params System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
     ---@param legendary_id app.EnemyDef.LEGENDARY_ID
     ---@param bool boolean
-    ---@return table<integer, System.Guid[]>?
+    ---@return table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
     local function get_difficulty(difficulty_params, legendary_id, bool)
         if not bool then
             return
         end
 
-        ---@type table<integer, System.Guid[]>
+        ---@type table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>
         local ret = {}
         for i = 0, difficulty_params:get_Count() - 1 do
             local weight = difficulty_params:get_Item(i)
             ---@cast weight app.user_data.ExFieldParam_LayoutData.cDifficultyWeight
             local guid = weight:call("getDifficultyRankID(app.EnemyDef.LEGENDARY_ID)", legendary_id)
             local rate = diff2:getDifficultyRate(guid)
-            table_util.insert_nested_value(ret, { rate:get_RewardGrade() }, guid)
+            table_util.insert_nested_value(
+                ret,
+                { rate:get_RewardGrade(), util.get_em_reward_rank(rate:get_RewardRank()) },
+                guid
+            )
         end
+
+        for grade, ranks in pairs(ret) do
+            for rank, guids in pairs(ranks) do
+                ranks[rank] = table_util.set(guids, function(o)
+                    return util.format_guid(o)
+                end)
+            end
+        end
+
         return ret
     end
 

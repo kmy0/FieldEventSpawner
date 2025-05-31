@@ -420,6 +420,8 @@
 
 ---@class app.user_data.EmParamDifficulty2.cDifficultyRate : via.clr.ManagedObject
 ---@field get_RewardGrade fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Int32
+---@field get_RewardRank fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): app.QuestDef.EM_REWARD_RANK_Fixed
 
 ---@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
 ---@class app.FieldDef.STAGE_Fixed : System.Enum
+---@class app.QuestDef.EM_REWARD_RANK_Fixed : System.Enum

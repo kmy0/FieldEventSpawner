@@ -20,6 +20,7 @@ function this.switch_arrays()
         this.event:value(),
         this.em_param:value(),
         this.em_param_mod:value(),
+        this.em_difficulty:value(),
         rt.state.stage,
         rt.state.environ,
         this.is_ignore_environ:value()
@@ -111,6 +112,23 @@ this.em_difficulty = item.config:new(
     end,
     function()
         return iv.em_difficulty:empty() or not this.is_force_difficulty:value()
+    end,
+    function(self)
+        this.switch_arrays()
+    end,
+    is_combo_changed
+)
+
+this.em_difficulty_rank = item.config:new(
+    "mod.em_difficulty_rank",
+    imgui.combo,
+    { iv.em_difficulty_rank.array },
+    nil,
+    function(config_value)
+        return iv.em_difficulty_rank.map[config_value]
+    end,
+    function()
+        return iv.em_difficulty_rank:empty() or not this.is_force_difficulty:value()
     end,
     function(self)
         this.switch_arrays()

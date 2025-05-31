@@ -40,6 +40,9 @@ this.createEventInstance = sdk.find_type_definition("app.ExFieldUtil")
     :get_method("createEventInstance(app.cExFieldScheduleExportData.cEventData)") --[[@as REMethodDefinition]]
 this.getItemData = sdk.find_type_definition("app.ItemDef"):get_method("Data(app.ItemDef.ID)") --[[@as REMethodDefinition]]
 this.isValidItem = sdk.find_type_definition("app.ItemDef"):get_method("isValidItem(app.ItemDef.ID)") --[[@as REMethodDefinition]]
+this.getEM_REWARD_RANKFromFixed = sdk.find_type_definition("app.QuestDef"):get_method(
+    "getEM_REWARD_RANKFromFixed(app.QuestDef.EM_REWARD_RANK_Fixed, app.QuestDef.EM_REWARD_RANK)"
+) --[[@as REMethodDefinition]]
 
 ---@param int integer
 ---@return integer
@@ -49,6 +52,25 @@ function this.unsigned_to_signed(int)
         return num32 - 0x100000000
     end
     return num32
+end
+
+---@param guid System.Guid
+---@return string
+function this.format_guid(guid)
+    return string.format(
+        "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        guid.mData1,
+        guid.mData2,
+        guid.mData3,
+        guid.mData4_0,
+        guid.mData4_1,
+        guid.mData4_2,
+        guid.mData4_3,
+        guid.mData4_4,
+        guid.mData4_5,
+        guid.mData4_6,
+        guid.mData4_7
+    )
 end
 
 ---@param guid System.Guid
@@ -91,6 +113,14 @@ function this.deref_ptr(ptr)
     local deref = fake_int64:get_field("m_value")
 
     return deref
+end
+
+---@param rank_fixed app.QuestDef.EM_REWARD_RANK_Fixed
+---@return app.QuestDef.EM_REWARD_RANK
+function this.get_em_reward_rank(rank_fixed)
+    local o = ValueType.new(sdk.find_type_definition("app.QuestDef.EM_REWARD_RANK") --[[@as RETypeDefinition]])
+    this.getEM_REWARD_RANKFromFixed:call(nil, rank_fixed, o)
+    return o:get_field("value__")
 end
 
 ---@param stage app.FieldDef.STAGE

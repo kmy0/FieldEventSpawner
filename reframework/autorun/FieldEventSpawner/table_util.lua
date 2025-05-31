@@ -151,11 +151,20 @@ end
 
 ---@generic T
 ---@param t T[]
+---@param key (fun(o: T): any)?
 ---@return T[]
-function this.set(t)
+function this.set(t, key)
     local d = {}
     for _, value in pairs(t) do
-        d[value] = 1
+        if key then
+            d[key(value)] = value
+        else
+            d[value] = 1
+        end
+    end
+
+    if key then
+        return this.values(d)
     end
     return this.keys(d)
 end
@@ -356,6 +365,36 @@ function this.slice(t, index1, index2, strict)
         return
     end
     return ret
+end
+
+---@param t table
+---@param indent integer?
+---@param visited table<table, boolean>?
+function this.print(t, indent, visited)
+    indent = indent or 2
+    visited = visited or {}
+    local spacing = string.rep("  ", indent)
+
+    if visited[t] then
+        print(spacing .. "[Circular Ref]")
+        return
+    end
+
+    visited[t] = true
+    for k, v in pairs(t) do
+        local key = tostring(k)
+        if type(v) == "table" then
+            print(spacing .. key .. " = {")
+            this.print(v, indent + 1, visited)
+            print(spacing .. "}")
+        elseif type(v) == "string" then
+            print(spacing .. key .. ' = "' .. v .. '"')
+        else
+            print(spacing .. key .. " = " .. tostring(v))
+        end
+    end
+
+    visited[t] = nil
 end
 
 return this

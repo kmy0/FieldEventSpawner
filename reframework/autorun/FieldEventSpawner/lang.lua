@@ -186,6 +186,9 @@ local default = {
     em_param_difficulty_combo = {
         name = "Difficulty",
     },
+    em_param_difficulty_rank_combo = {
+        name = "Quest Rank",
+    },
 }
 
 function this.init()

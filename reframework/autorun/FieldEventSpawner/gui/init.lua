@@ -87,7 +87,7 @@ function state.callbacks.spawn()
                 item.swarm_count:value(),
                 item.area:value(),
                 rewards,
-                item.em_difficulty:value(),
+                item.em_difficulty_rank:value(),
                 environ
             )
         elseif em_param == "battlefield_repel" or em_param == "battlefield_slay" then
@@ -101,7 +101,7 @@ function state.callbacks.spawn()
                 rt.enum.battlefield_state[em_param],
                 item.area:value(),
                 rewards,
-                item.em_difficulty:value(),
+                item.em_difficulty_rank:value(),
                 environ
             )
         else
@@ -117,7 +117,7 @@ function state.callbacks.spawn()
                 item.area:value(),
                 item.spoffer:value(),
                 rewards,
-                item.em_difficulty:value(),
+                item.em_difficulty_rank:value(),
                 environ
             )
         end
@@ -307,6 +307,7 @@ function this.draw()
         item.em_param:draw(gui_util.tr("em_param_combo"))
         item.em_param_mod:draw(gui_util.tr("em_param_mod_combo"))
         item.em_difficulty:draw(gui_util.tr("em_param_difficulty_combo"))
+        item.em_difficulty_rank:draw(gui_util.tr("em_param_difficulty_rank_combo"))
         item.swarm_count:draw(gui_util.tr("swarm_count_slider"))
         gui_util.tooltip(lang.tr("swarm_count_slider.tooltip.name"))
         item.spoffer:draw(gui_util.tr("spoffer_combo"))

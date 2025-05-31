@@ -36,6 +36,7 @@
 ---@field is_force_rewards boolean
 ---@field reward_config RewardSettings
 ---@field em_difficulty integer
+---@field em_difficulty_rank integer
 
 ---@class (exact) SpawnCooldown
 ---@field normal integer
@@ -120,6 +121,7 @@ this.default = {
         swarm_count = 2,
         spoffer = 1,
         em_difficulty = 1,
+        em_difficulty_rank = 1,
         is_ignore_environ = false,
         is_yummy = false,
         is_village_boost = false,

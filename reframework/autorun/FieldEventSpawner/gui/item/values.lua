@@ -7,7 +7,7 @@
 ---@field em_param_struct MonsterParam
 ---@field em_difficulty_struct table<string, MonsterDifficulty>
 ---@field em_param_mod string
----@field em_difficulty string
+---@field em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
 ---@field lang string
 ---@field environ app.EnvironmentType.ENVIRONMENT
 ---@field ignore_environ boolean
@@ -21,6 +21,7 @@
 ---@field em_param GuiItemData
 ---@field em_param_mod GuiItemData
 ---@field em_difficulty GuiItemData
+---@field em_difficulty_rank GuiItemData
 ---@field spoffer GuiItemData
 ---@field current CurrentData
 
@@ -51,6 +52,7 @@ local this = {
     em_param = item_data:new(),
     em_param_mod = item_data:new(),
     em_difficulty = item_data:new(),
+    em_difficulty_rank = item_data:new(),
     spoffer = item_data:new(),
     ---@diagnostic disable-next-line: missing-fields
     current = {
@@ -331,6 +333,71 @@ local function switch_em_difficulty_array(event_key, em_param, em_param_mod, sta
     end
 end
 
+---@param event_key string
+---@param em_param string
+---@param em_param_mod string
+---@param em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
+---@param stage app.FieldDef.STAGE
+---@param environ app.EnvironmentType.ENVIRONMENT
+---@param ignore_environ boolean
+local function switch_em_difficulty_rank_array(
+    event_key,
+    em_param,
+    em_param_mod,
+    em_difficulty,
+    stage,
+    environ,
+    ignore_environ
+)
+    if
+        this.current.event_type ~= "monster"
+        or not em_param_mod
+        or (
+            event_key == this.current.event
+            and stage == this.current.stage
+            and environ == this.current.environ
+            and ignore_environ == this.current.ignore_environ
+            and em_param == this.current.em_param
+            and em_param_mod == this.current.em_param_mod
+            and em_difficulty == this.current.em_difficulty
+        )
+    then
+        return
+    end
+
+    local current_value = this.em_difficulty_rank.array
+            and this.em_difficulty_rank.array[config.current.mod.em_difficulty_rank]
+        or nil
+    local event = this.event_table[event_key]
+
+    if not event then
+        return
+    end
+    ---@cast event MonsterData
+
+    local diff_rank_table = em_difficulty or {}
+
+    no_tr_update_combo(
+        "em_difficulty_rank",
+        table_util.map_array(table_util.keys(diff_rank_table), function(o)
+            return diff_rank_table[o]
+        end, function(o)
+            return tostring(o)
+        end),
+        nil,
+        function(a, b)
+            ---@diagnostic disable-next-line: undefined-field
+            return tonumber(util.split_string(a.text, "##")[1]) < tonumber(util.split_string(b.text, "##")[1])
+        end,
+        false
+    )
+
+    local index = table_util.index(this.em_difficulty_rank.array, current_value)
+    if index then
+        config.current.mod.em_difficulty_rank = index
+    end
+end
+
 local function switch_spoffer_array()
     if this.current.event_type ~= "monster" then
         return
@@ -419,10 +486,20 @@ end
 ---@param event string
 ---@param em_param string
 ---@param em_param_mod string
+---@param em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
 ---@param stage app.FieldDef.STAGE
 ---@param environ app.EnvironmentType.ENVIRONMENT
 ---@param ignore_environ boolean
-function this.switch_event_arrays(event_type, event, em_param, em_param_mod, stage, environ, ignore_environ)
+function this.switch_event_arrays(
+    event_type,
+    event,
+    em_param,
+    em_param_mod,
+    em_difficulty,
+    stage,
+    environ,
+    ignore_environ
+)
     switch_type(event_type, stage)
 
     if table_util.empty(this.event_table) then
@@ -432,11 +509,13 @@ function this.switch_event_arrays(event_type, event, em_param, em_param_mod, sta
         this.em_param:clear()
         this.em_param_mod:clear()
         this.em_difficulty:clear()
+        this.em_difficulty_rank:clear()
     else
         switch_area_array(event, em_param, stage, environ, ignore_environ)
         switch_em_param_array(event, stage, environ, ignore_environ)
         switch_em_param_mod_array(event, em_param, stage, environ, ignore_environ)
         switch_em_difficulty_array(event, em_param, em_param_mod, stage, environ, ignore_environ)
+        switch_em_difficulty_rank_array(event, em_param, em_param_mod, em_difficulty, stage, environ, ignore_environ)
         switch_spoffer_array()
     end
 
@@ -447,6 +526,7 @@ function this.switch_event_arrays(event_type, event, em_param, em_param_mod, sta
     this.current.ignore_environ = ignore_environ
     this.current.em_param = em_param
     this.current.em_param_mod = em_param_mod
+    this.current.em_difficulty = em_difficulty
 end
 
 ---@param key string
