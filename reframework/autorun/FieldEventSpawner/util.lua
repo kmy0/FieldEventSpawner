@@ -120,7 +120,7 @@ end
 ---@param gimmick_fixed app.ExDef.GIMMICK_EVENT_Fixed
 ---@return integer
 function this.get_gimmick_event_id(gimmick_fixed)
-    local o = ValueType.new(sdk.find_type_definition("app.ExDef.GIMMICK_EVENT_Fixed") --[[@as RETypeDefinition]])
+    local o = ValueType.new(sdk.find_type_definition("app.ExDef.GIMMICK_EVENT") --[[@as RETypeDefinition]])
     this.getGIMMICK_EVENTFromFixed:call(nil, gimmick_fixed, o)
     return o:get_field("value__")
 end
