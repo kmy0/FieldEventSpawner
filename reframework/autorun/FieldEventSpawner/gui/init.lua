@@ -243,7 +243,13 @@ function this.draw()
 
     if imgui.begin_menu_bar() then
         if imgui.begin_menu(gui_util.tr("config_menu"), true) then
+            imgui.spacing()
+            imgui.indent(2)
+
             if imgui.begin_menu(gui_util.tr("config_menu.entries.lang"), true) then
+                imgui.spacing()
+                imgui.indent(2)
+
                 for i = 1, #lang.sorted do
                     local menu_item = lang.sorted[i]
                     if imgui.menu_item(menu_item, nil, config.current.gui.lang == menu_item) then
@@ -251,8 +257,27 @@ function this.draw()
                         lang.change()
                     end
                 end
+
+                imgui.separator()
+
+                if
+                    imgui.menu_item(
+                        gui_util.tr("config_menu.entries.lang.fallback"),
+                        nil,
+                        config.current.gui.lang_fallback
+                    )
+                then
+                    config.current.gui.lang_fallback = not config.current.gui.lang_fallback
+                end
+                gui_util.tooltip(lang.tr("config_menu.entries.lang.fallback.tooltip"))
+
+                imgui.unindent(2)
+                imgui.spacing()
                 imgui.end_menu()
             end
+
+            imgui.unindent(2)
+            imgui.spacing()
             imgui.end_menu()
         end
         imgui.end_menu_bar()

@@ -8,6 +8,7 @@
 ---@field main WindowState
 ---@field reward_builder WindowState
 ---@field lang string
+---@field lang_fallback boolean
 
 ---@class (exact) RewardSettings
 ---@field array GuiRewardData[]
@@ -106,6 +107,7 @@ this.default = {
             size_y = 700,
         },
         lang = "en-us",
+        lang_fallback = true,
     },
     mod = {
         spawn_timer = 3,
