@@ -247,4 +247,51 @@ function this.get_message_local(guid, lang, fallback)
     return msg
 end
 
+---@param obj REManagedObject
+function this.print_fields(obj)
+    ---@type RETypeDefinition[]
+    local types = {}
+    local def = obj:get_type_definition()
+
+    while def do
+        table.insert(types, def)
+        def = def:get_parent_type()
+    end
+
+    ---@type {type: string, data: {name: string, data: any}[]}[]
+    local res = {}
+    for i = 1, #types do
+        local type = types[i]
+        local fields = type:get_fields()
+        local data = { type = type:get_full_name(), data = {} }
+
+        for j = 1, #fields do
+            local field = fields[j]
+            table.insert(data.data, { name = field:get_name(), data = field:get_data(obj) })
+        end
+
+        table.insert(res, data)
+    end
+
+    local max_len = 0
+    for _, t in pairs(res) do
+        for _, d in pairs(t.data) do
+            max_len = math.max(max_len, #d.name)
+        end
+    end
+
+    print(obj)
+    for i = 1, #res do
+        local type = res[i]
+        print(type.type)
+        print(string.rep("_", max_len))
+
+        for j = 1, #type.data do
+            local data = type.data[j]
+            print(string.format("%s: %s", data.name .. string.rep(" ", max_len - #data.name), data.data))
+        end
+    end
+    print("\n")
+end
+
 return this

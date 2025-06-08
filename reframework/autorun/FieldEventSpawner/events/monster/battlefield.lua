@@ -166,7 +166,7 @@ function this:build()
     event_data._FreeValue5 = reward_data.reward_id2
     event_data._FreeMiniValue0 = is_repel and 0 or 0x1C | ((self.is_yummy or reward_data.reward_id2 ~= -1) and 1 or 0)
     event_data._FreeMiniValue1 = environ_type | (0x10 * self.pop_em_type)
-    event_data._FreeMiniValue2 = is_repel and 0 or self.monster_role | (0x10 * self.legendary_id)
+    event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = area
     event_data._FreeMiniValue4 = stage_param and 0x10 * self:_get_option_tag(option_value) or 0
     event_data._FreeMiniValue5 = self.time
