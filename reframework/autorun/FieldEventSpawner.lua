@@ -94,16 +94,16 @@ sdk.hook(
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.version)) then
-        config_menu.is_opened = not config_menu.is_opened
+        config.current.gui.main.is_opened = not config.current.gui.main.is_opened
     end
 end)
 
 re.on_frame(function()
     if not reframework:is_drawing_ui() then
-        config_menu.is_opened = false
+        config.current.gui.main.is_opened = false
     end
 
-    if config_menu.is_opened then
+    if config.current.gui.main.is_opened then
         sched.update()
         config_menu.draw()
     end

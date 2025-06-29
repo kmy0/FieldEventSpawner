@@ -3,6 +3,7 @@
 ---@field pos_y integer
 ---@field size_x integer
 ---@field size_y integer
+---@field is_opened boolean
 
 ---@class (exact) GuiState
 ---@field main WindowState
@@ -100,12 +101,14 @@ this.default = {
             pos_y = 50,
             size_x = 800,
             size_y = 700,
+            is_opened = false,
         },
         reward_builder = {
             pos_x = 50,
             pos_y = 50,
             size_x = 800,
             size_y = 700,
+            is_opened = false,
         },
         lang = "en-us",
         lang_fallback = true,

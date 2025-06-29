@@ -15,9 +15,7 @@ local gui = data.gui
 local rt = data.runtime
 local rl = data.util.reverse_lookup
 
-local this = {
-    is_opened = false,
-}
+local this = {}
 local window = {
     flags = 1024,
     condition = 1 << 1,
@@ -50,7 +48,6 @@ local state = {
             return self.cooldown > 0 and self.cooldown or text
         end,
     },
-    open_reward_builder = false,
     callbacks = {},
 }
 state.spawn_button.self = state.spawn_button
@@ -224,10 +221,13 @@ function this.draw()
         window.condition
     )
 
-    this.is_opened =
-        imgui.begin_window(string.format("%s %s", config.name, config.version), this.is_opened, window.flags)
+    config.current.gui.main.is_opened = imgui.begin_window(
+        string.format("%s %s", config.name, config.version),
+        config.current.gui.main.is_opened,
+        window.flags
+    )
 
-    if not this.is_opened then
+    if not config.current.gui.main.is_opened then
         if lang.font then
             imgui.pop_font()
         end
@@ -363,11 +363,12 @@ function this.draw()
     state.spawn_button.state = check_current_event()
 
     if state.open_reward_builder then
-        reward_builder.is_opened = true
-        reward_builder.draw()
+        config.current.gui.reward_builder.is_opened = true
     end
 
-    if not reward_builder.is_opened then
+    if config.current.gui.reward_builder.is_opened then
+        reward_builder.draw()
+    else
         state.open_reward_builder = false
     end
 
@@ -375,6 +376,7 @@ function this.draw()
         imgui.pop_font()
     end
 
+    imgui.spacing()
     imgui.unindent(3)
     imgui.end_window()
 end

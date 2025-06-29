@@ -8,9 +8,7 @@ local gui_util = require("FieldEventSpawner.gui.util")
 local item = require("FieldEventSpawner.gui.item")
 local lang = require("FieldEventSpawner.lang")
 
-local this = {
-    is_opened = false,
-}
+local this = {}
 local window = {
     flags = 0,
     condition = 1 << 1,
@@ -60,7 +58,8 @@ function this.draw()
         window.condition
     )
 
-    this.is_opened = imgui.begin_window(gui_util.tr("reward_builder"), this.is_opened, window.flags)
+    config.current.gui.reward_builder.is_opened =
+        imgui.begin_window(gui_util.tr("reward_builder"), config.current.gui.reward_builder.is_opened, window.flags)
 
     imgui.spacing()
     imgui.indent(3)
@@ -72,7 +71,7 @@ function this.draw()
     item.reward_add:draw(gui_util.tr("reward_add_button"))
     draw_reward_table()
 
-    if not this.is_opened then
+    if not config.current.gui.reward_builder.is_opened then
         local pos = imgui.get_window_pos()
         local size = imgui.get_window_size()
         config.current.gui.reward_builder.pos_x, config.current.gui.reward_builder.pos_y = pos.x, pos.y
