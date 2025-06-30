@@ -18,6 +18,7 @@
 ---@field boss MonsterParamModifier?
 ---@field battlefield_repel MonsterParamModifier?
 ---@field battlefield_slay MonsterParamModifier?
+---@field pop_many2 MonsterParamModifier?
 
 ---@class (exact) MonsterMapData : MapData
 ---@field param MonsterParam
@@ -400,6 +401,10 @@ local function get_param_data(em_id, map_data)
                 legendary = get_difficulty(pop_param._DifficultyParams, legendary.legendary, leg_prob > 0),
             }, env_check)
             ::continue::
+        end
+
+        if md.param.normal or md.param.swarm then
+            md.param.pop_many2 = nil
         end
     end
 end

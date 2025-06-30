@@ -102,6 +102,13 @@ sdk.hook(
     function(args) end,
     sched.hook.force_spoffer_array_post
 )
+sdk.hook(
+    sdk.find_type_definition("app.cExFieldDirector"):get_method(
+        "recreateEmPopEvent_BeforeExecute(app.cExFieldEvent_PopEnemy, app.cExFieldEvent_PopEnemy, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Boolean)"
+    ) --[[@as REMethodDefinition]],
+    sched.hook.force_pop_many_spawn_pre,
+    sched.hook.force_pop_many_spawn_post
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.version)) then

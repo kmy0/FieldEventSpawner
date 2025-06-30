@@ -23,6 +23,7 @@ local this = {
             "nushi",
             "battlefield_repel",
             "battlefield_slay",
+            "pop_many2",
         },
         em_param_mod = {
             "none",
@@ -43,6 +44,7 @@ local this = {
             battlefield_repel = "NORMAL",
             battlefield_slay = "NORMAL",
             cocoon = "COCOON",
+            pop_many2 = "NORMAL",
         },
         ---@enum EmParamModToLeg
         em_param_mod_to_legendary = {
@@ -56,6 +58,7 @@ local this = {
             legendary = "LEGENDARY",
             cocoon = "COCOON",
             normal = "NORMAL",
+            pop_many2 = "POP_MANY_2",
             nushi = "NUSHI",
             swarm = "SWARM",
             battlefield_repel = "BATTLEFIELD",

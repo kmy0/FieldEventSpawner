@@ -27,8 +27,11 @@
 ---@field npc table<app.ExDef.GIMMICK_EVENT, boolean>
 
 local ace_data = require("FieldEventSpawner.data.ace")
+local data_util = require("FieldEventSpawner.data.util")
 local table_util = require("FieldEventSpawner.table_util")
 local util = require("FieldEventSpawner.util")
+
+local rl = data_util.reverse_lookup
 
 ---@class RuntimeData
 local this = {
@@ -235,7 +238,11 @@ function this.update_spoffer()
         local pop_em = pop_em_enum:get_Current()
         ---@cast pop_em app.cExFieldEvent_PopEnemy
 
-        if pop_em:get_IsSwarm() or pop_em:get_IsBattlefieldEm() then
+        if
+            pop_em:get_IsSwarm()
+            or pop_em:get_IsBattlefieldEm()
+            or pop_em:get_PopEmType() == rl(ace_data.enum.pop_em_fixed, "POP_MANY_2")
+        then
             goto continue
         end
 

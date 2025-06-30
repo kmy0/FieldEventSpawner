@@ -54,6 +54,7 @@ local default = {
             nushi = "Apex",
             battlefield_repel = "Battlefield Repel",
             battlefield_slay = "Battlefield Slay",
+            pop_many2 = "Normal",
         },
     },
     em_param_mod_combo = {

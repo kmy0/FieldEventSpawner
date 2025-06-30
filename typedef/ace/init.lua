@@ -304,6 +304,7 @@
 ---@field get_IsNushi fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_IsLegendary fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_IsBattlefieldEm fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
+---@field get_PopEmType fun(self: app.cExFieldEvent_PopEnemy): app.ExDef.POP_EM_TYPE_Fixed
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE

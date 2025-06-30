@@ -224,4 +224,40 @@ function this.allow_invalid_quests_post(retval)
     return retval
 end
 
+function this.force_pop_many_spawn_pre(args)
+    if this.state.force_spawn_flag then
+        thread.get_hook_storage()["out"] = args[3]
+        thread.get_hook_storage()["in"] = args[4]
+    end
+end
+
+--FIXME: Forcing monster that we actually want to spawn, this is Lagiacrus only,
+-- for whatever reason he has only one EmPopParam, POP_MANY_2, in which he has 75% chance to spawn.....
+-- not sure if its by design or an oversight
+function this.force_pop_many_spawn_post(retval)
+    if this.state.force_spawn_flag then
+        local out_pop_em = sdk.to_managed_object(util.deref_ptr(thread.get_hook_storage()["out"])) --[[@as app.cExFieldEvent_PopEnemy?]]
+        local in_pop_em = sdk.to_managed_object(thread.get_hook_storage()["in"]) --[[@as app.cExFieldEvent_PopEnemy]]
+
+        if out_pop_em then
+            out_pop_em._FreeValue0 = in_pop_em._FreeValue0
+            out_pop_em._FreeValue1 = in_pop_em._FreeValue1
+            out_pop_em._FreeValue2 = in_pop_em._FreeValue2
+            out_pop_em._FreeValue3 = in_pop_em._FreeValue3
+            out_pop_em._FreeValue4 = in_pop_em._FreeValue4
+            out_pop_em._FreeValue5 = in_pop_em._FreeValue5
+            out_pop_em._FreeMiniValue0 = in_pop_em._FreeMiniValue0
+            out_pop_em._FreeMiniValue1 = in_pop_em._FreeMiniValue1
+            out_pop_em._FreeMiniValue2 = in_pop_em._FreeMiniValue2
+            out_pop_em._FreeMiniValue3 = in_pop_em._FreeMiniValue3
+            out_pop_em._FreeMiniValue4 = in_pop_em._FreeMiniValue4
+            out_pop_em._FreeMiniValue5 = in_pop_em._FreeMiniValue5
+            out_pop_em._FreeMiniValue6 = in_pop_em._FreeMiniValue6
+            out_pop_em._UniqueIndex = in_pop_em._UniqueIndex
+        end
+    end
+
+    return retval
+end
+
 return this
