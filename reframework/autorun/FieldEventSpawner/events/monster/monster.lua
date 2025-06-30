@@ -137,11 +137,7 @@ function this:build()
     end
 
     local spoffer_rewards = (self.rewards and self.spoffer) and self:_get_edited_reward_data() or nil
-    local reward_data = self:_get_reward_data(
-        difficulty_guid,
-        self.pop_em_type == rl(ace.enum.pop_em_fixed, "FRENZY"),
-        self.legendary_id == rl(ace.enum.legendary, "NORMAL")
-    )
+    local reward_data = self:_get_reward_data(difficulty_guid)
 
     if not reward_data or (self.rewards and self.spoffer and not spoffer_rewards) then
         return rt.enum.spawn_result.NO_REWARDS
@@ -237,15 +233,13 @@ end
 
 ---@protected
 ---@param difficulty_guid System.Guid
----@param is_frenzy boolean
----@param is_legendary boolean
 ---@return EditedRewardData?
-function this:_get_reward_data(difficulty_guid, is_frenzy, is_legendary)
+function this:_get_reward_data(difficulty_guid)
     local ret
     if self.rewards and not self.spoffer then
         ret = self:_get_edited_reward_data()
     else
-        local reward_data = self:_get_game_reward_data(difficulty_guid, is_frenzy, is_legendary)
+        local reward_data = self:_get_game_reward_data(difficulty_guid)
         ---@cast reward_data EditedRewardData
         reward_data.reward_array = sched.util.unpack_events(reward_data.reward_array)
         ret = reward_data
@@ -268,12 +262,8 @@ end
 
 ---@protected
 ---@param difficulty_guid System.Guid
----@param is_frenzy boolean
----@param is_legendary boolean
 ---@return RewardData
-function this:_get_game_reward_data(difficulty_guid, is_frenzy, is_legendary)
-    local reward_rank = util.getRewardRankFromDifficulty:call(nil, difficulty_guid)
-    local reward_grade = util.getRewardGradeFromDifficulty:call(nil, difficulty_guid)
+function this:_get_game_reward_data(difficulty_guid)
     local out_item_work_array_vt =
         ValueType.new(sdk.find_type_definition("app.savedata.cItemWork[]") --[[@as RETypeDefinition]])
     local out_bool_array_vt = ValueType.new(sdk.find_type_definition("System.Boolean[]") --[[@as RETypeDefinition]])
@@ -281,11 +271,10 @@ function this:_get_game_reward_data(difficulty_guid, is_frenzy, is_legendary)
         out_item_work_array_vt,
         out_bool_array_vt,
         self.event_data.id,
-        reward_rank,
-        reward_grade,
-        self.is_yummy,
-        is_legendary,
-        is_frenzy
+        self.monster_role,
+        self.legendary_id,
+        difficulty_guid,
+        self.is_yummy
     )
 
     local item_work_array = sdk.to_managed_object(util.deref_ptr(out_item_work_array_vt:address()))

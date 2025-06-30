@@ -147,11 +147,7 @@ function this:build()
         return rt.enum.spawn_result.NO_DIFFICULTY
     end
 
-    local reward_data = self:_get_reward_data(
-        difficulty_guid,
-        self.pop_em_type == rl(ace.enum.pop_em_fixed, "FRENZY"),
-        self.legendary_id == rl(ace.enum.legendary, "NORMAL")
-    )
+    local reward_data = self:_get_reward_data(difficulty_guid)
 
     if not reward_data then
         return rt.enum.spawn_result.NO_REWARDS

@@ -89,7 +89,7 @@ sdk.hook(
 sdk.hook(
     sdk.find_type_definition("app.cExFieldDirector"):get_method("findExecutedPopEms") --[[@as REMethodDefinition]],
     function(args) end,
-    sched.hook.force_spoffer_array
+    sched.hook.force_spoffer_array_post
 )
 
 re.on_draw_ui(function()

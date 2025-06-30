@@ -131,7 +131,6 @@ end
 ---@return SpawnResult, ScheduledEvent[]?, ScheduledEvent?
 function this:_build_member(swarm_data)
     self.monster_role = rl(ace.enum.em_role, "NORMAL")
-    self.legendary_id = rl(ace.enum.legendary, "NONE")
     self.pop_em_type = rl(ace.enum.pop_em_fixed, "SWARM")
     self.is_village_boost = false
     self.is_yummy = false
@@ -144,11 +143,11 @@ function this:_build_member(swarm_data)
     local difficulty_guid, reward_data
     if swarm_data.has_boss then
         difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
-        reward_data = self:_get_game_reward_data(difficulty_guid, false, false)
+        reward_data = self:_get_game_reward_data(difficulty_guid)
     else
         difficulty_guid = self.difficulty and self.difficulty[math.random(#self.difficulty)]
             or em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
-        reward_data = self:_get_reward_data(difficulty_guid, false, false)
+        reward_data = self:_get_reward_data(difficulty_guid)
     end
 
     if not difficulty_guid then
@@ -169,7 +168,7 @@ function this:_build_member(swarm_data)
     event_data._FreeValue5 = reward_data.reward_id2
     event_data._FreeMiniValue0 = swarm_data.has_boss and 0x10 or 0x1C
     event_data._FreeMiniValue1 = rt.get_environ(self.stage) | (0x10 * rl(ace.enum.pop_em_fixed, "SWARM"))
-    event_data._FreeMiniValue2 = self.monster_role
+    event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = swarm_data.area
     event_data._FreeMiniValue4 = swarm_data.groupid
     event_data._FreeMiniValue5 = self.time

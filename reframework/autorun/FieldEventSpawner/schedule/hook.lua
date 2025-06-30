@@ -183,7 +183,7 @@ function this.force_lot_spoffer_post(retval)
     return retval
 end
 
-function this.force_spoffer_array(retval)
+function this.force_spoffer_array_post(retval)
     if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.spoffer then
         local _, schedule_timeline = rt.get_field_director()
         local pop_em_array = sdk.to_managed_object(retval)

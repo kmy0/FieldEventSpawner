@@ -368,7 +368,9 @@ function this.draw()
 
     if config.current.gui.reward_builder.is_opened then
         reward_builder.draw()
-    else
+    end
+
+    if not config.current.gui.reward_builder.is_opened then
         state.open_reward_builder = false
     end
 

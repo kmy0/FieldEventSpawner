@@ -255,7 +255,7 @@
 ---@field getInitAreaList fun(self: app.cExFieldDirector, route_info: app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo, stage: app.FieldDef.STAGE, environ_type: app.EnvironmentType.ENVIRONMENT): System.LimitedArray<System.Byte>
 ---@field createExEmRewardEvent fun(self: app.cExFieldDirector, out_reward_array: System.Array<app.cExFieldEvent_EmReward>, out_reward_id_array: System.Array<System.Int32>, size: System.Int32, item_work_array: System.Array<app.savedata.cItemWork>, bool_array: System.Array<System.Boolean>, schedule_timeline: app.cExFieldDirector.cScheduleTimeline, stage_id: app.FieldDef.STAGE)
 -- is_legendary specifically checks if its NORMAL
----@field createRewardData fun(self: app.cExFieldDirector, out_item_array: System.Array<app.savedata.cItemWork>, out_bool_array: System.Array<System.Boolean>, enemy_id: app.EnemyDef.ID, reward_rank: app.QuestDef.EM_REWARD_RANK, reward_grade: System.Int32, is_yummy: System.Boolean, is_legendary: System.Boolean, is_frenzy: System.Boolean)
+---@field createRewardData fun(self: app.cExFieldDirector, out_item_array: System.Array<app.savedata.cItemWork>, out_bool_array: System.Array<System.Boolean>, enemy_id: app.EnemyDef.ID, monster_role: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, difficulty: System.Guid, is_yummy: System.Boolean)
 ---@field isExEnableStage fun(self: app.cExFieldDirector, stage: app.FieldDef.STAGE): System.Boolean
 ---@field clearExEventByStage fun(self: app.cExFieldDirector, stage: app.FieldDef.STAGE)
 ---@field rebuildExEventByStage fun(self: app.cExFieldDirector, stage: app.FieldDef.STAGE, future_only: System.Boolean)
