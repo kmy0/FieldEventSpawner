@@ -78,7 +78,7 @@ local util = require("FieldEventSpawner.util")
 ---@class Config
 local this = {}
 
-this.version = "0.0.6"
+this.version = "0.0.7"
 this.name = "FieldEventSpawner"
 this.config_path = this.name .. "/config.json"
 this.cache_path = this.name .. "/cache.json"
