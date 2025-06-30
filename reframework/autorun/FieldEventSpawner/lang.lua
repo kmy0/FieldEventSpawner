@@ -189,6 +189,9 @@ local default = {
     em_param_difficulty_rank_combo = {
         name = "Quest Rank",
     },
+    allow_invalid_quest = {
+        name = "Allow Invalid Quests",
+    },
 }
 
 function this.init()

@@ -1,4 +1,5 @@
 local cache = require("FieldEventSpawner.schedule.cache")
+local config = require("FieldEventSpawner.config")
 local data = require("FieldEventSpawner.data")
 local special_offer = require("FieldEventSpawner.events.special_offer")
 local util = require("FieldEventSpawner.util")
@@ -206,6 +207,20 @@ function this.spoffer_village_boost_post(retval)
     then
         return sdk.to_ptr(true)
     end
+    return retval
+end
+
+function this.allow_invalid_quests_pre(args)
+    if config.current.mod.is_allow_invalid_quest then
+        return sdk.PreHookResult.SKIP_ORIGINAL
+    end
+end
+
+function this.allow_invalid_quests_post(retval)
+    if config.current.mod.is_allow_invalid_quest then
+        return sdk.to_ptr(true)
+    end
+
     return retval
 end
 

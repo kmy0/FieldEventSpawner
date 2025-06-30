@@ -31,6 +31,7 @@
 ---@field is_force_area boolean
 ---@field is_spoffer boolean
 ---@field is_force_difficulty boolean
+---@field is_allow_invalid_quest boolean
 ---@field time integer
 ---@field swarm_count integer
 ---@field spawn_timer integer
@@ -132,6 +133,7 @@ this.default = {
         is_spoffer = false,
         is_force_rewards = false,
         is_force_difficulty = false,
+        is_allow_invalid_quest = false,
         time = 30,
         reward_config = {
             array = {},

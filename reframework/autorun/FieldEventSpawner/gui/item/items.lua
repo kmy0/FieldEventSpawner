@@ -169,6 +169,10 @@ this.is_village_boost = item.config:new("mod.is_village_boost", imgui.checkbox, 
         or (this.swarm_count:value() > 0 and this.em_param:value() ~= "boss")
 end)
 
+this.is_allow_invalid_quest = item.config:new("mod.is_allow_invalid_quest", imgui.checkbox, nil, false, nil, function()
+    return rt.is_in_quest()
+end)
+
 this.is_force_rewards = item.config:new("mod.is_force_rewards", imgui.checkbox, nil, false, nil, function()
     return rt.is_in_quest()
 end)

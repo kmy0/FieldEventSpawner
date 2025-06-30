@@ -333,6 +333,7 @@ function this.draw()
         item.is_force_rewards:draw(gui_util.tr("force_rewards_box"))
         imgui.same_line()
         item.edit_rewards:draw(gui_util.tr("open_rewards_builder_button"))
+        item.is_allow_invalid_quest:draw(gui_util.tr("allow_invalid_quest"))
         imgui.separator()
     end
 

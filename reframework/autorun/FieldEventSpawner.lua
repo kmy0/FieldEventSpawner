@@ -13,6 +13,17 @@ local config_menu = require("FieldEventSpawner.gui")
 config_menu.init()
 
 sdk.hook(
+    sdk.find_type_definition("app.QuestCheckUtil"):get_method("checkExQuest(System.Int32, app.cKeepQuestData)") --[[@as REMethodDefinition]],
+    sched.hook.allow_invalid_quests_pre,
+    sched.hook.allow_invalid_quests_post
+)
+sdk.hook(
+    sdk.find_type_definition("app.QuestCheckUtil")
+        :get_method("checkExQuest(System.Int32, app.net_session_manager.SessionManager.cSearchResultQuest)") --[[@as REMethodDefinition]],
+    sched.hook.allow_invalid_quests_pre,
+    sched.hook.allow_invalid_quests_post
+)
+sdk.hook(
     sdk.find_type_definition("app.cExFieldEvent_PopEnemy"):get_method("checkPopEnabled") --[[@as REMethodDefinition]],
     function(args) end,
     sched.hook.spawn_check_post
