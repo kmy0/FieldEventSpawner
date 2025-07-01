@@ -200,8 +200,8 @@
 ---@field get_ExCurrentStage fun(self: app.EnvironmentManager): app.FieldDef.STAGE
 ---@field getEnvActiveLayer fun(self: app.EnvironmentManager, stage: app.FieldDef.STAGE): app.EnvironmentManager.FIELD_DATA_LAYER
 ---@field getEnvironmentType fun(self: app.EnvironmentManager, stage: app.FieldDef.STAGE, option: System.UInt32): app.EnvironmentType.ENVIRONMENT
--- no idea what those bools are, seems to be always called with true, false, true when creating ex events
----@field getOption fun(self: app.EnvironmentManager, layer: app.EnvironmentManager.FIELD_DATA_LAYER, arg2: System.Boolean, arg3: System.Boolean, arg4: System.Boolean)
+-- no idea what those bools are, seems to be always called with false, true, turue, false when creating ex events
+---@field getOption fun(self: app.EnvironmentManager, layer: app.EnvironmentManager.FIELD_DATA_LAYER, arg2: System.Boolean, arg3: System.Boolean, arg4: System.Boolean, arg4: System.Boolean)
 ---@field exportExFieldSchedule_Field fun(self: app.EnvironmentManager, stage_id: app.FieldDef.STAGE): app.cExFieldScheduleExportData
 
 ---@class app.EX_FIELD_EVENT_TYPE : System.Enum

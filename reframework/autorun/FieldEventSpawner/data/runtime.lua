@@ -217,7 +217,7 @@ end
 function this.get_environ(stage)
     local envman = this.get_envman()
     local env_layer = envman:getEnvActiveLayer(stage)
-    local env_option = envman:getOption(env_layer, true, false, true)
+    local env_option = envman:getOption(env_layer, false, true, true, false)
     local ret = envman:getEnvironmentType(stage, env_option)
     return ret ~= -1 and ret or 0
 end
