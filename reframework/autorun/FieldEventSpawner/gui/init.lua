@@ -162,7 +162,10 @@ local function draw_event_table()
             imgui.text(event.area)
             imgui.table_set_column_index(2)
             if imgui.button(gui_util.tr("event_table.remove_button") .. string.format("_%s", row)) then
-                timer.new(state.spawn_button.key, config.spawn_cooldown.remove)
+                if not config.current.mod.disable_button_cooldown then
+                    timer.new(state.spawn_button.key, config.spawn_cooldown.remove)
+                end
+
                 sched.remove(rt.state.stage, event.unique_index)
             end
         end
@@ -242,44 +245,51 @@ function this.draw()
     end
 
     if imgui.begin_menu_bar() then
-        if imgui.begin_menu(gui_util.tr("config_menu"), true) then
+        if imgui.begin_menu(gui_util.tr("menu.config"), true) then
             imgui.spacing()
             imgui.indent(2)
 
-            if imgui.begin_menu(gui_util.tr("config_menu.entries.lang"), true) then
-                imgui.spacing()
-                imgui.indent(2)
-
-                for i = 1, #lang.sorted do
-                    local menu_item = lang.sorted[i]
-                    if imgui.menu_item(menu_item, nil, config.current.gui.lang == menu_item) then
-                        config.current.gui.lang = menu_item
-                        lang.change()
-                    end
-                end
-
-                imgui.separator()
-
-                if
-                    imgui.menu_item(
-                        gui_util.tr("config_menu.entries.lang.fallback"),
-                        nil,
-                        config.current.gui.lang_fallback
-                    )
-                then
-                    config.current.gui.lang_fallback = not config.current.gui.lang_fallback
-                end
-                gui_util.tooltip(lang.tr("config_menu.entries.lang.fallback.tooltip"))
-
-                imgui.unindent(2)
-                imgui.spacing()
-                imgui.end_menu()
+            if
+                imgui.menu_item(
+                    gui_util.tr("menu.config.entries.disable_button_cooldown"),
+                    nil,
+                    config.current.mod.disable_button_cooldown
+                )
+            then
+                config.current.mod.disable_button_cooldown = not config.current.mod.disable_button_cooldown
             end
 
             imgui.unindent(2)
             imgui.spacing()
             imgui.end_menu()
         end
+
+        if imgui.begin_menu(gui_util.tr("menu.language"), true) then
+            imgui.spacing()
+            imgui.indent(2)
+
+            for i = 1, #lang.sorted do
+                local menu_item = lang.sorted[i]
+                if imgui.menu_item(menu_item, nil, config.current.gui.lang == menu_item) then
+                    config.current.gui.lang = menu_item
+                    lang.change()
+                end
+            end
+
+            imgui.separator()
+
+            if
+                imgui.menu_item(gui_util.tr("menu.language.entries.fallback"), nil, config.current.gui.lang_fallback)
+            then
+                config.current.gui.lang_fallback = not config.current.gui.lang_fallback
+            end
+            gui_util.tooltip(lang.tr("menu.language.entries.fallback.tooltip"))
+
+            imgui.unindent(2)
+            imgui.spacing()
+            imgui.end_menu()
+        end
+
         imgui.end_menu_bar()
     end
 

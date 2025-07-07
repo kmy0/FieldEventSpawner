@@ -19,6 +19,7 @@
 
 ---@class (exact) ModSettings
 ---@field event_type integer
+---@field disable_button_cooldown boolean
 ---@field event integer
 ---@field area integer
 ---@field spoffer integer
@@ -34,7 +35,6 @@
 ---@field is_allow_invalid_quest boolean
 ---@field time integer
 ---@field swarm_count integer
----@field spawn_timer integer
 ---@field is_force_rewards boolean
 ---@field reward_config RewardSettings
 ---@field em_difficulty integer
@@ -115,7 +115,7 @@ this.default = {
         lang_fallback = true,
     },
     mod = {
-        spawn_timer = 3,
+        disable_button_cooldown = false,
         event = 1,
         event_type = 1,
         area = 1,

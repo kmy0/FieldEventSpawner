@@ -194,11 +194,13 @@ end)
 this.spawn = item.callback:new(
     function()
         state.spawn_button.result = state.callbacks.spawn()
-        timer.new(
-            state.spawn_button.key,
-            state.spawn_button.result == rt.enum.spawn_result.OK and config.spawn_cooldown.normal
-                or config.spawn_cooldown.failed
-        )
+        if not config.current.mod.disable_button_cooldown then
+            timer.new(
+                state.spawn_button.key,
+                state.spawn_button.result == rt.enum.spawn_result.OK and config.spawn_cooldown.normal
+                    or config.spawn_cooldown.failed
+            )
+        end
     end,
     imgui.button,
     nil,
@@ -215,7 +217,9 @@ this.spawn = item.callback:new(
 
 this.clear_schedule = item.callback:new(
     function()
-        timer.new(state.spawn_button.key, config.spawn_cooldown.clear_schedule)
+        if not config.current.mod.disable_button_cooldown then
+            timer.new(state.spawn_button.key, config.spawn_cooldown.clear_schedule)
+        end
         sched.clear()
     end,
     imgui.button,
@@ -228,7 +232,9 @@ this.clear_schedule = item.callback:new(
 
 this.rebuild_schedule = item.callback:new(
     function()
-        timer.new(state.spawn_button.key, config.spawn_cooldown.rebuild_schedule)
+        if not config.current.mod.disable_button_cooldown then
+            timer.new(state.spawn_button.key, config.spawn_cooldown.rebuild_schedule)
+        end
         sched.rebuild()
     end,
     imgui.button,

@@ -14,11 +14,18 @@ local default = {
         name = nil,
         size = 16,
     },
-    config_menu = {
-        name = "Config",
-        entries = {
-            lang = {
-                name = "Language",
+    menu = {
+        config = {
+            name = "Mod",
+            entries = {
+                disable_button_cooldown = {
+                    name = "Disable Button Cooldown",
+                },
+            },
+        },
+        language = {
+            name = "Language",
+            entries = {
                 fallback = {
                     name = "Fallback",
                     tooltip = "Display message in english if key is missing",
