@@ -192,7 +192,7 @@ end)
 this.spawn = item.callback:new(
     function()
         state.spawn_button.result = state.callbacks.spawn()
-        if not config.current.mod.disable_button_cooldown then
+        if not config.current.mod.disable_button_cooldown or state.spawn_button.result ~= rt.enum.spawn_result.OK then
             timer.new(
                 state.spawn_button.key,
                 state.spawn_button.result == rt.enum.spawn_result.OK and config.spawn_cooldown.normal
