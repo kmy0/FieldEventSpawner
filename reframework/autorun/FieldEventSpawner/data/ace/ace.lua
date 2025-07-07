@@ -99,6 +99,7 @@ local this = {
             SWARM = "swarm",
             BATTLEFIELD = "battlefield_slay",
             BF_POP_BELONGING = "battlefield_repel",
+            POP_MANY_2 = "pop_many2",
         },
     },
 }
