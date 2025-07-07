@@ -1,78 +1,27 @@
 ---@meta
 
----@class via.Object : REManagedObject
----@class via.clr.ManagedObject : via.Object
----@class via.Component : via.clr.ManagedObject
----@class via.UserData : via.clr.ManagedObject
----@class via.Scene : via.clr.ManagedObject
+---@class app.cGameContext : via.clr.ManagedObject
 ---@class app.AppBehavior : via.Behavior
----@class via.GameObject : via.clr.ManagedObject
----@field destroy fun(self: via.GameObject, object: via.GameObject)
+---@class app.cPlayerManageInfo : via.clr.ManagedObject
+---@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
+---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
+---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_EnvStart : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
+---@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
+---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByHR_Base : via.clr.ManagedObject
+---@class app.cParamsByEnv<app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo.cAreaInfoByEnv>
+---@class app.cExFieldEvent_Battlefield : app.cExFieldEventBase
+---@class app.cExFieldEvent_AnimalEvent : app.cExFieldEventBase
+---@class app.EnemyCharacter : app.CharacterBase
+---@class app.cAnimalNoUpdatableSystem: via.clr.ManagedObject
+---@class app.GimmickManagerBase : ace.GAElement
+---@class app.cExSpOfferFactory.SpOfferInfo : System.ValueType
 
----@class System.ValueType : ValueType
----@class System.UInt32 : integer, System.ValueType
----@class System.Int32 : integer, System.ValueType
----@class System.Int64 : integer, System.ValueType
----@class System.UInt16 : integer, System.ValueType
----@class System.Byte : integer, System.ValueType
----@class System.Boolean : boolean, System.ValueType
----@class System.String : string, via.clr.ManagedObject
----@class System.Enum : integer, System.ValueType
----@class System.Object : via.clr.ManagedObject
----@class System.Single : integer, System.ValueType
----@class System.Guid : System.ValueType
----@field mData1 System.UInt32
----@field mData2 System.UInt16
----@field mData3 System.UInt16
----@field mData4_0 System.Byte
----@field mData4_1 System.Byte
----@field mData4_2 System.Byte
----@field mData4_3 System.Byte
----@field mData4_4 System.Byte
----@field mData4_5 System.Byte
----@field mData4_6 System.Byte
----@field mData4_7 System.Byte
-
----@class ace.GUIManagerBase : ace.GAElement
----@class via.Language : System.Enum
 ---@class app.GUIManager : ace.GUIManagerBase
 ---@field getSystemLanguageToApp fun(self: app.GUIManager) : via.Language
 
----@class System.Nullable<T> : System.ValueType
----@field _Value any
----@field _HasValue System.Boolean
-
----@class app.NpcDef.ID : System.Enum
----@class app.cGameContext : via.clr.ManagedObject
 ---@class app.cNpcContext : app.cGameContext
 ---@field NpcID app.NpcDef.ID
 
----@class app.EnemyDef.ID : System.Enum
----@class via.Behavior : via.Component
-
----@class System.ArrayEnumerator<T> : via.clr.ManagedObject
----@field MoveNext fun(self: System.ArrayEnumerator): System.Boolean
----@field get_Current fun(self: System.ArrayEnumerator): any
-
----@class System.Array<T> : System.Object
----@field get_Count fun(self: System.Array): integer
----@field get_Item fun(self: System.Array, i: integer): any
----@field set_Item fun(self: System.Array, i: integer, item: any)
----@field Contains fun(self: System.Array, item: any): System.Boolean
----@field ToArray fun(self: System.Array): System.Array<any>
----@field GetEnumerator fun(self: System.Array): System.ArrayEnumerator<any>
----@field IndexOf fun(self: System.Array, item: any): System.Int32
----@field AddRange fun(self: System.Array, list: System.Array<any>)
----@field AddWithResize fun(self: System.Array, item: any)
----@field Remove fun(self: System.Array, item: any): System.Boolean
----@field Clear fun(self: System.Array)
-
----@class System.LimitedArray<T>
----@field _Array System.Array
-
----@class app.cPlayerManageInfo : via.clr.ManagedObject
----@class ace.GAElementBase : via.Behavior
----@class ace.GAElement<T> : ace.GAElementBase
 ---@class app.PlayerManager : ace.GAElement
 ---@field getMasterPlayer fun(self: app.PlayerManager): app.cPlayerManageInfo
 
@@ -80,8 +29,6 @@
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base : app.cParamByEnvBase
 ---@field get_RandomWeight fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base): System.Byte
 
----@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
----@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_EnvStart : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm : app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_EnvStart
 ---@field get_IsBossSpawned fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Boolean
 ---@field lotDifficultyID_Boss fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm, legendary_id: app.EnemyDef.LEGENDARY_ID, suitable_only: System.Boolean): System.Guid
@@ -91,7 +38,6 @@
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
 ---@field get_BossProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary): System.Byte
 
----@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base : via.clr.ManagedObject
 ---@field _DifficultyParams System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 ---@field _ParamsByEnv app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base
@@ -105,7 +51,6 @@
 ---@class app.user_data.ExFieldParam_LayoutData.cGimmickEventParam : app.user_data.ExFieldParam_LayoutData.cEnvEventParamBase
 ---@field get_GimmickEvent fun(self: app.user_data.ExFieldParam_LayoutData.cGimmickEventParam): app.ExDef.GIMMICK_EVENT
 
----@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByHR_Base : via.clr.ManagedObject
 ---@class app.user_data.ExFieldParam_LayoutData.cEnvEventLayoutByArea : via.clr.ManagedObject
 ---@field get_GimmickEvents fun(self: app.user_data.ExFieldParam_LayoutData.cEnvEventLayoutByArea): System.Array<app.user_data.ExFieldParam_LayoutData.cGimmickEventParam>
 ---@field get_AnimalEvents fun(self: app.user_data.ExFieldParam_LayoutData.cEnvEventLayoutByArea): System.Array<app.user_data.ExFieldParam_LayoutData.cAnimalEventParam>
@@ -145,15 +90,12 @@
 ---@field get_LegendaryID fun(self: app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam): app.EnemyDef.LEGENDARY_ID
 ---@field getOptionTagIdx fun(self: app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam, option_balue: System.Int64): System.Byte
 
----@class app.QuestDef.RANK: System.Enum
 ---@class app.user_data.ExFieldParam_EnemyData : via.UserData
 ---@field getExEmGlobalParam fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, quest_rank: app.QuestDef.RANK): app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam
 ---@field getAreaMoveInfo fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID): app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfoByEm
 ---@field get_StayMinute fun(self: app.user_data.ExFieldParam_EnemyData): System.Byte
 ---@field get_ExEnemies fun(self: app.user_data.ExFieldParam_EnemyData): System.Array<app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam>
 
----@class app.ExDef.GIMMICK_EVENT: System.Enum
----@class app.FieldDef.AREA_ID_Fixed: System.Enum
 ---@class app.user_data.ExFieldParam.cAssistNpcGimmick : via.clr.ManagedObject
 ---@field get_GimmickEvent fun(self: app.user_data.ExFieldParam.cAssistNpcGimmick): app.ExDef.GIMMICK_EVENT
 ---@field get_AreaNo fun(self: app.user_data.ExFieldParam.cAssistNpcGimmick): System.Byte
@@ -187,14 +129,6 @@
 ---@class app.cExFieldScheduleExportData : via.clr.ManagedObject
 ---@field _EventList System.Array<app.cExFieldScheduleExportData.cEventData>
 
----@class app.EnvironmentType.ENVIRONMENT : System.Enum
----@class app.EnvironmentManager.FIELD_DATA_LAYER: System.Enum
----@class app.EnvironmentType.ENVIRONMENT: System.Enum
----@class app.EnemyDef.ROLE_ID: System.Enum
----@class app.EnemyDef.LEGENDARY_ID: System.Enum
----@class app.ExDef.POP_EM_TYPE_Fixed : System.Enum
----@class app.EnemyDef.ID : System.Enum
----@class app.FieldDef.STAGE : System.Enum
 ---@class app.EnvironmentManager : ace.GAElement
 ---@field _ExFieldDirector app.cExFieldDirector
 ---@field get_ExCurrentStage fun(self: app.EnvironmentManager): app.FieldDef.STAGE
@@ -204,7 +138,6 @@
 ---@field getOption fun(self: app.EnvironmentManager, layer: app.EnvironmentManager.FIELD_DATA_LAYER, arg2: System.Boolean, arg3: System.Boolean, arg4: System.Boolean, arg4: System.Boolean)
 ---@field exportExFieldSchedule_Field fun(self: app.EnvironmentManager, stage_id: app.FieldDef.STAGE): app.cExFieldScheduleExportData
 
----@class app.EX_FIELD_EVENT_TYPE : System.Enum
 ---@class app.cExEvent : via.clr.ManagedObject
 ---@field _UniqueIndex System.Int32
 
@@ -218,7 +151,6 @@
 ---@class app.cParamsByEnv<T> : via.clr.ManagedObject
 ---@field _EnvParams System.Array<any>
 
----@class app.cParamsByEnv<app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo.cAreaInfoByEnv>
 ---@class app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo: via.clr.ManagedObject
 ---@field _AreaInfoByEnv app.cParamsByEnv<app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo.cAreaInfoByEnv>
 ---@field get_AreaMoveGuid fun(self: app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo): System.Guid
@@ -290,8 +222,6 @@
 ---@field get_AreaNo fun(self: app.cExFieldEventBase): System.Byte
 ---@field endProc fun(self: app.cExFieldEventBase)
 
----@class app.cExFieldEvent_Battlefield : app.cExFieldEventBase
----@class app.cExFieldEvent_AnimalEvent : app.cExFieldEventBase
 ---@class app.cExFieldEvent_GimmickEvent : app.cExFieldEventBase
 ---@field get_IsAssistNpc fun(self: app.cExFieldEvent_GimmickEvent): System.Boolean
 
@@ -305,6 +235,8 @@
 ---@field get_IsLegendary fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_IsBattlefieldEm fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_PopEmType fun(self: app.cExFieldEvent_PopEnemy): app.ExDef.POP_EM_TYPE_Fixed
+---@field get_EnableSpOfferTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
+---@field get_EnableKeepQuestTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE
@@ -327,15 +259,9 @@
 ---@field get_EmID fun(self: app.cExFieldDirector.cSpawnableEmParam): app.EnemyDef.ID
 ---@field get_StayMinute_Real fun(self: app.cExFieldDirector.cSpawnableEmParam): System.Int32
 
----@class app.ExDef.GIMMICK_EVENT_Fixed : System.Enum
----@class app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE : System.Enum
----@class app.ExDef.ANIMAL_EVENT_Fixed : System.Enum
----@class app.ExDef.ANIMAL_EVENT: System.Enum
-
 ---@class app.user_data.ExFieldParam_LayoutData.cAnimalEventParam : app.user_data.ExFieldParam_LayoutData.cEnvEventParamBase
 ---@field get_AnimalEvent fun(self: app.user_data.ExFieldParam_LayoutData.cAnimalEventParam): app.ExDef.ANIMAL_EVENT
 
----@class app.cFieldSceneParam.SCENE_TYPE : System.Enum
 ---@class app.GameFlowManager : ace.GAElement
 ---@field get_CurrentGameScene fun(self: app.GameFlowManager) : app.cFieldSceneParam.SCENE_TYPE
 ---@field get_NextGameStateType fun(self: app.GameFlowManager) : app.cFieldSceneParam.SCENE_TYPE?
@@ -366,21 +292,12 @@
 ---@class app.CharacterBase : app.AppBehavior
 ---@field get_GameObject fun(self: app.CharacterBase) : via.GameObject
 
----@class app.EnemyCharacter : app.CharacterBase
 ---@class app.AnimalManager : ace.GAElement
 ---@field get_ExManager fun(self: app.AnimalManager): app.AnimalExManager
 
----@class app.cAnimalNoUpdatableSystem: via.clr.ManagedObject
 ---@class app.AnimalExManager : app.cAnimalNoUpdatableSystem
 ---@field unloadAllExEventSet fun(self: app.AnimalExManager)
 
----@class ace.GimmickDef.BASE_STATE : System.Enum
----@class ace.GimmickBaseCore : via.Behavior
----@class ace.GimmickBase<T> : ace.GimmickBaseCore
----@field changeState fun(self: ace.GimmickBase, state: ace.GimmickDef.BASE_STATE)
-
----@class app.GimmickManagerBase : ace.GAElement
----@class app.GimmickDef.ID : System.Enum
 ---@class app.GimmickManager : app.GimmickManagerBase
 ---@field findGimmick_ID fun(self: app.GimmickManager, gimmick_id: app.GimmickDef.ID): System.Array<app.GimmickBaseApp>
 
@@ -396,16 +313,11 @@
 ---@class app.MissionManager : ace.GAElement
 ---@field get_IsActiveQuest fun(self: app.MissionManager): System.Boolean
 
----@class app.cExSpOfferFactory.SpOfferInfo : System.ValueType
----@class app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE : System.Enum
 ---@class app.cExSpOfferFactory.cSpOfferByStage : via.clr.ManagedObject
 ---@field get_SpOfferList fun(self: app.cExSpOfferFactory.cSpOfferByStage): System.Array<app.cExSpOfferFactory.SpOfferInfo>
 ---@field set_LotCreateSpOfferGameMinute fun(self: app.cExSpOfferFactory.cSpOfferByStage, value: System.Int32)
 ---@field set_IsReserveCreateSpOffer fun(self: app.cExSpOfferFactory.cSpOfferByStage, value: System.Boolean)
 
----@class app.ItemDef.ID : System.Enum
----@class app.ItemDef.ID_Fixed : System.Enum
----@class ace.user_data.ExcelUserData.cData : via.clr.ManagedObject
 ---@class app.user_data.ItemData.cData : ace.user_data.ExcelUserData.cData
 ---@field get_RawName fun(self: app.user_data.ItemData.cData): System.Guid
 ---@field get_ItemId fun(self: app.user_data.ItemData.cData): app.ItemDef.ID_Fixed
@@ -422,7 +334,3 @@
 ---@class app.user_data.EmParamDifficulty2.cDifficultyRate : via.clr.ManagedObject
 ---@field get_RewardGrade fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Int32
 ---@field get_RewardRank fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): app.QuestDef.EM_REWARD_RANK_Fixed
-
----@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
----@class app.FieldDef.STAGE_Fixed : System.Enum
----@class app.QuestDef.EM_REWARD_RANK_Fixed : System.Enum

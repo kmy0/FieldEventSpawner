@@ -1,0 +1,30 @@
+---@meta
+
+---@class via.Language : System.Enum
+
+---@class app.NpcDef.ID : System.Enum
+---@class app.EnemyDef.ID : System.Enum
+---@class app.FieldDef.STAGE_Fixed : System.Enum
+---@class app.QuestDef.EM_REWARD_RANK_Fixed : System.Enum
+---@class app.QuestDef.RANK: System.Enum
+---@class app.ExDef.GIMMICK_EVENT: System.Enum
+---@class app.FieldDef.AREA_ID_Fixed: System.Enum
+---@class app.EnvironmentType.ENVIRONMENT : System.Enum
+---@class app.EnvironmentManager.FIELD_DATA_LAYER: System.Enum
+---@class app.EnvironmentType.ENVIRONMENT: System.Enum
+---@class app.EnemyDef.ROLE_ID: System.Enum
+---@class app.EnemyDef.LEGENDARY_ID: System.Enum
+---@class app.ExDef.POP_EM_TYPE_Fixed : System.Enum
+---@class app.EnemyDef.ID : System.Enum
+---@class app.FieldDef.STAGE : System.Enum
+---@class app.EX_FIELD_EVENT_TYPE : System.Enum
+---@class app.ExDef.GIMMICK_EVENT_Fixed : System.Enum
+---@class app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE : System.Enum
+---@class app.ExDef.ANIMAL_EVENT_Fixed : System.Enum
+---@class app.ExDef.ANIMAL_EVENT: System.Enum
+---@class app.cFieldSceneParam.SCENE_TYPE : System.Enum
+---@class ace.GimmickDef.BASE_STATE : System.Enum
+---@class app.GimmickDef.ID : System.Enum
+---@class app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE : System.Enum
+---@class app.ItemDef.ID : System.Enum
+---@class app.ItemDef.ID_Fixed : System.Enum
