@@ -90,6 +90,12 @@ function this:build()
     end
     ---@cast leader_data MonsterSpawnEvent
 
+    if self.legendary_id > 0 then
+        local event_data = leader_data.event_data
+        --FIXME: TU2 change
+        event_data._FreeMiniValue0 = event_data._FreeMiniValue0 | (0x80 * self.legendary_id)
+    end
+
     leader_data.cache_base.children = {}
     local member_data, member_rewards
     for _ = 1, self.swarm_count do
@@ -166,7 +172,8 @@ function this:_build_member(swarm_data)
     event_data._FreeValue3 = swarm_data.route_hash
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
-    event_data._FreeMiniValue0 = swarm_data.has_boss and 0x10 or 0x1C
+    --FIXME: never actaully found where those values are set
+    event_data._FreeMiniValue0 = (swarm_data.has_boss and 0x10 or 0x1C) | (0x80 * self.legendary_id)
     event_data._FreeMiniValue1 = rt.get_environ(self.stage) | (0x10 * rl(ace.enum.pop_em_fixed, "SWARM"))
     event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = swarm_data.area

@@ -20,7 +20,6 @@
     _FreeValue4 = app.cExFieldEvent_EmReward ID1, from app.cExFieldDirector:createExEmRewardEvent(...) at index 0
     _FreeValue5 = app.cExFieldEvent_EmReward ID2, from app.cExFieldDirector:createExEmRewardEvent(...) at index 1, -1 if it does not exist
     _FreeMiniValue0 =
-        swarm with alpha - seems to be 16 for swarm members, coludnt find it anywhere though
         a14 = 0 when creating monsters through createEmPopEvent
         if isVillageBoost then
             _FreeMiniValue0 = a14 | 0x5C
@@ -151,6 +150,7 @@ function this:build()
     event_data._FreeValue3 = util.hash_guid(route_guid)
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
+    --FIXME: after TU2 game auto xors (0x80 * self.legendary_id) for tempered monsters that can be also swarm
     event_data._FreeMiniValue0 = ((self.is_village_boost and not self.spoffer) and 0x5C or 0x1C)
         | ((self.is_yummy or reward_data.reward_id2 ~= -1) and 1 or 0)
     event_data._FreeMiniValue1 = environ_type | (0x10 * self.pop_em_type)
