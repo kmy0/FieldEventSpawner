@@ -178,11 +178,9 @@ this.is_force_rewards = item.config:new("mod.is_force_rewards", imgui.checkbox, 
 end)
 
 this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, nil, function()
-    local em_param = this.em_param:value()
     return rt.is_in_quest()
         or not rt.is_spoffer_unlocked(rt.state.stage)
         or is_battlefield()
-        or em_param == "swarm"
         or this.swarm_count:value() > 0
         or iv.spoffer:empty()
 end)

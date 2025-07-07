@@ -239,7 +239,8 @@ function this.update_spoffer()
         ---@cast pop_em app.cExFieldEvent_PopEnemy
 
         if
-            pop_em:get_IsSwarm()
+            not pop_em:get_EnableSpOfferTarget()
+            or not pop_em:get_EnableKeepQuestTarget()
             or pop_em:get_IsBattlefieldEm()
             or pop_em:get_PopEmType() == rl(ace_data.enum.pop_em_fixed, "POP_MANY_2")
         then
