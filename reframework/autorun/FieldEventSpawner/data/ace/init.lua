@@ -65,7 +65,7 @@ function this.get_monster_name(pop_em)
 
     if pop_em._FreeMiniValue2 >> 0 == rl(this.enum.em_role, "BOSS") then
         guid = util.getEnemyExtraName:call(nil, id)
-    elseif pop_em._FreeMiniValue2 >> 4 == rl(this.enum.em_role, "FRENZY") then
+    elseif pop_em._FreeMiniValue2 >> 0 == rl(this.enum.em_role, "FRENZY") then
         guid = util.getEnemyFrenzyName:call(nil, id)
     elseif pop_em._FreeMiniValue2 >> 4 == rl(this.enum.legendary, "NORMAL") then
         guid = util.getEnemyLegendaryName:call(nil, id)
