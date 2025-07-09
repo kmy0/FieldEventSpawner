@@ -21,6 +21,8 @@ local this = {
         em_args = nil,
         updated = false,
         cheat_message = "",
+        ---@type table<integer, {timer: Timer, area: integer}>
+        force_area = {},
     },
 }
 
@@ -293,6 +295,66 @@ function this.force_pop_many_reward_pre(args)
     if this.state.force_spawn_flag then
         return sdk.PreHookResult.SKIP_ORIGINAL
     end
+end
+
+function this.force_context_area_pre(args)
+    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.force_area then
+        local context_args = sdk.to_managed_object(args[3]) --[[@as app.cContextCreateArg_Enemy]]
+        context_args:set_AreaNo(this.state.em_args.force_area)
+        this.state.force_area[this.state.em_args.unique_index] = {
+            timer = timer.new(tostring(this.state.em_args.unique_index), config.force_area_timer),
+            area = this.state.em_args.force_area,
+        }
+    end
+end
+
+function this.stop_em_combat_pre(args)
+    if not table_util.empty(this.state.force_area) then
+        thread.get_hook_storage()["ctx_holder1"] = args[3]
+        thread.get_hook_storage()["ctx_holder2"] = args[6]
+    end
+end
+
+function this.stop_em_combat_post(retval)
+    if not table_util.empty(this.state.force_area) then
+        for index, d in pairs(this.state.force_area) do
+            if d.timer:finished() then
+                this.state.force_area[index] = nil
+            end
+        end
+
+        local ctx_holder1 = sdk.to_managed_object(thread.get_hook_storage()["ctx_holder1"]) --[[@as app.cEnemyContextHolder?]]
+        local ctx_holder2 = sdk.to_managed_object(thread.get_hook_storage()["ctx_holder2"]) --[[@as app.cEnemyContextHolder?]]
+        if not table_util.empty(this.state.force_area) and ctx_holder1 and ctx_holder2 then
+            local _, schedule_timeline = rt.get_field_director()
+            local ctx1 = ctx_holder1:get_Em()
+            local ctx2 = ctx_holder2:get_Em()
+
+            for index, _ in pairs(this.state.force_area) do
+                local pop_em = schedule_timeline:findKeyFromUniqueIndex(index) --[[@as app.cExFieldEvent_PopEnemy]]
+                if not pop_em then
+                    this.state.force_area[index] = nil
+                    goto continue
+                end
+
+                local pop_em_ctx_holder = pop_em:call("findEm()") --[[@as app.cEnemyContextHolder]]
+                local pop_em_ctx = pop_em_ctx_holder:get_Em()
+
+                if pop_em_ctx.Area:get_IsTargetArrival() then
+                    this.state.force_area[index] = nil
+                    goto continue
+                end
+
+                if ctx1 == pop_em_ctx or ctx2 == pop_em_ctx then
+                    return sdk.to_ptr(false)
+                end
+
+                ::continue::
+            end
+        end
+    end
+
+    return retval
 end
 
 return this

@@ -1,6 +1,6 @@
 ---@class (exact) MonsterSpawnEventArgs
 ---@field id app.EnemyDef.ID
----@field force_area boolean
+---@field force_area integer?
 ---@field village_boost boolean?
 ---@field unique_index integer?
 ---@field spoffer integer?
@@ -51,7 +51,7 @@ end
 ---@param name string
 ---@param area integer
 ---@param id app.EnemyDef.ID
----@param force_area boolean
+---@param force_area integer?
 ---@param village_boost boolean?
 ---@param spoffer integer?
 ---@param collision_flag EventCollisionFlag?

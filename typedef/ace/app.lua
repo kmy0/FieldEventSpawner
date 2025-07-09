@@ -15,6 +15,9 @@
 ---@class app.cAnimalNoUpdatableSystem: via.clr.ManagedObject
 ---@class app.GimmickManagerBase : ace.GAElement
 ---@class app.cExSpOfferFactory.SpOfferInfo : System.ValueType
+---@class app.cGameContextHolder : via.clr.ManagedObject
+---@class app.cEmModuleBase : via.clr.ManagedObject
+---@class app.cContextCreateArg : via.clr.ManagedObject
 
 ---@class app.GUIManager : ace.GUIManagerBase
 ---@field getSystemLanguageToApp fun(self: app.GUIManager) : via.Language
@@ -237,6 +240,7 @@
 ---@field get_PopEmType fun(self: app.cExFieldEvent_PopEnemy): app.ExDef.POP_EM_TYPE_Fixed
 ---@field get_EnableSpOfferTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_EnableKeepQuestTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
+---@field findEm fun(self: app.cExFieldEvent_PopEnemy): app.cEnemyContextHolder
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE
@@ -334,3 +338,16 @@
 ---@class app.user_data.EmParamDifficulty2.cDifficultyRate : via.clr.ManagedObject
 ---@field get_RewardGrade fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Int32
 ---@field get_RewardRank fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): app.QuestDef.EM_REWARD_RANK_Fixed
+
+---@class app.cEnemyContextHolder : app.cGameContextHolder
+---@field get_Em fun(self: app.cEnemyContextHolder): app.cEnemyContext
+
+---@class app.cEnemyContext : app.cGameContext
+---@field Area app.cEmModuleArea
+
+---@class app.cEmModuleArea : app.cEmModuleBase
+---@field get_CurrentAreaNo fun(self: app.cEmModuleArea): System.Int32
+---@field get_IsTargetArrival fun(self: app.cEmModuleArea): System.Boolean
+
+---@class app.cContextCreateArg_Enemy : app.cContextCreateArg
+---@field set_AreaNo fun(self: app.cContextCreateArg_Enemy, area: System.Int32)

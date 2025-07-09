@@ -29,9 +29,15 @@ sdk.hook(
     sched.hook.spawn_check_post
 )
 sdk.hook(
-    sdk.find_type_definition("app.EnemyManager"):get_method("getEnemyStageResident(app.EnemyDef.ID)") --[[@as REMethodDefinition]],
-    sched.hook.force_em_area_pre,
-    sched.hook.force_em_area_post
+    sdk.find_type_definition("app.cEmModuleCombatEm"):get_method(
+        "isAcceptCombatEm_CheckFeelTarget(app.cEnemyContextHolder, app.EnemyCharacter, app.cEmModuleCombatEm.cTargetInfo, app.cEnemyContextHolder, System.Boolean, System.Boolean)"
+    ) --[[@as REMethodDefinition]],
+    sched.hook.stop_em_combat_pre,
+    sched.hook.stop_em_combat_post
+)
+sdk.hook(
+    sdk.find_type_definition("app.cContextInstanceController_Enemy"):get_method("onSetupContext(app.cContextCreateArg)") --[[@as REMethodDefinition]],
+    sched.hook.force_context_area_pre
 )
 sdk.hook(
     sdk.find_type_definition("app.cExFieldDirector"):get_method("update") --[[@as REMethodDefinition]],

@@ -165,7 +165,7 @@ function this:build()
         self:_get_monster_name(),
         area,
         self.event_data.id,
-        self.area ~= nil,
+        self.area,
         self.spoffer and self.is_village_boost or false,
         self.spoffer,
         nil,

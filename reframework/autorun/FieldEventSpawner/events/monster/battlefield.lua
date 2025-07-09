@@ -178,7 +178,7 @@ function this:build()
             self:_get_monster_name(),
             area,
             self.event_data.id,
-            self.area ~= nil,
+            self.area,
             nil,
             nil,
             rt.enum.event_collision_flag.EVENT_TYPE,

@@ -66,6 +66,7 @@
 ---@field spawn_cooldown SpawnCooldown
 ---@field display_cheat_timer integer
 ---@field display_cheat_timer_name string
+---@field force_area_timer integer
 ---@field default Settings
 ---@field current Settings
 ---@field init fun()
@@ -88,6 +89,7 @@ this.cache_path = this.name .. "/cache.json"
 this.default_lang_path = this.name .. "/lang/en-us.json"
 this.display_cheat_timer_name = "cheat_timer"
 this.display_cheat_timer = 30
+this.force_area_timer = 60
 this.font = {
     size = 16,
 }
