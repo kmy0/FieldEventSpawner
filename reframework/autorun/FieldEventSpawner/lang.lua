@@ -21,6 +21,9 @@ local default = {
                 disable_button_cooldown = {
                     name = "Disable Button Cooldown",
                 },
+                display_cheat_errors = {
+                    name = "Display Cheat Errors",
+                },
             },
         },
         language = {

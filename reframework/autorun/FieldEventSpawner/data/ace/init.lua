@@ -87,6 +87,7 @@ function this.init()
     data_util.get_enum("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE", this.enum.ex_gimmick)
     data_util.get_enum("this.GimmickDef.BASE_STATE", this.enum.gimmick_state)
     data_util.get_enum("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE", this.enum.battlefield_state)
+    data_util.get_enum("app.QuestCheckUtil.INCORRECT_STATUS", this.enum.incorrect_status)
 
     local dataman = sdk.get_managed_singleton("app.VariousDataManager")
     ---@cast dataman app.VariousDataManager

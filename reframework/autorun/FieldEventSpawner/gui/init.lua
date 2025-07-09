@@ -173,6 +173,13 @@ local function draw_event_table()
     end
 end
 
+local function draw_cheat()
+    if timer.remaining_key(config.display_cheat_timer_name) > 0 then
+        imgui.text_colored(sched.hook.state.cheat_message, gui.colors.bad)
+        imgui.separator()
+    end
+end
+
 ---@return SpawnState
 local function check_current_event()
     ---@type SpawnState
@@ -259,6 +266,16 @@ function this.draw()
                 config.current.mod.disable_button_cooldown = not config.current.mod.disable_button_cooldown
             end
 
+            if
+                imgui.menu_item(
+                    gui_util.tr("menu.config.entries.display_cheat_errors"),
+                    nil,
+                    config.current.mod.display_cheat_errors
+                )
+            then
+                config.current.mod.display_cheat_errors = not config.current.mod.display_cheat_errors
+            end
+
             imgui.unindent(2)
             imgui.spacing()
             imgui.end_menu()
@@ -306,6 +323,10 @@ function this.draw()
 
     imgui.spacing()
     imgui.indent(3)
+
+    if config.current.mod.display_cheat_errors then
+        draw_cheat()
+    end
 
     item.switch_arrays()
 

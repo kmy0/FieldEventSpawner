@@ -43,6 +43,8 @@ this.isValidItem = sdk.find_type_definition("app.ItemDef"):get_method("isValidIt
 this.getEM_REWARD_RANKFromFixed = sdk.find_type_definition("app.QuestDef"):get_method(
     "getEM_REWARD_RANKFromFixed(app.QuestDef.EM_REWARD_RANK_Fixed, app.QuestDef.EM_REWARD_RANK)"
 ) --[[@as REMethodDefinition]]
+this.getIncorrectStatusBit = sdk.find_type_definition("app.QuestCheckUtil")
+    :get_method("getIncorrectStatusBit(app.QuestCheckUtil.INCORRECT_STATUS)") --[[@as REMethodDefinition]]
 
 ---@param int integer
 ---@return integer

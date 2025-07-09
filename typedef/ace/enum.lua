@@ -29,3 +29,4 @@
 ---@class app.ItemDef.ID : System.Enum
 ---@class app.ItemDef.ID_Fixed : System.Enum
 ---@class app.EnemyDef.ID_Fixed : System.Enum
+---@class app.QuestCheckUtil.INCORRECT_STATUS : System.Enum

@@ -20,6 +20,7 @@
 ---@class (exact) ModSettings
 ---@field event_type integer
 ---@field disable_button_cooldown boolean
+---@field display_cheat_errors boolean
 ---@field event integer
 ---@field area integer
 ---@field spoffer integer
@@ -63,6 +64,8 @@
 ---@field cache_path string
 ---@field default_lang_path string
 ---@field spawn_cooldown SpawnCooldown
+---@field display_cheat_timer integer
+---@field display_cheat_timer_name string
 ---@field default Settings
 ---@field current Settings
 ---@field init fun()
@@ -83,6 +86,8 @@ this.name = "FieldEventSpawner"
 this.config_path = this.name .. "/config.json"
 this.cache_path = this.name .. "/cache.json"
 this.default_lang_path = this.name .. "/lang/en-us.json"
+this.display_cheat_timer_name = "cheat_timer"
+this.display_cheat_timer = 30
 this.font = {
     size = 16,
 }
@@ -116,6 +121,7 @@ this.default = {
     },
     mod = {
         disable_button_cooldown = false,
+        display_cheat_errors = true,
         event = 1,
         event_type = 1,
         area = 1,

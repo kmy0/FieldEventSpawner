@@ -17,6 +17,7 @@
 ---@field ex_gimmick table<app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE, string>
 ---@field gimmick_state table<ace.GimmickDef.BASE_STATE, string>
 ---@field battlefield_state table<app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE, string>
+---@field incorrect_status table<app.QuestCheckUtil.INCORRECT_STATUS, string>
 
 ---@class (exact) EventDataByType
 ---@field monster MonsterData[]
@@ -52,6 +53,7 @@ local this = {
         ex_gimmick = {},
         gimmick_state = {},
         battlefield_state = {},
+        incorrect_status = {},
     },
     map = {
         ex_event_to_time_field = {

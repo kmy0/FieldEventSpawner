@@ -2,6 +2,8 @@ local cache = require("FieldEventSpawner.schedule.cache")
 local config = require("FieldEventSpawner.config")
 local data = require("FieldEventSpawner.data")
 local special_offer = require("FieldEventSpawner.events.special_offer")
+local table_util = require("FieldEventSpawner.table_util")
+local timer = require("FieldEventSpawner.timer")
 local util = require("FieldEventSpawner.util")
 
 local ace = data.ace
@@ -18,6 +20,7 @@ local this = {
         ---@type MonsterSpawnEventArgs
         em_args = nil,
         updated = false,
+        cheat_message = "",
     },
 }
 
@@ -214,11 +217,37 @@ function this.allow_invalid_quests_pre(args)
     if config.current.mod.is_allow_invalid_quest then
         return sdk.PreHookResult.SKIP_ORIGINAL
     end
+
+    if config.current.mod.display_cheat_errors then
+        thread.get_hook_storage()["bit"] = args[2]
+    end
 end
 
 function this.allow_invalid_quests_post(retval)
     if config.current.mod.is_allow_invalid_quest then
         return sdk.to_ptr(true)
+    end
+
+    if config.current.mod.display_cheat_errors then
+        ---@diagnostic disable-next-line: param-type-mismatch
+        local bit = util.deref_ptr(thread.get_hook_storage()["bit"])
+        if bit ~= 0 then
+            local keys = table_util.sort(table_util.keys(ace.enum.incorrect_status))
+            ---@type string[]
+            local errors = {}
+            for i = 0, #keys do
+                local status = keys[i]
+                local status_bit = util.getIncorrectStatusBit:call(nil, status)
+                if bit & status_bit == status_bit then
+                    table.insert(errors, ace.enum.incorrect_status[status])
+                end
+            end
+
+            timer.new(config.display_cheat_timer_name, config.display_cheat_timer)
+            this.state.cheat_message = table.concat(errors, "\n")
+        else
+            timer.stop_key(config.display_cheat_timer_name)
+        end
     end
 
     return retval

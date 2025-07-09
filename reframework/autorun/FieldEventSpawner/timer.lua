@@ -62,4 +62,16 @@ function this:finished()
     return self._finished
 end
 
+function this:stop()
+    self._finished = true
+end
+
+---@param key string
+function this.stop_key(key)
+    local timer = this._instances[key]
+    if timer then
+        timer:stop()
+    end
+end
+
 return this
