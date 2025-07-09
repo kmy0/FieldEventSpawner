@@ -31,7 +31,7 @@ function this.add(stage, event)
     end
 
     fill_missing_fields(event.event_data)
-    local cached_event = table_util.table_deep_copy(event.cache_base)
+    local cached_event = table_util.deep_copy(event.cache_base)
     ---@cast cached_event CachedEvent
     cached_event.exec_time = event.event_data._ExecMinute
     cached_event.unique_index = event.event_data._UniqueIndex

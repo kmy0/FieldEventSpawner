@@ -1,9 +1,12 @@
+---@diagnostic disable: no-unknown
+
 local this = {}
 
----@param t table
----@param fn_keep function
----@return table
-function this.table_remove(t, fn_keep)
+---@generic T: table
+---@param t T
+---@param fn_keep fun(t: T, i: integer, j: integer): boolean
+---@return T
+function this.remove(t, fn_keep)
     local i, j, n = 1, 1, #t
     while i <= n do
         if fn_keep(t, i, j) then
@@ -22,14 +25,15 @@ function this.table_remove(t, fn_keep)
     return t
 end
 
----@param list any[]
----@param ... any
+---@generic K, V
+---@param t table<K, V>
+---@param ... V
 ---@return boolean
-function this.table_contains(list, ...)
-    local t = { ... }
-    for _, v in pairs(list) do
-        for _, test in pairs(t) do
-            if v == test then
+function this.contains(t, ...)
+    local values = { ... }
+    for _, v in pairs(t) do
+        for _, v2 in pairs(values) do
+            if v == v2 then
                 return true
             end
         end
@@ -37,36 +41,11 @@ function this.table_contains(list, ...)
     return false
 end
 
----@param t table
----@return table
-function this.table_copy(t)
-    local newtable = {}
-    for k, v in pairs(t) do
-        newtable[k] = v
-    end
-    return newtable
-end
-
----@param t table
----@return string
-function this.join_table(t)
-    local str = nil
-    for k, v in pairs(t) do
-        local l = k .. " " .. v
-        if not str then
-            str = l .. "\n"
-        else
-            str = str .. l
-        end
-    end
-    return str
-end
-
----@generic T
+---@generic T: table
 ---@param original T
----@param copies table?
+---@param copies nil
 ---@return T
-function this.table_deep_copy(original, copies)
+function this.deep_copy(original, copies)
     copies = copies or {}
     local original_type = type(original)
     local copy
@@ -77,9 +56,9 @@ function this.table_deep_copy(original, copies)
             copy = {}
             copies[original] = copy
             for original_key, original_value in next, original, nil do
-                copy[this.table_deep_copy(original_key, copies)] = this.table_deep_copy(original_value, copies)
+                copy[this.deep_copy(original_key, copies)] = this.deep_copy(original_value, copies)
             end
-            setmetatable(copy, this.table_deep_copy(getmetatable(original), copies))
+            setmetatable(copy, this.deep_copy(getmetatable(original), copies))
         end
     else -- number, string, boolean, etc
         copy = original
@@ -89,7 +68,7 @@ end
 
 ---@param ... table
 ---@return table
-function this.table_merge(...)
+function this.merge(...)
     local tables_to_merge = { ... }
     assert(#tables_to_merge > 1, "There should be at least two tables to merge them")
 
@@ -97,7 +76,7 @@ function this.table_merge(...)
         assert(type(table) == "table", string.format("Expected a table as function parameter %d", key))
     end
 
-    local result = this.table_deep_copy(tables_to_merge[1])
+    local result = this.deep_copy(tables_to_merge[1])
 
     for i = 2, #tables_to_merge do
         local from = tables_to_merge[i]
@@ -105,7 +84,7 @@ function this.table_merge(...)
             if type(value) == "table" then
                 result[key] = result[key] or {}
                 assert(type(result[key]) == "table", string.format("Expected a table: '%s'", key))
-                result[key] = this.table_merge(result[key], value)
+                result[key] = this.merge(result[key], value)
             else
                 result[key] = value
             end
@@ -115,20 +94,84 @@ function this.table_merge(...)
     return result
 end
 
----@generic T
----@param t table<any, T>
----@return T[]
-function this.values(t)
+---@generic T: table
+---@param ... T
+---@return T
+function this.merge_t(...)
+    return this.merge(...)
+end
+
+---@param protected string[]?
+---@param ignore_empty boolean?
+---@param ... table
+---@return table
+function this.merge2(protected, ignore_empty, ...)
+    if protected == nil then
+        protected = {}
+    end
+
+    if ignore_empty == nil then
+        ignore_empty = false
+    end
+
+    local tables_to_merge = { ... }
+    assert(#tables_to_merge > 1, "There should be at least two tables to merge them")
+
+    for key, table in ipairs(tables_to_merge) do
+        assert(type(table) == "table", string.format("Expected a table as function parameter %d", key))
+    end
+
+    local result = this.deep_copy(tables_to_merge[1])
+
+    for i = 2, #tables_to_merge do
+        local from = tables_to_merge[i]
+        for key, value in pairs(from) do
+            if this.contains(protected, key) or ignore_empty and result[key] == nil then
+                goto continue
+            end
+
+            if type(value) == "table" and (not ignore_empty or (ignore_empty and not this.empty(value))) then
+                result[key] = result[key] or {}
+                assert(type(result[key]) == "table", string.format("Expected a table: '%s'", key))
+                result[key] = this.merge2(protected, ignore_empty, result[key], value)
+            else
+                result[key] = value
+            end
+            ::continue::
+        end
+    end
+
+    return result
+end
+
+---@generic T: table
+---@param protected string[]?
+---@param ignore_empty boolean?
+---@param ... T
+---@return T
+function this.merge2_t(protected, ignore_empty, ...)
+    return this.merge2(protected, ignore_empty, ...)
+end
+
+---@generic K, V, R
+---@param t table<K,  V>
+---@param value_getter (fun(o: V): R)?
+---@return R|V[]
+function this.values(t, value_getter)
     local ret = {}
-    for _, value in pairs(t) do
+    for _, o_value in pairs(t) do
+        local value = o_value
+        if value_getter then
+            value = value_getter(o_value)
+        end
         table.insert(ret, value)
     end
     return ret
 end
 
----@generic T
----@param t table<T, any>
----@return T[]
+---@generic K, V
+---@param t table<K, V>
+---@return K[]
 function this.keys(t)
     local ret = {}
     for key, _ in pairs(t) do
@@ -139,40 +182,46 @@ end
 
 ---@generic T
 ---@param t T[]
----@param value T
+---@param value T | fun(o: T): boolean
 ---@return integer?
 function this.index(t, value)
     for i, v in pairs(t) do
-        if v == value then
+        if (type(value) == "function" and value(v)) or v == value then
             return i
         end
     end
 end
 
----@generic T
+---@generic T: table
 ---@param t T[]
 ---@param key (fun(o: T): any)?
+---@param ... T[]
 ---@return T[]
-function this.set(t, key)
-    local d = {}
-    for _, value in pairs(t) do
-        if key then
-            d[key(value)] = value
-        else
-            d[value] = 1
+function this.set(t, key, ...)
+    local tables = { t, ... }
+    local ret = {}
+    for _, tbl in pairs(tables) do
+        for _, value in pairs(tbl) do
+            if key then
+                ret[key(value)] = value
+            else
+                ret[value] = 1
+            end
         end
     end
 
     if key then
-        return this.values(d)
+        return this.values(ret)
     end
-    return this.keys(d)
+
+    return this.keys(ret)
 end
 
----@param t table
+---@generic T: table
+---@param t T
 ---@param keys any[]
 ---@param value any
----@return table
+---@return T
 function this.insert_nested_value(t, keys, value)
     local current = t
     local size = #keys
@@ -189,10 +238,11 @@ function this.insert_nested_value(t, keys, value)
     return t
 end
 
----@param t table
+---@generic T: table
+---@param t T
 ---@param keys any[]
 ---@param value any
----@return table
+---@return T
 function this.set_nested_value(t, keys, value)
     local current = t
     local size = #keys
@@ -228,15 +278,19 @@ end
 ---@return any[]
 function this.array_merge(...)
     local arrays_to_merge = { ... }
-    local ret = {}
-
-    for i = 1, #arrays_to_merge do
+    local ret = arrays_to_merge[1]
+    for i = 2, #arrays_to_merge do
         local t = arrays_to_merge[i]
-        for j = 1, #t do
-            table.insert(ret, t[j])
-        end
+        table.move(t, 1, #t, #ret + 1, ret)
     end
     return ret
+end
+
+---@generic T
+---@param ... T[]
+---@return T[]
+function this.array_merge_t(...)
+    return this.array_merge(...)
 end
 
 ---@param t table
@@ -258,23 +312,9 @@ function this.merge_nested_array(t, keys, t_merge)
     return this.array_merge(current, t_merge)
 end
 
----@param t any[]
----@param sort boolean?
----@return string[]
-function this.to_strings(t, sort)
-    local ret = {}
-    for _, v in ipairs(t) do
-        table.insert(ret, tostring(v))
-    end
-    if sort then
-        table.sort(ret)
-    end
-    return ret
-end
-
----@generic T
----@param t table<any, T> | T[]
----@param predicate fun(o: T) : boolean
+---@generic K, V
+---@param t table<K, V>
+---@param predicate fun(o: V) : boolean
 ---@return boolean
 function this.all(t, predicate)
     for _, value in pairs(t) do
@@ -283,6 +323,19 @@ function this.all(t, predicate)
         end
     end
     return true
+end
+
+---@generic K, V
+---@param t table<K, V>
+---@param predicate fun(key: K, value: V) : boolean
+---@return boolean
+function this.any(t, predicate)
+    for key, value in pairs(t) do
+        if predicate(key, value) then
+            return true
+        end
+    end
+    return false
 end
 
 ---@generic T
@@ -298,21 +351,20 @@ function this.map_array(t, key, value)
     return ret
 end
 
----@generic K
----@generic V
+---@generic K, V
 ---@param t table<K, V>
 ---@param key (fun(o: K): any)?
 ---@param value (fun(o: V): any)?
----@return table<string, any>
+---@return table<any, any>
 function this.map_table(t, key, value)
     local ret = {}
     for k, v in pairs(t) do
-        ret[key and key(k) or tostring(k)] = value and value(v) or v
+        ret[key and key(k) or k] = value and value(v) or v
     end
     return ret
 end
 
----@param t table<any, any>
+---@param t table
 ---@return integer
 function this.size(t)
     local ret = 0
@@ -322,8 +374,7 @@ function this.size(t)
     return ret
 end
 
----@generic K
----@generic V
+---@generic K, V
 ---@param t table<K, V>
 ---@param key K | fun(value: V): boolean
 ---@return V?
@@ -367,6 +418,52 @@ function this.slice(t, index1, index2, strict)
     return ret
 end
 
+---@generic T
+---@param t T[]
+---@param sort_func (fun(a: T, b: T): boolean)?
+---@return T[]
+function this.sort(t, sort_func)
+    table.sort(t, sort_func)
+    return t
+end
+
+---@generic K, V
+---@param t table<K, V>
+---@param predicate fun(key: K, value: V): boolean
+---@return V?
+function this.value(t, predicate)
+    for k, v in pairs(t) do
+        if predicate(k, v) then
+            return v
+        end
+    end
+end
+
+---@generic K, V
+---@param t table<K, V>
+---@param predicate fun(key: K, value: V): boolean
+---@return K?
+function this.key(t, predicate)
+    for k, v in pairs(t) do
+        if predicate(k, v) then
+            return k
+        end
+    end
+end
+
+---@generic K, V
+---@param t table<K, V>
+---@param func fun(t: table<K, V>, key: K, value: V): boolean?
+---@return boolean
+function this.do_something(t, func)
+    for k, v in pairs(t) do
+        if func(t, k, v) == false then
+            return false
+        end
+    end
+    return true
+end
+
 ---@param t table
 ---@param indent integer?
 ---@param visited table<table, boolean>?
@@ -395,6 +492,55 @@ function this.print(t, indent, visited)
     end
 
     visited[t] = nil
+end
+
+---@generic T
+---@param t T[]
+---@param n integer
+---@return T[][]
+function this.chunks(t, n)
+    local ret = {}
+    local chunk = {}
+    local size = #t
+
+    for i = 1, size do
+        table.insert(chunk, t[i])
+        if #chunk == n or i == size then
+            table.insert(ret, chunk)
+            chunk = {}
+        end
+    end
+
+    return ret
+end
+
+---@generic K, V, R
+---@param t table<K, V>
+---@param splitter fun(t: table<K, V>, key: K, value: V): R
+---@return {[R]: {[K]: V}}
+function this.split(t, splitter)
+    local ret = {}
+    for k, v in pairs(t) do
+        local key = splitter(t, k, v)
+        this.insert_nested_value(ret, { key, k }, v)
+    end
+
+    return ret
+end
+
+---@generic K, V
+---@param t table<K, V>
+---@param predicate fun(key: K, value: V): boolean
+---@return table<K, V>
+function this.filter(t, predicate)
+    local ret = {}
+    for k, v in pairs(t) do
+        if predicate(k, v) then
+            ret[k] = v
+        end
+    end
+
+    return ret
 end
 
 return this

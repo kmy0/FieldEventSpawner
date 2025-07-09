@@ -55,7 +55,7 @@ end
 ---@return integer
 function this:_get_area(other_events, areas)
     ---@type integer[]
-    local candidates = table_util.table_deep_copy(areas)
+    local candidates = table_util.deep_copy(areas)
     for _, event in pairs(other_events) do
         if not event:get_IsWorking() then
             goto continue

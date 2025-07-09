@@ -261,7 +261,7 @@ function this.update_spoffer()
     end
 
     for unique_index, _ in pairs(this.state.spoffer) do
-        if not table_util.table_contains(active_pop_ems, unique_index) then
+        if not table_util.contains(active_pop_ems, unique_index) then
             this.state.spoffer[unique_index] = nil
         end
     end

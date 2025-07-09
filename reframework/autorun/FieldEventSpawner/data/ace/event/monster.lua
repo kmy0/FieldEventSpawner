@@ -233,7 +233,7 @@ local function get_stage_data(area_move_info_by_em)
 
             table.sort(areas)
             map_data.area_by_env[environ] = areas
-            map_data.area = table_util.table_merge(map_data.area, areas)
+            map_data.area = table_util.merge(map_data.area, areas)
             ::continue::
         end
 
