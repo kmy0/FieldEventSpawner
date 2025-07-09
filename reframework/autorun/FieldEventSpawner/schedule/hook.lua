@@ -289,4 +289,10 @@ function this.force_pop_many_spawn_post(retval)
     return retval
 end
 
+function this.force_pop_many_reward_pre(args)
+    if this.state.force_spawn_flag then
+        return sdk.PreHookResult.SKIP_ORIGINAL
+    end
+end
+
 return this

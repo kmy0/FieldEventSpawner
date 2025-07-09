@@ -109,6 +109,12 @@ sdk.hook(
     sched.hook.force_pop_many_spawn_pre,
     sched.hook.force_pop_many_spawn_post
 )
+sdk.hook(
+    sdk.find_type_definition("app.cExFieldDirector"):get_method(
+        "relotEmReward(app.cExFieldDirector.cScheduleTimeline, app.cExFieldEvent_PopEnemy, System.Collections.Generic.List`1<app.cExFieldEvent_EmReward>, app.FieldDef.STAGE)"
+    ) --[[@as REMethodDefinition]],
+    sched.hook.force_pop_many_reward_pre
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.version)) then
