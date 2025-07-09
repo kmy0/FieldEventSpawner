@@ -309,6 +309,45 @@ function this.is_npc_unlocked(gimmick_event)
     return this.state.feature_unlock.npc[gimmick_event]
 end
 
+---@param event_type app.EX_FIELD_EVENT_TYPE | string?
+---@param event_id app.EnemyDef.ID_Fixed | app.ExDef.ANIMAL_EVENT_Fixed | app.ExDef.GIMMICK_EVENT_Fixed?
+function this.print_events(event_type, event_id)
+    ---@type string?
+    local event_type_name
+    ---@type app.EX_FIELD_EVENT_TYPE?
+    local event_type_id
+    ---@type string?
+    local event_id_field
+
+    if type(event_type) == "string" then
+        event_type_name = event_type
+        event_type_id = rl(ace_data.enum.ex_event, event_type)
+    elseif event_type then
+        event_type_name = ace_data.enum.ex_event[event_type]
+        event_type_id = event_type
+    end
+
+    if event_id and event_type_name then
+        if event_type_name == "POP_EM" then
+            event_id_field = "_FreeValue0"
+        else
+            event_id_field = "_FreeValue1"
+        end
+    end
+
+    local _, schedule_timeline = this.get_field_director()
+    local events = schedule_timeline._KeyList
+
+    util.do_something(events, function(system_array, index, value)
+        if
+            (not event_type_id or event_type_id == value:get_ExFieldEventType())
+            and (not event_id_field or value:get_field(event_id_field) == event_id)
+        then
+            util.print_fields(value)
+        end
+    end)
+end
+
 function this.clear_feature_unlock()
     table_util.clear(this.state.feature_unlock.spoffer)
     table_util.clear(this.state.feature_unlock.village_boost)

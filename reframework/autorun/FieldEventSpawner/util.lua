@@ -85,20 +85,17 @@ end
 ---@param array System.Array<T>
 ---@return System.ArrayEnumerator<T>
 function this.get_array_enum(array)
+    ---@type System.ArrayEnumerator
     local enum
-    local success, arr = pcall(function()
-        return array:ToArray()
+    local arr = array
+
+    this.try(function()
+        arr = array:ToArray()
     end)
 
-    if not success then
-        arr = array
-    end
-
-    success, enum = pcall(function()
-        return arr:GetEnumerator()
-    end)
-
-    if not success then
+    if not this.try(function()
+        enum = arr:GetEnumerator()
+    end) then
         enum = sdk.create_instance("System.ArrayEnumerator", true) --[[@as System.ArrayEnumerator]]
         enum:call(".ctor", arr)
     end
@@ -292,6 +289,49 @@ function this.print_fields(obj)
         end
     end
     print("\n")
+end
+
+---@generic T
+---@param system_array T[]
+---@param something fun(system_array: System.Array<T>, index: integer, value: T): boolean?
+---@param reverse boolean?
+function this.do_something(system_array, something, reverse)
+    ---@diagnostic disable-next-line: undefined-field, no-unknown
+    local size = system_array:get_Count() - 1
+    if reverse then
+        for i = size, 0, -1 do
+            ---@diagnostic disable-next-line: undefined-field
+            if something(system_array, i, system_array:get_Item(i)) == false then
+                break
+            end
+        end
+    else
+        for i = 0, size do
+            ---@diagnostic disable-next-line: undefined-field
+            if something(system_array, i, system_array:get_Item(i)) == false then
+                break
+            end
+        end
+    end
+end
+
+---@param try fun()
+---@param catch fun(err: string)?
+---@param finally fun(ok: boolean, err: string?)?
+---@return boolean
+function this.try(try, catch, finally)
+    ---@diagnostic disable-next-line: no-unknown
+    local ok, err = pcall(try)
+
+    if not ok and catch then
+        catch(err)
+    end
+
+    if finally then
+        finally(ok, err)
+    end
+
+    return ok
 end
 
 return this
