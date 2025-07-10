@@ -233,7 +233,7 @@ function this.allow_invalid_quests_post(retval)
     if config.current.mod.display_cheat_errors then
         ---@diagnostic disable-next-line: param-type-mismatch
         local bit = util.deref_ptr(thread.get_hook_storage()["bit"])
-        if bit ~= 0 then
+        if bit ~= 0 and sdk.to_int64(retval) & 1 == 0 then
             local keys = table_util.sort(table_util.keys(ace.enum.incorrect_status))
             ---@type string[]
             local errors = {}
