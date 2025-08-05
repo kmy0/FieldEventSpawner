@@ -246,83 +246,102 @@ local function get_stage_data(area_move_info_by_em)
     return ret
 end
 
----@param em_id app.EnemyDef.ID
----@param map_data table<app.FieldDef.STAGE, MonsterMapData>
-local function get_param_data(em_id, map_data)
-    ---@param md MonsterMapData
-    ---@param key string
-    ---@param em_param MonsterParamModifier
-    ---@param em_difficulty MonsterDifficulty
-    ---@param env_check (fun(env: app.EnvironmentType.ENVIRONMENT): boolean)?
-    local function iter(md, key, em_param, em_difficulty, env_check)
-        for env, areas in pairs(md.area_by_env) do
-            if env_check and not env_check(env) then
-                goto continue
-            end
-
-            table_util.set_nested_value(md.param_by_env, { env, key }, em_param)
-            table_util.set_nested_value(md.area_by_env_by_param, { env, key }, areas)
-            table_util.set_nested_value(md.difficulty_by_env_by_param, { env, key }, em_difficulty)
-            md.env_by_param = table_util.insert_nested_value(md.env_by_param, { key }, env)
-            md.env_by_param[key] = table_util.set(md.env_by_param[key])
-            md.area_by_param[key] = table_util.set(table_util.merge_nested_array(md.area_by_param, { key }, areas))
-            md.difficulty_by_param[key] = em_difficulty
-
-            if md.param[key] then
-                md.param[key].none = md.param[key].none or em_param.none
-                md.param[key].legendary = md.param[key].legendary or em_param.legendary
-                md.param[key].legendary_king = md.param[key].legendary_king or em_param.legendary_king
-            else
-                md.param[key] = em_param
-            end
-            ::continue::
-        end
-    end
-
+---@param difficulty_params System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
+---@param legendary_id app.EnemyDef.LEGENDARY_ID
+---@return table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
+local function get_difficulty(difficulty_params, legendary_id)
     local enemyman = sdk.get_managed_singleton("app.EnemyManager")
     ---@cast enemyman app.EnemyManager
     local em_setting = enemyman:get_Setting()
     local diff2 = em_setting:get_Difficulty2()
 
-    ---@param difficulty_params System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
-    ---@param legendary_id app.EnemyDef.LEGENDARY_ID
-    ---@param bool boolean
-    ---@return table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
-    local function get_difficulty(difficulty_params, legendary_id, bool)
-        if not bool then
-            return
-        end
-
-        ---@type table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>
-        local ret = {}
-        for i = 0, difficulty_params:get_Count() - 1 do
-            local weight = difficulty_params:get_Item(i)
-            ---@cast weight app.user_data.ExFieldParam_LayoutData.cDifficultyWeight
-            local guid = weight:call("getDifficultyRankID(app.EnemyDef.LEGENDARY_ID)", legendary_id)
-            local rate = diff2:getDifficultyRate(guid)
-            table_util.insert_nested_value(
-                ret,
-                { rate:get_RewardGrade(), util.get_em_reward_rank(rate:get_RewardRank()) },
-                guid
-            )
-        end
-
-        for grade, ranks in pairs(ret) do
-            for rank, guids in pairs(ranks) do
-                ranks[rank] = table_util.set(guids, function(o)
-                    return util.format_guid(o)
-                end)
-            end
-        end
-
-        return ret
+    ---@type table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>
+    local ret = {}
+    for i = 0, difficulty_params:get_Count() - 1 do
+        local weight = difficulty_params:get_Item(i)
+        ---@cast weight app.user_data.ExFieldParam_LayoutData.cDifficultyWeight
+        local guid = weight:call("getDifficultyRankID(app.EnemyDef.LEGENDARY_ID)", legendary_id)
+        local rate = diff2:getDifficultyRate(guid)
+        table_util.insert_nested_value(
+            ret,
+            { rate:get_RewardGrade(), util.get_em_reward_rank(rate:get_RewardRank()) },
+            guid
+        )
     end
 
+    for grade, ranks in pairs(ret) do
+        for rank, guids in pairs(ranks) do
+            ranks[rank] = table_util.set(guids, function(o)
+                return util.format_guid(o)
+            end)
+        end
+    end
+
+    return ret
+end
+
+---@param pop_param_by_env app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base?
+---@param environ app.EnvironmentType.ENVIRONMENT
+---@return boolean
+local function environment_check(pop_param_by_env, environ)
+    if not pop_param_by_env then
+        return true
+    end
+
+    local param_by_env_base = pop_param_by_env:getParamByEnv(environ)
+    if not param_by_env_base then
+        return false
+    end
+
+    return param_by_env_base:get_RandomWeight() > 0
+end
+
+---@param md MonsterMapData
+---@param key string
+---@param em_param MonsterParamModifier
+---@param pop_param_by_env app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base?
+---@param diff_array System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
+local function add_params(md, key, em_param, pop_param_by_env, diff_array)
     local legendary = {
         none = rl(ace_data.enum.legendary, "NONE"),
         legendary = rl(ace_data.enum.legendary, "NORMAL"),
         legendary_king = rl(ace_data.enum.legendary, "KING"),
     }
+
+    local em_difficulty = {}
+    for param_key, bool in pairs(em_param) do
+        if bool then
+            em_difficulty[param_key] = get_difficulty(diff_array, legendary[param_key])
+        end
+    end
+
+    for env, areas in pairs(md.area_by_env) do
+        if not environment_check(pop_param_by_env, env) then
+            goto continue
+        end
+
+        table_util.set_nested_value(md.param_by_env, { env, key }, em_param)
+        table_util.set_nested_value(md.area_by_env_by_param, { env, key }, areas)
+        table_util.set_nested_value(md.difficulty_by_env_by_param, { env, key }, em_difficulty)
+        md.env_by_param = table_util.insert_nested_value(md.env_by_param, { key }, env)
+        md.env_by_param[key] = table_util.set(md.env_by_param[key])
+        md.area_by_param[key] = table_util.set(table_util.merge_nested_array(md.area_by_param, { key }, areas))
+        md.difficulty_by_param[key] = em_difficulty
+
+        if md.param[key] then
+            md.param[key].none = md.param[key].none or em_param.none
+            md.param[key].legendary = md.param[key].legendary or em_param.legendary
+            md.param[key].legendary_king = md.param[key].legendary_king or em_param.legendary_king
+        else
+            md.param[key] = em_param
+        end
+        ::continue::
+    end
+end
+
+---@param em_id app.EnemyDef.ID
+---@param map_data table<app.FieldDef.STAGE, MonsterMapData>
+local function get_param_data(em_id, map_data)
     for stage, md in pairs(map_data) do
         for param_key, pop_em in pairs(gui_data.map.em_param_to_pop_em) do
             local pop_em_type = rl(ace_data.enum.pop_em_fixed, pop_em)
@@ -333,76 +352,32 @@ local function get_param_data(em_id, map_data)
             end
 
             local leg_prob = pop_param:get_LegendaryProbability()
-            local pop_param_by_env = pop_param._ParamsByEnv
-            local env_check = pop_param_by_env
-                    and function(env)
-                        local param_by_env_base = pop_param_by_env:getParamByEnv(env)
-                        if not param_by_env_base then
-                            return false
-                        end
-                        return param_by_env_base:get_RandomWeight() > 0
-                    end
-                or nil
-
-            if param_key == "legendary" then
-                iter(md, param_key, {
-                    none = false,
-                    legendary = true,
-                    legendary_king = false,
-                }, {
-                    legendary = get_difficulty(pop_param._DifficultyParams, legendary.legendary, true),
-                }, env_check)
-                goto continue
-            end
-
-            if param_key == "battlefield_repel" then
-                ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
-                iter(md, param_key, {
-                    none = leg_prob < 100,
-                    legendary = leg_prob > 0,
-                    legendary_king = false,
-                }, {
-                    none = get_difficulty(pop_param._DifficultyParams_PopBelonging, legendary.none, leg_prob < 100),
-                    legendary = get_difficulty(
-                        pop_param._DifficultyParams_PopBelonging,
-                        legendary.legendary,
-                        leg_prob > 0
-                    ),
-                }, env_check)
-                goto continue
-            end
-
-            if param_key == "boss" then
-                ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
-                if pop_param:get_IsBossSpawned() then
-                    local boss_leg_prob = pop_param:get_BossLegendaryProbability()
-                    iter(md, param_key, {
-                        none = boss_leg_prob < 100,
-                        legendary = boss_leg_prob > 0,
-                        legendary_king = false,
-                    }, {
-                        none = get_difficulty(pop_param._BossDifficultyParams, legendary.none, boss_leg_prob < 100),
-                        legendary = get_difficulty(
-                            pop_param._BossDifficultyParams,
-                            legendary.legendary,
-                            boss_leg_prob > 0
-                        ),
-                    }, env_check)
-                end
-                goto continue
-            end
-
-            iter(md, param_key, {
+            local em_param = {
                 none = leg_prob < 100,
                 legendary = leg_prob > 0,
                 legendary_king = false,
-            }, {
-                none = get_difficulty(pop_param._DifficultyParams, legendary.none, leg_prob < 100),
-                legendary = get_difficulty(pop_param._DifficultyParams, legendary.legendary, leg_prob > 0),
-            }, env_check)
+            }
+            local diff_array = pop_param._DifficultyParams
+
+            if param_key == "legendary" then
+                em_param.none = false
+                em_param.legendary = true
+            elseif param_key == "battlefield_repel" then
+                ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
+                diff_array = pop_param._DifficultyParams_PopBelonging
+            elseif param_key == "boss" then
+                ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
+                leg_prob = pop_param:get_BossLegendaryProbability()
+                em_param.none = leg_prob < 100
+                em_param.legendary = leg_prob > 0
+                diff_array = pop_param._BossDifficultyParams
+            end
+
+            add_params(md, param_key, em_param, pop_param._ParamsByEnv, diff_array)
             ::continue::
         end
 
+        -- as of TU2, Lagi only
         if md.param.normal or md.param.swarm then
             md.param.pop_many2 = nil
         end
@@ -415,14 +390,10 @@ end
 local function merge_map_data(md, battlefield_data)
     for stage, mmd in pairs(battlefield_data) do
         local map_data = md[stage]
-        map_data.param.battlefield_slay = mmd.param.battlefield_slay
-        map_data.param.battlefield_repel = mmd.param.battlefield_repel
-        map_data.area_by_param.battlefield_repel = mmd.area_by_param.battlefield_repel
-        map_data.area_by_param.battlefield_slay = mmd.area_by_param.battlefield_slay
-        map_data.env_by_param.battlefield_slay = mmd.env_by_param.battlefield_slay
-        map_data.env_by_param.battlefield_repel = mmd.env_by_param.battlefield_repel
-        map_data.difficulty_by_param.battlefield_slay = mmd.difficulty_by_param.battlefield_slay
-        map_data.difficulty_by_param.battlefield_repel = mmd.difficulty_by_param.battlefield_repel
+        for _, key in pairs({ "param", "area_by_param", "env_by_param", " difficulty_by_param" }) do
+            map_data[key] = mmd[key].battlefield_slay
+            map_data[key] = mmd[key].battlefield_repel
+        end
 
         for env, param in pairs(mmd.param_by_env) do
             map_data.param_by_env[env].battlefield_slay = param.battlefield_slay

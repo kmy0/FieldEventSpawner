@@ -35,7 +35,7 @@
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm : app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_EnvStart
 ---@field get_IsBossSpawned fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Boolean
 ---@field lotDifficultyID_Boss fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm, legendary_id: app.EnemyDef.LEGENDARY_ID, suitable_only: System.Boolean): System.Guid
----@field get_BossLegendaryProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Boolean
+---@field get_BossLegendaryProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Byte
 ---@field _BossDifficultyParams System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
