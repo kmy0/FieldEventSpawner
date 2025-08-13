@@ -156,7 +156,7 @@ function this:build()
     event_data._FreeMiniValue1 = environ_type | (0x10 * self.pop_em_type)
     event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = area
-    event_data._FreeMiniValue4 = self:_get_group_id(other_monsters, environ_type)
+    event_data._FreeMiniValue4 = self:_get_group_id(other_monsters, environ_type, difficulty_guid)
     event_data._FreeMiniValue5 = self.time
     event_data._FreeMiniValue6 = 255
 
@@ -313,9 +313,10 @@ end
 ---@protected
 ---@param other_ems System.Array<app.cExFieldEvent_PopEnemy>
 ---@param environ_type app.EnvironmentType.ENVIRONMENT
+---@param difficulty_guid System.Guid
 ---@return integer
-function this:_get_group_id(other_ems, environ_type)
-    local option = self:_lot_option_tag(environ_type)
+function this:_get_group_id(other_ems, environ_type, difficulty_guid)
+    local option = self:_lot_option_tag(environ_type, difficulty_guid)
     local count = 0
 
     local enum = util.get_array_enum(other_ems)
@@ -331,28 +332,34 @@ end
 
 ---@protected
 ---@param environ_type app.EnvironmentType.ENVIRONMENT
+---@param difficulty_guid System.Guid
 ---@return integer
-function this:_lot_option_tag(environ_type)
+function this:_lot_option_tag(environ_type, difficulty_guid)
     local enemy_param = ace.ex_field_param:get_ExEnemyGlobalParam()
+    local reward_rank = util.getRewardRankFromDifficulty:call(nil, difficulty_guid) --[[@as app.QuestDef.EM_REWARD_RANK]]
     local enemy_global_param = enemy_param:getExEmGlobalParam(
         self.event_data.id,
         self.monster_role,
         self.legendary_id,
-        rl(ace.enum.quest_rank, "EX")
+        rl(ace.enum.quest_rank, "EX"),
+        reward_rank
     )
     return enemy_global_param:lotOptionTagIdx(self.stage, environ_type)
 end
 
 ---@protected
 ---@param option_value System.Int64
+---@param difficulty_guid System.Guid
 ---@return integer
-function this:_get_option_tag(option_value)
+function this:_get_option_tag(option_value, difficulty_guid)
     local enemy_param = ace.ex_field_param:get_ExEnemyGlobalParam()
+    local reward_rank = util.getRewardRankFromDifficulty:call(nil, difficulty_guid) --[[@as app.QuestDef.EM_REWARD_RANK]]
     local enemy_global_param = enemy_param:getExEmGlobalParam(
         self.event_data.id,
         self.monster_role,
         self.legendary_id,
-        rl(ace.enum.quest_rank, "EX")
+        rl(ace.enum.quest_rank, "EX"),
+        reward_rank
     )
     return enemy_global_param:getOptionTagIdx(option_value)
 end

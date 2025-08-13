@@ -164,7 +164,7 @@ function this:build()
     event_data._FreeMiniValue1 = environ_type | (0x10 * self.pop_em_type)
     event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = area
-    event_data._FreeMiniValue4 = stage_param and 0x10 * self:_get_option_tag(option_value) or 0
+    event_data._FreeMiniValue4 = stage_param and 0x10 * self:_get_option_tag(option_value, difficulty_guid) or 0
     event_data._FreeMiniValue5 = self.time
     event_data._FreeMiniValue6 = 255
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + 1
@@ -174,7 +174,12 @@ function this:build()
     table.insert(sub_events, sched.spawn_event.subevent_ctor(event_data)[1])
     return rt.enum.spawn_result.OK,
         sched.spawn_event.monster_ctor(
-            self:_get_battlefield_data(em_pop_param, event_data._ExecMinute - 1, event_data._UniqueIndex),
+            self:_get_battlefield_data(
+                em_pop_param,
+                event_data._ExecMinute - 1,
+                event_data._UniqueIndex,
+                difficulty_guid
+            ),
             self:_get_monster_name(),
             area,
             self.event_data.id,
@@ -198,8 +203,9 @@ end
 ---@param em_pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
 ---@param now integer
 ---@param em_pop_index integer
+---@param difficulty_guid System.Guid
 ---@return app.cExFieldScheduleExportData.cEventData
-function this:_get_battlefield_data(em_pop_param, now, em_pop_index)
+function this:_get_battlefield_data(em_pop_param, now, em_pop_index, difficulty_guid)
     local route_guid, area, option_value
     local is_repel = self.battlefield_state == rt.enum.battlefield_state.battlefield_repel
 
@@ -229,7 +235,7 @@ function this:_get_battlefield_data(em_pop_param, now, em_pop_index)
     event_data._FreeMiniValue3 = 255
     event_data._FreeMiniValue4 = is_repel and rl(ace.enum.battlefield_state, "POP_BELONGING")
         or rl(ace.enum.battlefield_state, "ACCEPTABLE_QUEST")
-    event_data._FreeMiniValue5 = self:_get_option_tag(option_value)
+    event_data._FreeMiniValue5 = self:_get_option_tag(option_value, difficulty_guid)
     event_data._FreeMiniValue6 = area
     event_data._UniqueIndex = self._schedule_timeline:newEventUniqueIndex(self.stage)
     return event_data

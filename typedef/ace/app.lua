@@ -94,7 +94,7 @@
 ---@field getOptionTagIdx fun(self: app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam, option_balue: System.Int64): System.Byte
 
 ---@class app.user_data.ExFieldParam_EnemyData : via.UserData
----@field getExEmGlobalParam fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, quest_rank: app.QuestDef.RANK): app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam
+---@field getExEmGlobalParam fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, quest_rank: app.QuestDef.RANK, reward_rank: app.QuestDef.EM_REWARD_RANK): app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam
 ---@field getAreaMoveInfo fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID): app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfoByEm
 ---@field get_StayMinute fun(self: app.user_data.ExFieldParam_EnemyData): System.Byte
 ---@field get_ExEnemies fun(self: app.user_data.ExFieldParam_EnemyData): System.Array<app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam>
