@@ -4,6 +4,7 @@ local gimmick_data = require("FieldEventSpawner.data.ace.event.gimmick")
 local gui_data = require("FieldEventSpawner.data.gui")
 local item_data = require("FieldEventSpawner.data.ace.item")
 local monster_data = require("FieldEventSpawner.data.ace.event.monster")
+local table_util = require("FieldEventSpawner.table_util")
 local util = require("FieldEventSpawner.util")
 
 local this = require("FieldEventSpawner.data.ace.ace")
@@ -57,6 +58,35 @@ local function item_by_ctor(item_array)
     return ret
 end
 
+---@param ex_field_param app.user_data.ExFieldParam
+---@return table<string, boolean>
+local function get_spoffer_pairings(ex_field_param)
+    local ret = {}
+    local spoffer_by_rank = ex_field_param._SpOfferSecondTargetWeightsByFirstEmRank
+
+    util.do_something(spoffer_by_rank, function(_, _, value)
+        local first_rank = value:get_FirstEmRank()
+        local targets = value:get_SecondTargetWeights()
+
+        util.do_something(targets, function(_, _, value2)
+            local second_rank = value2:get_EmRank()
+            local key = table_util.sort({ first_rank, second_rank })
+            ret[string.format("%s,%s", table.unpack(key))] = value2:get_Weight() > 0
+        end)
+    end)
+
+    return ret
+end
+
+---@param first app.QuestDef.EM_REWARD_RANK
+---@param second app.QuestDef.EM_REWARD_RANK
+---@return boolean
+function this.is_spoffer_pair(first, second)
+    local key = table_util.sort({ first, second })
+    local ret = this.map.spoffer_pairings[string.format("%s,%s", table.unpack(key))]
+    return ret or ret == nil
+end
+
 ---@param pop_em app.cExFieldEvent_PopEnemy
 ---@return string
 function this.get_monster_name(pop_em)
@@ -105,6 +135,7 @@ function this.init()
     this.event.by_stage =
         events_by_stage_ctor(this.event.by_type.monster, this.event.by_type.gimmick, this.event.by_type.animal)
     this.item = item_by_ctor(item_data.get_data())
+    this.map.spoffer_pairings = get_spoffer_pairings(this.ex_field_param)
 end
 
 return this

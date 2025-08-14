@@ -113,6 +113,7 @@
 
 ---@class app.user_data.ExFieldParam : via.UserData
 ---@field _FieldLayouts System.Array<app.user_data.ExFieldParam_LayoutData>
+---@field _SpOfferSecondTargetWeightsByFirstEmRank System.Array<app.user_data.ExFieldParam.cSpOfferSecondTargetWeightByFirstEmRank>
 ---@field getFieldLayout fun(self: app.user_data.ExFieldParam, stage: app.FieldDef.STAGE): app.user_data.ExFieldParam_LayoutData
 ---@field get_ExEnemyGlobalParam fun(self: app.user_data.ExFieldParam): app.user_data.ExFieldParam_EnemyData
 ---@field isOpenedVillageBoost fun(self: app.user_data.ExFieldParam, stage: app.FieldDef.STAGE): System.Boolean
@@ -122,6 +123,14 @@
 ---@field isOpenedSpOffer fun(self: app.user_data.ExFieldParam, stage: app.FieldDef.STAGE): System.Boolean
 ---@field isOpenedAssisNpc fun(self: app.user_data.ExFieldParam, gimmick_event: app.ExDef.GIMMICK_EVENT): System.Boolean
 ---@field isDisableAssistNpc fun(self: app.user_data.ExFieldParam, gimmick_event: app.ExDef.GIMMICK_EVENT): System.Boolean
+
+---@class app.user_data.ExFieldParam.cSpOfferSecondTargetWeightByFirstEmRank : via.clr.ManagedObject
+---@field get_FirstEmRank fun(self: app.user_data.ExFieldParam.cSpOfferSecondTargetWeightByFirstEmRank): app.QuestDef.EM_REWARD_RANK
+---@field get_SecondTargetWeights fun(self: app.user_data.ExFieldParam.cSpOfferSecondTargetWeightByFirstEmRank): System.Array<app.user_data.ExFieldParam.cSpOfferSecondTargetWeight>
+
+---@class app.user_data.ExFieldParam.cSpOfferSecondTargetWeight : via.clr.ManagedObject
+---@field get_EmRank fun(self: app.user_data.ExFieldParam.cSpOfferSecondTargetWeight): app.QuestDef.EM_REWARD_RANK
+---@field get_Weight fun(self: app.user_data.ExFieldParam.cSpOfferSecondTargetWeight): System.Byte
 
 ---@class app.user_data.VariousDataManagerSetting : via.UserData
 ---@field get_ExFieldParam fun(self: app.user_data.VariousDataManagerSetting): app.user_data.ExFieldParam
@@ -241,6 +250,7 @@
 ---@field get_EnableSpOfferTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_EnableKeepQuestTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field findEm fun(self: app.cExFieldEvent_PopEnemy): app.cEnemyContextHolder
+---@field get_Rank fun(self: app.cExFieldEvent_PopEnemy): app.QuestDef.EM_REWARD_RANK
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE

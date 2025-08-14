@@ -5,6 +5,7 @@ local iv = require("FieldEventSpawner.gui.item.values")
 local sched = require("FieldEventSpawner.schedule")
 local table_util = require("FieldEventSpawner.table_util")
 local timer = require("FieldEventSpawner.timer")
+local util = require("FieldEventSpawner.util")
 
 local rt = data.runtime
 local ace = data.ace
@@ -26,6 +27,40 @@ function this.switch_arrays()
         this.is_ignore_environ:value()
     )
     iv.switch_reward_array(this.reward_filter:value())
+end
+
+---@return table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>?
+function this.get_difficulties()
+    local ret = {}
+    local event_type = this.event_type:value()
+
+    if event_type ~= "monster" then
+        return
+    end
+
+    if this.em_difficulty_rank:value() then
+        local index = config.get(this.em_difficulty_rank.config_key)
+        local rank = tonumber(util.split_string(iv.em_difficulty_rank.array[index], "##")[1]) --[[@as number]]
+        ret[rank] = table_util.deep_copy(this.em_difficulty_rank:value())
+    else
+        for _, difs in
+            pairs(iv.em_difficulty.map --[[@as table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>]])
+        do
+            for rank, guids in pairs(difs) do
+                if not ret[rank] then
+                    ret[rank] = table_util.deep_copy(guids)
+                else
+                    table_util.merge_t(ret[rank], table_util.deep_copy(guids))
+                end
+            end
+        end
+
+        for k, v in pairs(ret) do
+            ret[k] = table_util.set(v)
+        end
+    end
+
+    return ret
 end
 
 ---@param self ConfigItem

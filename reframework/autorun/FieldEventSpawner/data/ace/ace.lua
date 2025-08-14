@@ -6,6 +6,7 @@
 ---@field map AceMap
 ---@field init fun()
 ---@field get_monster_name fun(pop_em: app.cExFieldEvent_PopEnemy): string
+---@field is_spoffer_pair fun(first: app.QuestDef.EM_REWARD_RANK, second: app.QuestDef.EM_REWARD_RANK): boolean
 
 ---@class (exact) AceEnum
 ---@field ex_event table<app.EX_FIELD_EVENT_TYPE, string>
@@ -40,6 +41,7 @@
 ---@field ex_gimmick_to_flag table<string, integer>
 ---@field pop_em_to_param_field table<string, string>
 ---@field pop_em_to_em_param_key table<string, string>
+---@field spoffer_pairings table<string, boolean>
 
 ---@class AceData
 local this = {
@@ -103,6 +105,7 @@ local this = {
             BF_POP_BELONGING = "battlefield_repel",
             POP_MANY_2 = "pop_many2",
         },
+        spoffer_pairings = {},
     },
 }
 

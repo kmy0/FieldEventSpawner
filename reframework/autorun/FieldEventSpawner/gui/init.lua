@@ -70,6 +70,23 @@ function state.callbacks.spawn()
                     rt.state.stage --[[@as app.FieldDef.STAGE]]
                 ].env_by_param[em_param]
             or nil
+        local spoffer = item.spoffer:value()
+        local difficulty = item.em_difficulty_rank:value()
+
+        -- ensure valid difficulties for specified spoffer
+        if spoffer and not difficulty then
+            local spoffer_rank = rt.state.spoffer[spoffer].rank
+            local candidates = item.get_difficulties() --[[@as table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>]]
+            difficulty = {}
+
+            for rank, guids in pairs(candidates) do
+                if ace.is_spoffer_pair(rank, spoffer_rank) then
+                    difficulty = table_util.merge(difficulty, guids)
+                end
+            end
+
+            difficulty = table_util.set(difficulty)
+        end
 
         if item.swarm_count:value() > 0 then
             return spawn.swarm(
@@ -84,7 +101,7 @@ function state.callbacks.spawn()
                 item.swarm_count:value(),
                 item.area:value(),
                 rewards,
-                item.em_difficulty_rank:value(),
+                difficulty,
                 environ
             )
         elseif em_param == "battlefield_repel" or em_param == "battlefield_slay" then
@@ -98,7 +115,7 @@ function state.callbacks.spawn()
                 rt.enum.battlefield_state[em_param],
                 item.area:value(),
                 rewards,
-                item.em_difficulty_rank:value(),
+                difficulty,
                 environ
             )
         else
@@ -112,9 +129,9 @@ function state.callbacks.spawn()
                 item.is_village_boost:value(),
                 item.is_yummy:value(),
                 item.area:value(),
-                item.spoffer:value(),
+                spoffer,
                 rewards,
-                item.em_difficulty_rank:value(),
+                difficulty,
                 environ
             )
         end

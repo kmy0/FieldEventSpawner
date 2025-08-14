@@ -11,6 +11,7 @@
 ---@field unique_index integer
 ---@field name string
 ---@field exec_min integer
+---@field rank app.QuestDef.EM_REWARD_RANK
 
 ---@class (exact) State
 ---@field schedule ScheduleState
@@ -32,6 +33,8 @@ local table_util = require("FieldEventSpawner.table_util")
 local util = require("FieldEventSpawner.util")
 
 local rl = data_util.reverse_lookup
+---@module "FieldEventSpawner.gui.item"
+local gui_items
 
 ---@class RuntimeData
 local this = {
@@ -228,6 +231,12 @@ function this.update_spoffer()
         return
     end
 
+    local ranks = gui_items.get_difficulties()
+    if not ranks then
+        table_util.clear(this.state.spoffer)
+        return
+    end
+
     local field_director, schedule_timeline = this.get_field_director()
     local pop_em_array = field_director:findExecutedPopEms(false)
     local pop_em_enum = util.get_array_enum(pop_em_array)
@@ -247,6 +256,15 @@ function this.update_spoffer()
             goto continue
         end
 
+        local second_rank = pop_em:get_Rank()
+        if
+            not table_util.any(ranks, function(key, value)
+                return ace_data.is_spoffer_pair(key, second_rank)
+            end)
+        then
+            goto continue
+        end
+
         local unique_index = pop_em._UniqueIndex
         table.insert(active_pop_ems, unique_index)
         if not this.state.spoffer[unique_index] then
@@ -254,6 +272,7 @@ function this.update_spoffer()
                 unique_index = unique_index,
                 name = ace_data.get_monster_name(pop_em),
                 exec_min = pop_em._ExecMinute,
+                rank = second_rank,
             }
         end
 
@@ -353,6 +372,12 @@ function this.clear_feature_unlock()
     table_util.clear(this.state.feature_unlock.village_boost)
     table_util.clear(this.state.feature_unlock.monster)
     table_util.clear(this.state.feature_unlock.npc)
+end
+
+---@return boolean
+function this.init()
+    gui_items = require("FieldEventSpawner.gui.item")
+    return true
 end
 
 return this

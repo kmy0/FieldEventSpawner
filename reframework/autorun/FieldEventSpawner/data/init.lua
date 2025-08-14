@@ -13,6 +13,7 @@ function this.init()
     end
 
     this.ace.init()
+    this.runtime.init()
 
     this.initialized = true
     return true
