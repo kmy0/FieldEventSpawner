@@ -258,13 +258,14 @@ function this.draw()
         if lang.font then
             imgui.pop_font()
         end
-        imgui.end_window()
+
         local pos = imgui.get_window_pos()
         local size = imgui.get_window_size()
         config.current.gui.main.pos_x, config.current.gui.main.pos_y = pos.x, pos.y
         config.current.gui.main.size_x, config.current.gui.main.size_y = size.x, size.y
         config.save()
         rt.clear_feature_unlock()
+        imgui.end_window()
         return
     end
 
