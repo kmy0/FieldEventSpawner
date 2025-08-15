@@ -215,11 +215,13 @@ function this.spoffer_village_boost_post(retval)
     return retval
 end
 
---FIXME: starting quest by attack does not work, it seems plugin would be needed to make it work,
--- status value starts at 2 by default and since its value type passed by ref it cannot be changed
--- app.MissionManager.requestAttackQuestStart
 function this.allow_invalid_quests_pre(args)
     if config.current.mod.is_allow_invalid_quest then
+        if util.mem.is_attached() then
+            local ptr = sdk.to_int64(args[2])
+            util.mem.write_qword(ptr, 0)
+        end
+
         return sdk.PreHookResult.SKIP_ORIGINAL
     end
 

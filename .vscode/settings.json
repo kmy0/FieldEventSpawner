@@ -1,7 +1,8 @@
 {
     "Lua.workspace.library": [
         "typedef/reframework/dist/library/*",
-        "typedef/ace/*"
+        "typedef/ace/*",
+        "typedef/memutil/*"
     ],
     "Lua.workspace.ignoreSubmodules": false,
     "editor.rulers": [
