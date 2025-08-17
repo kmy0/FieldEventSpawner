@@ -1,4 +1,5 @@
 local lang = require("FieldEventSpawner.lang")
+local table_util = require("FieldEventSpawner.table_util")
 
 local this = {}
 
@@ -94,6 +95,27 @@ function this.tr(key, last_key)
     end
     local _key = string.format("%s.%s", key, last_key)
     return lang.tr(_key) .. string.format("##%s", _key)
+end
+
+---@param name string
+---@param ... any
+---@return string
+function this.id(name, ...)
+    local args = { ... }
+    local keys = {}
+
+    for i = 1, #args do
+        local arg = args[i]
+        if arg then
+            table.insert(keys, arg)
+        end
+    end
+
+    if table_util.empty(keys) then
+        return name
+    end
+
+    return string.format("%s##%s", name, table.concat(keys, "_"))
 end
 
 return this

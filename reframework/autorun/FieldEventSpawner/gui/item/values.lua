@@ -1,16 +1,18 @@
----@class (exact) CurrentData
+---@class (exact) SwitchData
 ---@field event_type string
 ---@field event string
----@field reward_filter string
 ---@field stage app.FieldDef.STAGE
 ---@field em_param string
+---@field em_param_mod string
+---@field ignore_environ boolean
+---@field em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
+---@field environ app.EnvironmentType.ENVIRONMENT
+
+---@class (exact) CurrentData : SwitchData
+---@field reward_filter string
 ---@field em_param_struct MonsterParam
 ---@field em_difficulty_struct table<string, MonsterDifficulty>
----@field em_param_mod string
----@field em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
 ---@field lang string
----@field environ app.EnvironmentType.ENVIRONMENT
----@field ignore_environ boolean
 
 ---@class RuntimeGuiData
 ---@field event_table table<string, AreaEventData>
@@ -32,6 +34,7 @@
 local config = require("FieldEventSpawner.config")
 local data = require("FieldEventSpawner.data")
 local filter_item_data = require("FieldEventSpawner.gui.item_def.filter_item_data")
+local gui_util = require("FieldEventSpawner.gui.util")
 local item_data = require("FieldEventSpawner.gui.item_def.item_data")
 local lang = require("FieldEventSpawner.lang")
 local table_util = require("FieldEventSpawner.table_util")
@@ -61,218 +64,221 @@ local this = {
     },
 }
 
+local function is_monster_event()
+    return this.current.event_type == "monster"
+end
+
+---@param new_values SwitchData
+---@param fields string[]
+local function is_state_changed(new_values, fields)
+    return table_util.any(fields, function(key, value)
+        return this.current[value] ~= new_values[value]
+    end)
+end
+
+---@param a SortStruct
+---@param b SortStruct
+---@return boolean
+local function default_sort_fn(a, b)
+    return a.text < b.text
+end
+
+---@param a SortStruct
+---@param b SortStruct
+---@return boolean
+local function numeric_sort_fn(a, b)
+    local a_num = tonumber(util.split_string(a.text, "##")[1])
+    local b_num = tonumber(util.split_string(b.text, "##")[1])
+    return a_num < b_num
+end
+
+---@param config_key string
+---@param array string[]
+---@param value string?
+local function restore_index(config_key, array, value)
+    if value == nil then
+        return
+    end
+
+    local index = table_util.index(array, value)
+    if index then
+        config.set(config_key, index)
+    end
+end
+
+---@generic K, V
 ---@param key string
----@param predicate (fun(o: string): boolean)?
-local function tr_update_combo(key, predicate)
+---@param map table<K, V>
+---@param sort_struct_fn fun(key: string, map_key: K, map_value: V): SortStruct
+---@param sort_fn (fun(a: SortStruct, b: SortStruct): boolean)?
+---@param predicate (fun(map_key: K, map_value: V): boolean)?
+local function update_combo_values(key, map, sort_struct_fn, sort_fn, predicate)
     local gui_item = this[key]
     ---@cast gui_item GuiItemData
     gui_item:clear()
 
-    local arr = gui.combo[key]
-    ---@cast arr string[]
-    ---@type SortStruct[]
     local sorted = {}
-    for _, v in pairs(arr) do
-        if predicate and predicate(v) or not predicate then
-            table.insert(
-                sorted,
-                { key = v, text = tr(string.format("%s_combo.values.%s", key, v)) .. string.format("##%s_%s", key, v) }
-            )
+    for k, v in pairs(map) do
+        if predicate and predicate(k, v) or not predicate then
+            table.insert(sorted, sort_struct_fn(key, k, v))
         end
     end
-    table.sort(sorted, function(a, b)
-        return a.text < b.text
-    end)
+
+    table.sort(sorted, sort_fn and sort_fn or default_sort_fn)
     for i = 1, #sorted do
-        local value = sorted[i]
-        table.insert(gui_item.array, value.text)
-        table.insert(gui_item.map, value.key)
+        local sort_struct = sorted[i]
+        table.insert(gui_item.array, sort_struct.text)
+        table.insert(gui_item.map, sort_struct.key)
     end
 end
 
 ---@param key string
----@param t table<any, string>
----@param predicate (fun(o: string): boolean)?
----@param sort (fun(a: SortStruct, b: SortStruct): boolean)?
----@param unique_key boolean?
-local function no_tr_update_combo(key, t, predicate, sort, unique_key)
-    local gui_item = this[key]
-    ---@cast gui_item GuiItemData
-    gui_item:clear()
-
-    if unique_key == nil then
-        unique_key = true
-    end
-
-    ---@type SortStruct[]
-    local sorted = {}
-    for k, v in pairs(t) do
-        if predicate and predicate(v) or not predicate then
-            table.insert(sorted, { key = k, text = string.format("%s##%s_%s", v, key, unique_key and k or "unique") })
-        end
-    end
-    table.sort(sorted, sort and sort or function(a, b)
-        return a.text < b.text
-    end)
-    for i = 1, #sorted do
-        local value = sorted[i]
-        table.insert(gui_item.array, value.text)
-        table.insert(gui_item.map, value.key)
-    end
+---@param map_key any
+---@param map_value string
+local function sort_struct_fn(key, map_key, map_value)
+    local t = type(map_key)
+    return { key = map_key, text = gui_util.id(map_value, key, (t == "string" or t == "number") and map_key or nil) }
 end
 
-local function tr_em_param_array()
+---@param key string
+---@param map_key any
+---@param map_value string
+local function sort_struct_translated_fn(key, map_key, map_value)
+    return {
+        key = map_value,
+        text = gui_util.id(tr(string.format("%s_combo.values.%s", key, map_value)), key, map_value),
+    }
+end
+
+local function translate_em_param_combo()
     if not this.current.em_param_struct then
         return
     end
-    tr_update_combo("em_param", function(o)
-        return this.current.em_param_struct[o]
+
+    local key = "em_param"
+    update_combo_values(key, gui.combo[key], sort_struct_translated_fn, nil, function(map_key, map_value)
+        return this.current.em_param_struct[map_value]
     end)
 end
 
-local function tr_em_param_mod_array()
+local function translate_em_param_mod_combo()
     if not this.current.em_param_struct then
         return
     end
-    tr_update_combo("em_param_mod", function(o)
+
+    local key = "em_param_mod"
+    update_combo_values(key, gui.combo[key], sort_struct_translated_fn, nil, function(map_key, map_value)
         local t = this.current.em_param_struct[this.em_param.map[config.current.mod.em_param]]
         if t then
-            return t[o]
+            return t[map_value]
         end
         return false
     end)
 end
 
----@param event_type string
----@param stage app.FieldDef.STAGE
-local function switch_type(event_type, stage)
-    if stage == this.current.stage and event_type == this.current.event_type then
+local function translate_event_type_combo()
+    local key = "event_type"
+    update_combo_values(key, gui.combo[key], sort_struct_translated_fn)
+end
+
+---@param params SwitchData
+local function switch_event_type(params)
+    if not is_state_changed(params, { "stage", "event_type" }) then
         return
     end
 
-    this.event_table = ace.event.by_stage[stage][event_type]
-
-    if not this.event_table then
-        this.event_table = {}
+    this.event_table = ace.event.by_stage[params.stage][params.event_type] or {}
+    if table_util.empty(this.event_table) then
         return
     end
 
     local current_value = this.event.map[config.current.mod.event] or nil
-    no_tr_update_combo(
+    update_combo_values(
         "event",
         table_util.map_table(this.event_table, nil, function(o)
             return o.name_local
-        end)
+        end),
+        sort_struct_fn
     )
-    local index = table_util.index(this.event.map, current_value)
-    if index then
-        config.current.mod.event = index
-    end
+    restore_index("mod.event", this.event.map, current_value)
 end
 
----@param event_key string
----@param em_param string
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT
----@param ignore_environ boolean
-local function switch_area_array(event_key, em_param, stage, environ, ignore_environ)
-    if
-        event_key == this.current.event
-        and stage == this.current.stage
-        and environ == this.current.environ
-        and this.current.ignore_environ == ignore_environ
-        and (
-            (this.current.event_type == "monster" and em_param == this.current.em_param)
-            or this.current.event_type ~= "monster"
-        )
-    then
+---@param params SwitchData
+local function switch_area_array(params)
+    local fields = {
+        "event",
+        "stage",
+        "environ",
+        "ignore_environ",
+    }
+
+    if is_monster_event() then
+        table.insert(fields, "em_param")
+    end
+
+    if not is_state_changed(params, fields) then
         return
     end
 
     local current_value = this.area.map and this.area.map[config.current.mod.area] or nil
-    local event = this.event_table[event_key]
+    local event = this.event_table[params.event]
 
     if not event then
         return
     end
     ---@cast event AreaEventData | MonsterData
 
-    local areas = event:get_area_array(stage, not ignore_environ and environ or nil, em_param) or {}
-    no_tr_update_combo(
+    local areas = event:get_area_array(
+        params.stage,
+        not params.ignore_environ and params.environ or nil,
+        params.em_param
+    ) or {}
+    update_combo_values(
         "area",
         table_util.map_array(areas, function(o)
             return o
         end, function(o)
             return tostring(o)
         end),
-        nil,
-        function(a, b)
-            ---@diagnostic disable-next-line: undefined-field
-            return tonumber(util.split_string(a.text, "##")[1]) < tonumber(util.split_string(b.text, "##")[1])
-        end
+        sort_struct_fn,
+        numeric_sort_fn
     )
-
-    local index = table_util.index(this.area.map, current_value)
-    if index then
-        config.current.mod.area = index
-    end
+    restore_index("mod.area", this.area.map, current_value)
 end
 
----@param event_key string
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT
----@param ignore_environ boolean
-local function switch_em_param_array(event_key, stage, environ, ignore_environ)
-    if
-        this.current.event_type ~= "monster"
-        or (
-            event_key == this.current.event
-            and stage == this.current.stage
-            and environ == this.current.environ
-            and ignore_environ == this.current.ignore_environ
-        )
-    then
+---@param params SwitchData
+local function switch_em_param_array(params)
+    if not is_monster_event() or not is_state_changed(params, { "event", "stage", "environ", "ignore_environ" }) then
         return
     end
 
     local current_value = this.em_param.array and this.em_param.array[config.current.mod.em_param] or nil
-    local event = this.event_table[event_key]
+    local event = this.event_table[params.event]
     ---@cast event MonsterData
 
     if not event then
         return
     end
 
-    this.current.em_param_struct = event:get_param_struct(stage, not ignore_environ and environ or nil) or {}
-    tr_em_param_array()
-
-    local index = table_util.index(this.em_param.array, current_value)
-    if index then
-        config.current.mod.em_param = index
-    end
+    this.current.em_param_struct = event:get_param_struct(
+        params.stage,
+        not params.ignore_environ and params.environ or nil
+    ) or {}
+    translate_em_param_combo()
+    restore_index("mod.em_param", this.em_param.array, current_value)
 end
 
----@param event_key string
----@param em_param string
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT
----@param ignore_environ boolean
-local function switch_em_param_mod_array(event_key, em_param, stage, environ, ignore_environ)
+---@param params SwitchData
+local function switch_em_param_mod_array(params)
     if
-        this.current.event_type ~= "monster"
-        or (
-            event_key == this.current.event
-            and stage == this.current.stage
-            and environ == this.current.environ
-            and ignore_environ == this.current.ignore_environ
-            and em_param == this.current.em_param
-        )
+        not is_monster_event()
+        or not is_state_changed(params, { "event", "stage", "environ", "ignore_environ", "em_param" })
     then
         return
     end
 
     local current_value = this.em_param_mod.array and this.em_param_mod.array[config.current.mod.em_param_mod] or nil
-    tr_em_param_mod_array()
+    translate_em_param_mod_combo()
 
     local index = table_util.index(this.em_param_mod.array, current_value)
     if index then
@@ -280,86 +286,51 @@ local function switch_em_param_mod_array(event_key, em_param, stage, environ, ig
     end
 end
 
----@param event_key string
----@param em_param string
----@param em_param_mod string
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT
----@param ignore_environ boolean
-local function switch_em_difficulty_array(event_key, em_param, em_param_mod, stage, environ, ignore_environ)
+---@param params SwitchData
+local function switch_em_difficulty_array(params)
     if
-        this.current.event_type ~= "monster"
-        or not em_param_mod
-        or (
-            event_key == this.current.event
-            and stage == this.current.stage
-            and environ == this.current.environ
-            and ignore_environ == this.current.ignore_environ
-            and em_param == this.current.em_param
-            and em_param_mod == this.current.em_param_mod
-        )
+        not is_monster_event()
+        or not params.em_param_mod
+        or not is_state_changed(params, { "event", "stage", "environ", "ignore_environ", "em_param", "em_param_mod" })
     then
         return
     end
 
     local current_value = this.em_difficulty.array and this.em_difficulty.array[config.current.mod.em_difficulty] or nil
-    local event = this.event_table[event_key]
+    local event = this.event_table[params.event]
 
     if not event then
         return
     end
     ---@cast event MonsterData
 
-    local diff_table = event:get_difficulty_table(stage, not ignore_environ and environ or nil, em_param, em_param_mod)
-        or {}
-    no_tr_update_combo(
+    local diff_table = event:get_difficulty_table(
+        params.stage,
+        not params.ignore_environ and params.environ or nil,
+        params.em_param,
+        params.em_param_mod
+    ) or {}
+    update_combo_values(
         "em_difficulty",
         table_util.map_array(table_util.keys(diff_table), function(o)
             return diff_table[o]
         end, function(o)
             return tostring(o)
         end),
-        nil,
-        function(a, b)
-            ---@diagnostic disable-next-line: undefined-field
-            return tonumber(util.split_string(a.text, "##")[1]) < tonumber(util.split_string(b.text, "##")[1])
-        end,
-        false
+        sort_struct_fn,
+        numeric_sort_fn
     )
-
-    local index = table_util.index(this.em_difficulty.array, current_value)
-    if index then
-        config.current.mod.em_difficulty = index
-    end
+    restore_index("mod.em_difficulty", this.em_difficulty.array, current_value)
 end
 
----@param event_key string
----@param em_param string
----@param em_param_mod string
----@param em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT
----@param ignore_environ boolean
-local function switch_em_difficulty_rank_array(
-    event_key,
-    em_param,
-    em_param_mod,
-    em_difficulty,
-    stage,
-    environ,
-    ignore_environ
-)
+---@param params SwitchData
+local function switch_em_difficulty_rank_array(params)
     if
-        this.current.event_type ~= "monster"
-        or not em_param_mod
-        or (
-            event_key == this.current.event
-            and stage == this.current.stage
-            and environ == this.current.environ
-            and ignore_environ == this.current.ignore_environ
-            and em_param == this.current.em_param
-            and em_param_mod == this.current.em_param_mod
-            and em_difficulty == this.current.em_difficulty
+        not is_monster_event()
+        or not params.em_param_mod
+        or not is_state_changed(
+            params,
+            { "event", "stage", "environ", "ignore_environ", "em_param", "em_param", "em_difficulty" }
         )
     then
         return
@@ -368,34 +339,27 @@ local function switch_em_difficulty_rank_array(
     local current_value = this.em_difficulty_rank.array
             and this.em_difficulty_rank.array[config.current.mod.em_difficulty_rank]
         or nil
-    local event = this.event_table[event_key]
+    local event = this.event_table[params.event]
 
     if not event then
         return
     end
     ---@cast event MonsterData
 
-    local diff_rank_table = em_difficulty or {}
-
-    no_tr_update_combo(
+    -- params.em_difficulty is nil when force_difficulty is not enabled,
+    -- which means that, array would be always empty when disabled, and it looks ass
+    local diff_rank_table = this.em_difficulty.map[config.current.mod.em_difficulty] or {} --[[@as table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>]]
+    update_combo_values(
         "em_difficulty_rank",
         table_util.map_array(table_util.keys(diff_rank_table), function(o)
             return diff_rank_table[o]
         end, function(o)
             return tostring(o)
         end),
-        nil,
-        function(a, b)
-            ---@diagnostic disable-next-line: undefined-field
-            return tonumber(util.split_string(a.text, "##")[1]) < tonumber(util.split_string(b.text, "##")[1])
-        end,
-        false
+        sort_struct_fn,
+        numeric_sort_fn
     )
-
-    local index = table_util.index(this.em_difficulty_rank.array, current_value)
-    if index then
-        config.current.mod.em_difficulty_rank = index
-    end
+    restore_index("mod.em_difficulty_rank", this.em_difficulty_rank.array, current_value)
 end
 
 local function switch_spoffer_array()
@@ -404,22 +368,19 @@ local function switch_spoffer_array()
     end
 
     local current_value = this.spoffer.array and this.spoffer.array[config.current.mod.spoffer] or nil
-    no_tr_update_combo(
+    update_combo_values(
         "spoffer",
         table_util.map_array(table_util.values(rt.state.spoffer), function(o)
             return o.unique_index
         end, function(o)
             return o.name
         end),
-        nil,
+        sort_struct_fn,
         function(a, b)
             return rt.state.spoffer[a.key].exec_min < rt.state.spoffer[b.key].exec_min
         end
     )
-    local index = table_util.index(this.spoffer.array, current_value)
-    if index then
-        config.current.mod.spoffer = index
-    end
+    restore_index("mod.spoffer", this.spoffer.array, current_value)
 end
 
 ---@param query string
@@ -432,19 +393,9 @@ function this.switch_reward_array(query)
 
     local current_value = this.reward.filtered_array[config.current.mod.reward_config.reward]
     if this.reward:empty() then
-        ---@type SortStruct[]
-        local sorted = {}
-        for k, v in pairs(ace.item.by_key) do
-            table.insert(sorted, { key = k, text = v.name_local })
-        end
-        table.sort(sorted, function(a, b)
-            return a.text < b.text
+        update_combo_values("reward", ace.item.by_key, function(key, map_key, map_value)
+            return { key = map_key, text = map_value.name_local }
         end)
-        for i = 1, #sorted do
-            local value = sorted[i]
-            table.insert(this.reward.array, value.text)
-            table.insert(this.reward.map, value.key)
-        end
     end
 
     this.reward:filter(function(map_value)
@@ -461,11 +412,7 @@ function this.switch_reward_array(query)
         local name_lower = ace.item.by_key[map_value].name_local:lower()
         return name_lower:find(query_lower) ~= nil
     end)
-
-    local index = table_util.index(this.reward.filtered_array, current_value)
-    if index then
-        config.current.mod.reward_config.reward = index
-    end
+    restore_index("mod.reward_config.reward", this.reward.filtered_array, current_value)
 end
 
 ---@param language string
@@ -477,9 +424,9 @@ function this.switch_lang(language)
     this.current.event_type = nil
     this.current.lang = language
 
-    tr_update_combo("event_type")
-    tr_em_param_array()
-    tr_em_param_mod_array()
+    translate_event_type_combo()
+    translate_em_param_combo()
+    translate_em_param_mod_combo()
 end
 
 ---@param event_type string
@@ -500,33 +447,42 @@ function this.switch_event_arrays(
     environ,
     ignore_environ
 )
-    switch_type(event_type, stage)
+    ---@type SwitchData
+    local params = {
+        stage = stage,
+        event_type = event_type,
+        event = event,
+        environ = environ,
+        ignore_environ = ignore_environ,
+        em_param = em_param,
+        em_param_mod = em_param_mod,
+        em_difficulty = em_difficulty,
+    }
+
+    switch_event_type(params)
 
     if table_util.empty(this.event_table) then
-        this.event:clear()
-        this.em_param:clear()
-        this.area:clear()
-        this.em_param:clear()
-        this.em_param_mod:clear()
-        this.em_difficulty:clear()
-        this.em_difficulty_rank:clear()
+        for _, key in pairs({
+            "event",
+            "area",
+            "em_param",
+            "em_param_mod",
+            "em_difficulty",
+            "em_difficulty_rank",
+            "spoffer",
+        }) do
+            this[key]:clear()
+        end
     else
-        switch_area_array(event, em_param, stage, environ, ignore_environ)
-        switch_em_param_array(event, stage, environ, ignore_environ)
-        switch_em_param_mod_array(event, em_param, stage, environ, ignore_environ)
-        switch_em_difficulty_array(event, em_param, em_param_mod, stage, environ, ignore_environ)
-        switch_em_difficulty_rank_array(event, em_param, em_param_mod, em_difficulty, stage, environ, ignore_environ)
+        switch_area_array(params)
+        switch_em_param_array(params)
+        switch_em_param_mod_array(params)
+        switch_em_difficulty_array(params)
+        switch_em_difficulty_rank_array(params)
         switch_spoffer_array()
     end
 
-    this.current.stage = stage
-    this.current.event_type = event_type
-    this.current.event = event
-    this.current.environ = environ
-    this.current.ignore_environ = ignore_environ
-    this.current.em_param = em_param
-    this.current.em_param_mod = em_param_mod
-    this.current.em_difficulty = em_difficulty
+    this.current = table_util.merge_t(this.current, params)
 end
 
 ---@param key string
