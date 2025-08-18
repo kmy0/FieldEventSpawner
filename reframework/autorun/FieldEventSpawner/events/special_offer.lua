@@ -58,14 +58,26 @@ end
 
 ---@param spoffer_info app.cExSpOfferFactory.SpOfferInfo
 ---@param edited_reward_data EditedRewardData
+---@param index integer
+local function set_em_reward(spoffer_info, edited_reward_data, index)
+    local reward_array = spoffer_info:get_field("<SpOfferRewardArray>k__BackingField")._Array --[[@as System.Array<app.cExFieldEvent_EmReward>]]
+    local o_reward = reward_array:get_Item(index)
+    if not o_reward then
+        local spoffer = spoffer_info:get_field("<SpOffer>k__BackingField") --[[@as app.cExFieldEvent_SpecialOffer]]
+        o_reward = sdk.create_instance("app.cExFieldEvent_EmReward", true):add_ref() --[[@as app.cExFieldEvent_EmReward]]
+        o_reward._UniqueIndex = spoffer._UniqueIndex - (index + 1)
+        o_reward._ExecMinute = spoffer._ExecMinute
+    end
+
+    local new_reward = swap_rewards(o_reward, edited_reward_data.reward_array[1])
+    reward_array:set_Item(index, new_reward)
+end
+
+---@param spoffer_info app.cExSpOfferFactory.SpOfferInfo
+---@param edited_reward_data EditedRewardData
 function this.swap_rewards(spoffer_info, edited_reward_data)
-    ---for whatever reason app.cExSpOfferFactory.SpOfferInfo ValueType offsets are wrong
-    local reward_array = spoffer_info:get_field("<SpOfferRewardArray>k__BackingField")._Array
-    ---@cast reward_array System.Array<app.cExFieldEvent_EmReward>
-    local reward1 = swap_rewards(reward_array:get_Item(0), edited_reward_data.reward_array[1])
-    local reward2 = swap_rewards(reward_array:get_Item(1), edited_reward_data.reward_array[2])
-    reward_array:set_Item(0, reward1)
-    reward_array:set_Item(1, reward2)
+    set_em_reward(spoffer_info, edited_reward_data, 0)
+    set_em_reward(spoffer_info, edited_reward_data, 1)
 end
 
 return this
