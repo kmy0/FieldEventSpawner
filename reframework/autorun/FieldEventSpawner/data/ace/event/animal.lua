@@ -29,7 +29,7 @@ function this.get_data(ex_field_param)
             local e =
                 event:new(util.get_message_local(name_guid, 1), util.get_message_local(name_guid, lang, true), type)
             ---@cast e AnimalData
-            e.id = util.get_animal_event_id_fixed(animal_event)
+            e.id = data_util.enum_to_fixed("app.ExDef.ANIMAL_EVENT_Fixed", animal_event)
             cache[animal_event] = e
         end
         return cache[animal_event]

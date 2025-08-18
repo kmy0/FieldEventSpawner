@@ -157,7 +157,7 @@ function this:build()
     event_data._EventType = rl(ace.enum.ex_event, "POP_EM")
     event_data._FreeValue0 = util.getEnemyIdFixed:call(nil, self.event_data.id)
     event_data._FreeValue1 = util.hash_guid(difficulty_guid)
-    event_data._FreeValue2 = util.get_stage_id_fixed(self.stage)
+    event_data._FreeValue2 = data.util.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
     event_data._FreeMiniValue0 = is_repel and 0 or 0x1C | ((self.is_yummy or reward_data.reward_id2 ~= -1) and 1 or 0)
@@ -222,8 +222,8 @@ function this:_get_battlefield_data(em_pop_param, now, em_pop_index, difficulty_
     local event_data = sched.util.create_event_data()
     event_data._ExecMinute = now
     event_data._EventType = rl(ace.enum.ex_event, "BATTLEFIELD")
-    event_data._FreeValue0 = util.get_stage_id_fixed(self.stage)
-    event_data._FreeValue1 = util.get_stage_id_fixed(em_pop_param:get_QuestStage())
+    event_data._FreeValue0 = data.util.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue1 = data.util.enum_to_fixed("app.FieldDef.STAGE_Fixed", em_pop_param:get_QuestStage())
     event_data._FreeValue2 = em_pop_index
     event_data._FreeValue3 = is_repel and 0 or now
     event_data._FreeValue4 = util.hash_guid(route_guid)

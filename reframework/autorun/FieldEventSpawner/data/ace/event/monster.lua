@@ -262,11 +262,10 @@ local function get_difficulty(difficulty_params, legendary_id)
         ---@cast weight app.user_data.ExFieldParam_LayoutData.cDifficultyWeight
         local guid = weight:call("getDifficultyRankID(app.EnemyDef.LEGENDARY_ID)", legendary_id)
         local rate = diff2:getDifficultyRate(guid)
-        table_util.insert_nested_value(
-            ret,
-            { rate:get_RewardGrade(), util.get_em_reward_rank(rate:get_RewardRank()) },
-            guid
-        )
+        table_util.insert_nested_value(ret, {
+            rate:get_RewardGrade(),
+            data_util.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", rate:get_RewardRank()),
+        }, guid)
     end
 
     for grade, ranks in pairs(ret) do

@@ -66,7 +66,7 @@ function this:build()
 
     local event_data = sched.util.create_event_data()
     event_data._EventType = event_type
-    event_data._FreeValue0 = util.get_stage_id_fixed(self.stage)
+    event_data._FreeValue0 = data.util.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue1 = self.event_data.id
     event_data._FreeValue2 = self.event_data:get_area_fixed(self.stage, area)
     event_data._FreeMiniValue0 = area

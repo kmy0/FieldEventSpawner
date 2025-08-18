@@ -168,7 +168,7 @@ function this:_build_member(swarm_data)
     event_data._EventType = rl(ace.enum.ex_event, "POP_EM")
     event_data._FreeValue0 = util.getEnemyIdFixed:call(nil, self.event_data.id)
     event_data._FreeValue1 = util.hash_guid(difficulty_guid)
-    event_data._FreeValue2 = util.get_stage_id_fixed(self.stage)
+    event_data._FreeValue2 = data.util.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue3 = swarm_data.route_hash
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2

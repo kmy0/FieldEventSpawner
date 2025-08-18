@@ -44,7 +44,7 @@ local function get_event_struct(cache, gimmick_event, ex_id, lang, guid)
         local type = rl(ace_data.enum.ex_event, "GIMMICK_EVENT")
         local e = event:new(util.get_message_local(name_guid, 1), util.get_message_local(name_guid, lang, true), type)
         ---@cast e GimmickData
-        e.id = util.get_gimmick_event_id_fixed(gimmick_event)
+        e.id = data_util.enum_to_fixed("app.ExDef.GIMMICK_EVENT_Fixed", gimmick_event)
         e.ex_id = ex_id
         e.id_not_fixed = gimmick_event
         if guid then

@@ -29,7 +29,7 @@ local this = {
 ---@param gimmick_fixed app.ExDef.GIMMICK_EVENT_Fixed
 ---@param area integer
 local function repop_gimmick(gimmick_fixed, area)
-    local gimmick_event = util.get_gimmick_event_id(gimmick_fixed)
+    local gimmick_event = data.util.fixed_to_enum("app.ExDef.GIMMICK_EVENT", gimmick_fixed)
     local gimmick_id = util.getGimmickID:call(nil, gimmick_event)
     local gimmick_base_array = rt.get_gimman():findGimmick_ID(gimmick_id)
 

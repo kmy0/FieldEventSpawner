@@ -18,6 +18,7 @@
 ---@class app.cGameContextHolder : via.clr.ManagedObject
 ---@class app.cEmModuleBase : via.clr.ManagedObject
 ---@class app.cContextCreateArg : via.clr.ManagedObject
+---@class app.cExFieldEvent_SpecialOffer : app.cExFieldEventBase
 
 ---@class app.GUIManager : ace.GUIManagerBase
 ---@field getSystemLanguageToApp fun(self: app.GUIManager) : via.Language

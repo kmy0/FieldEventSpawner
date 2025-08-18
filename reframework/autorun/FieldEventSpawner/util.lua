@@ -27,15 +27,7 @@ this.getEnemyLegendaryKingName = sdk.find_type_definition("app.EnemyDef")
 this.getEnemyFrenzyName = sdk.find_type_definition("app.EnemyDef"):get_method("EnemyFrenzyName(app.EnemyDef.ID)") --[[@as REMethodDefinition]]
 this.getEnemyExtraName = sdk.find_type_definition("app.EnemyDef"):get_method("EnemyExtraName(app.EnemyDef.ID)") --[[@as REMethodDefinition]]
 this.getGimmickEventName = sdk.find_type_definition("app.ExDef"):get_method("Name(app.ExDef.GIMMICK_EVENT)") --[[@as REMethodDefinition]]
-this.getFixedFromGIMMICK_EVENT = sdk.find_type_definition("app.ExDef"):get_method(
-    "getFixedFromGIMMICK_EVENT(app.ExDef.GIMMICK_EVENT, app.ExDef.GIMMICK_EVENT_Fixed)"
-) --[[@as REMethodDefinition]]
-this.getGIMMICK_EVENTFromFixed = sdk.find_type_definition("app.ExDef"):get_method("getGIMMICK_EVENTFromFixed") --[[@as REMethodDefinition]]
-this.getFixedFromANIMAL_EVENT = sdk.find_type_definition("app.ExDef"):get_method(
-    "getFixedFromANIMAL_EVENT(app.ExDef.ANIMAL_EVENT, app.ExDef.ANIMAL_EVENT_Fixed)"
-) --[[@as REMethodDefinition]]
 this.getAnimalEventName = sdk.find_type_definition("app.ExDef"):get_method("AnimalEventName(app.ExDef.ANIMAL_EVENT)") --[[@as REMethodDefinition]]
-this.getUTCTime = sdk.find_type_definition("app.QuestUtil"):get_method("getUTCTime()") --[[@as REMethodDefinition]]
 this.getGimmickID = sdk.find_type_definition("app.ExDef"):get_method("GimmickID(app.ExDef.GIMMICK_EVENT)") --[[@as REMethodDefinition]]
 this.lotExRewardPopEnemy = sdk.find_type_definition("app.ExQuestRewardUtil"):get_method(
     "lotExRewardItemList(System.Collections.Generic.List`1<app.savedata.cItemWork>, System.Collections.Generic.List`1<System.Boolean>, System.Byte[], System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Boolean)"
@@ -44,9 +36,6 @@ this.createEventInstance = sdk.find_type_definition("app.ExFieldUtil")
     :get_method("createEventInstance(app.cExFieldScheduleExportData.cEventData)") --[[@as REMethodDefinition]]
 this.getItemData = sdk.find_type_definition("app.ItemDef"):get_method("Data(app.ItemDef.ID)") --[[@as REMethodDefinition]]
 this.isValidItem = sdk.find_type_definition("app.ItemDef"):get_method("isValidItem(app.ItemDef.ID)") --[[@as REMethodDefinition]]
-this.getEM_REWARD_RANKFromFixed = sdk.find_type_definition("app.QuestDef"):get_method(
-    "getEM_REWARD_RANKFromFixed(app.QuestDef.EM_REWARD_RANK_Fixed, app.QuestDef.EM_REWARD_RANK)"
-) --[[@as REMethodDefinition]]
 this.getIncorrectStatusBit = sdk.find_type_definition("app.QuestCheckUtil")
     :get_method("getIncorrectStatusBit(app.QuestCheckUtil.INCORRECT_STATUS)") --[[@as REMethodDefinition]]
 
@@ -116,46 +105,6 @@ function this.deref_ptr(ptr)
     local deref = fake_int64:get_field("m_value")
 
     return deref
-end
-
----@param rank_fixed app.QuestDef.EM_REWARD_RANK_Fixed
----@return app.QuestDef.EM_REWARD_RANK
-function this.get_em_reward_rank(rank_fixed)
-    local o = ValueType.new(sdk.find_type_definition("app.QuestDef.EM_REWARD_RANK") --[[@as RETypeDefinition]])
-    this.getEM_REWARD_RANKFromFixed:call(nil, rank_fixed, o)
-    return o:get_field("value__")
-end
-
----@param stage app.FieldDef.STAGE
----@return app.FieldDef.STAGE_Fixed
-function this.get_stage_id_fixed(stage)
-    local o = ValueType.new(sdk.find_type_definition("app.FieldDef.STAGE_Fixed") --[[@as RETypeDefinition]])
-    this.getFixedFromSTAGE:call(nil, stage, o)
-    return o:get_field("value__")
-end
-
----@param gimmick_event app.ExDef.GIMMICK_EVENT
----@return app.ExDef.GIMMICK_EVENT_Fixed
-function this.get_gimmick_event_id_fixed(gimmick_event)
-    local o = ValueType.new(sdk.find_type_definition("app.ExDef.GIMMICK_EVENT_Fixed") --[[@as RETypeDefinition]])
-    this.getFixedFromGIMMICK_EVENT:call(nil, gimmick_event, o)
-    return o:get_field("value__")
-end
-
----@param animal_event app.ExDef.ANIMAL_EVENT
----@return app.ExDef.ANIMAL_EVENT_Fixed
-function this.get_animal_event_id_fixed(animal_event)
-    local o = ValueType.new(sdk.find_type_definition("app.ExDef.ANIMAL_EVENT_Fixed") --[[@as RETypeDefinition]])
-    this.getFixedFromANIMAL_EVENT:call(nil, animal_event, o)
-    return o:get_field("value__")
-end
-
----@param gimmick_fixed app.ExDef.GIMMICK_EVENT_Fixed
----@return app.ExDef.GIMMICK_EVENT
-function this.get_gimmick_event_id(gimmick_fixed)
-    local o = ValueType.new(sdk.find_type_definition("app.ExDef.GIMMICK_EVENT") --[[@as RETypeDefinition]])
-    this.getGIMMICK_EVENTFromFixed:call(nil, gimmick_fixed, o)
-    return o:get_field("value__")
 end
 
 ---@generic T
