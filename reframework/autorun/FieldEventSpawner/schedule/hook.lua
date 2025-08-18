@@ -253,7 +253,7 @@ function this.allow_invalid_quests_post(retval)
             timer.new(config.display_cheat_timer_name, config.display_cheat_timer)
             this.state.cheat_message = table.concat(errors, "\n")
         else
-            timer.stop_key(config.display_cheat_timer_name)
+            timer.reset_key(config.display_cheat_timer_name)
         end
     end
 
