@@ -155,27 +155,13 @@ this.default = {
 ---@param key string
 ---@return any
 function this.get(key)
-    local ret = this.current
-    if not key:find(".") then
-        return ret[key]
-    end
-
-    local keys = util.split_string(key, "%.")
-    for i = 1, #keys do
-        ret = ret[keys[i]]
-    end
-    return ret
+    return table_util.get_by_key(this.current, key)
 end
 
 ---@param key string
 ---@param value any
 function this.set(key, value)
-    local t = this.current
-    if not key:find(".") then
-        t[key] = value
-        return
-    end
-    table_util.set_nested_value(t, util.split_string(key, "%."), value)
+    table_util.set_by_key(this.current, key, value)
 end
 
 function this.load()

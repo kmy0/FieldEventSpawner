@@ -236,34 +236,19 @@ function this.change()
     this.font = imgui.load_font(font.name or config.font.name, font.size or config.font.size, { 0x1, 0xFFFF, 0 })
 end
 
----@protected
----@param t table<string, any>
----@param key string
----@param fallback boolean?
----@return string
-function this._tr(t, key, fallback)
-    ---@type string
-    local ret
-
-    if not key:find(".") then
-        ret = t[key]
-    else
-        ret = table_util.get_nested_value(t, util.split_string(key, "%."))
-    end
-
-    if not ret and fallback and config.current.gui.lang ~= config.default.gui.lang then
-        return this._tr(default, key)
-    elseif not ret then
-        return string.format("Bad key: %s", key)
-    end
-
-    return ret
-end
-
 ---@param key string
 ---@return string
 function this.tr(key)
-    return this._tr(this.lang[config.current.gui.lang], key, config.current.gui.lang_fallback)
+    local ret = table_util.get_by_key(this.lang[config.current.gui.lang], key)
+    if not ret and config.current.gui.lang_fallback then
+        ret = table_util.get_by_key(default, key)
+    end
+
+    if not ret then
+        ret = string.format("Bad key: %s", key)
+    end
+
+    return ret
 end
 
 return this
