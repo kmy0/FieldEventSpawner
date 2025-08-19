@@ -69,7 +69,7 @@ local function set_em_reward(spoffer_info, edited_reward_data, index)
         o_reward._ExecMinute = spoffer._ExecMinute
     end
 
-    local new_reward = swap_rewards(o_reward, edited_reward_data.reward_array[1])
+    local new_reward = swap_rewards(o_reward, edited_reward_data.reward_array[index + 1])
     reward_array:set_Item(index, new_reward)
 end
 
