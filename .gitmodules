@@ -1,3 +1,6 @@
 [submodule "typedef/reframework"]
 	path = typedef/reframework
 	url = https://github.com/kmy0/REFrameworkLuaTypedef.git
+[submodule "deps/fes_util"]
+	path = deps/fes_util
+	url = https://github.com/kmy0/fes_util.git

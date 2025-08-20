@@ -217,10 +217,8 @@ end
 
 function this.allow_invalid_quests_pre(args)
     if config.current.mod.is_allow_invalid_quest then
-        if util.mem.is_attached() then
-            local ptr = sdk.to_int64(args[2])
-            util.mem.write_qword(ptr, 0)
-        end
+        local ptr = sdk.to_int64(args[2])
+        fes_util.write_qword(ptr, 0)
 
         return sdk.PreHookResult.SKIP_ORIGINAL
     end

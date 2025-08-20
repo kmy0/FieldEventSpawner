@@ -1,8 +1,4 @@
-local this = {
-    ---@class memutil
-    mem = package.loadlib("reframework/autorun/FieldEventSpawner/memutil.dll", "luaopen_memutil")(),
-}
-this.mem.attach("MonsterHunterWilds.exe")
+local this = {}
 
 local msg_id = {
     extract_pattern = "<REF (.-)>",

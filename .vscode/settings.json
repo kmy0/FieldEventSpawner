@@ -2,7 +2,7 @@
     "Lua.workspace.library": [
         "typedef/reframework/dist/library/*",
         "typedef/ace/*",
-        "typedef/memutil/*"
+        "deps/fes_util/typedef/*"
     ],
     "Lua.workspace.ignoreSubmodules": false,
     "editor.rulers": [

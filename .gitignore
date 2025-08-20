@@ -39,3 +39,4 @@ luac.out
 *.hex
 
 /.vscode/FieldEventSpawner.code-workspace
+/bin
