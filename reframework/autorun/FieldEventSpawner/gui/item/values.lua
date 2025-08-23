@@ -103,6 +103,8 @@ local function restore_index(config_key, array, value)
     local index = table_util.index(array, value)
     if index then
         config.set(config_key, index)
+    else
+        config.set(config_key, 1)
     end
 end
 
@@ -265,7 +267,10 @@ local function switch_em_param_array(params)
         not params.ignore_environ and params.environ or nil
     ) or {}
     translate_em_param_combo()
-    restore_index("mod.em_param", this.em_param.array, current_value)
+
+    local config_key = "mod.em_param"
+    restore_index(config_key, this.em_param.array, current_value)
+    params.em_param = this.em_param.map[config.get(config_key)]
 end
 
 ---@param params SwitchData
@@ -280,10 +285,9 @@ local function switch_em_param_mod_array(params)
     local current_value = this.em_param_mod.array and this.em_param_mod.array[config.current.mod.em_param_mod] or nil
     translate_em_param_mod_combo()
 
-    local index = table_util.index(this.em_param_mod.array, current_value)
-    if index then
-        config.current.mod.em_param_mod = index
-    end
+    local config_key = "mod.em_param_mod"
+    restore_index(config_key, this.em_param_mod.array, current_value)
+    params.em_param_mod = this.em_param_mod.map[config.get(config_key)]
 end
 
 ---@param params SwitchData
@@ -320,7 +324,9 @@ local function switch_em_difficulty_array(params)
         sort_struct_fn,
         numeric_sort_fn
     )
-    restore_index("mod.em_difficulty", this.em_difficulty.array, current_value)
+
+    local config_key = "mod.em_difficulty"
+    restore_index(config_key, this.em_difficulty.array, current_value)
 end
 
 ---@param params SwitchData
@@ -474,11 +480,11 @@ function this.switch_event_arrays(
             this[key]:clear()
         end
     else
-        switch_area_array(params)
         switch_em_param_array(params)
         switch_em_param_mod_array(params)
         switch_em_difficulty_array(params)
         switch_em_difficulty_rank_array(params)
+        switch_area_array(params)
         switch_spoffer_array()
     end
 
