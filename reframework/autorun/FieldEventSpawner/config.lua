@@ -77,12 +77,11 @@
 ---@field set fun(key: string, value: any)
 
 local table_util = require("FieldEventSpawner.table_util")
-local util = require("FieldEventSpawner.util")
 
 ---@class Config
 local this = {}
 
-this.version = "0.1.3"
+this.version = "0.1.4"
 this.name = "FieldEventSpawner"
 this.config_path = this.name .. "/config.json"
 this.cache_path = this.name .. "/cache.json"
