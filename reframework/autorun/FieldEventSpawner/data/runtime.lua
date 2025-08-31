@@ -182,7 +182,12 @@ end
 ---@return app.FieldDef.STAGE
 function this.update_stage()
     local fieldman = this.get_fieldman()
-    this.state.stage = fieldman:get_CurrentStage()
+    if fieldman then
+        this.state.stage = fieldman:get_CurrentStage()
+    else
+        this.state.stage = -1
+    end
+
     return this.state.stage
 end
 
