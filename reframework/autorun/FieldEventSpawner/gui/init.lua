@@ -85,7 +85,7 @@ function state.callbacks.spawn()
                 end
             end
 
-            difficulty = table_util.set(difficulty)
+            difficulty = table_util.unique(difficulty)
         end
 
         if item.swarm_count:value() > 0 then

@@ -238,7 +238,7 @@ local function get_stage_data(area_move_info_by_em)
         end
 
         if not table_util.empty(map_data.area) then
-            map_data.area = table_util.set(map_data.area)
+            map_data.area = table_util.unique(map_data.area)
             table.sort(map_data.area)
             ret[stage] = map_data
         end
@@ -270,7 +270,7 @@ local function get_difficulty(difficulty_params, legendary_id)
 
     for grade, ranks in pairs(ret) do
         for rank, guids in pairs(ranks) do
-            ranks[rank] = table_util.set(guids, function(o)
+            ranks[rank] = table_util.unique(guids, function(o)
                 return util.format_guid(o)
             end)
         end
@@ -323,8 +323,8 @@ local function add_params(md, key, em_param, pop_param_by_env, diff_array)
         table_util.set_nested_value(md.area_by_env_by_param, { env, key }, areas)
         table_util.set_nested_value(md.difficulty_by_env_by_param, { env, key }, em_difficulty)
         md.env_by_param = table_util.insert_nested_value(md.env_by_param, { key }, env)
-        md.env_by_param[key] = table_util.set(md.env_by_param[key])
-        md.area_by_param[key] = table_util.set(table_util.merge_nested_array(md.area_by_param, { key }, areas))
+        md.env_by_param[key] = table_util.unique(md.env_by_param[key])
+        md.area_by_param[key] = table_util.unique(table_util.merge_t(md.area_by_param[key] or {}, areas))
         md.difficulty_by_param[key] = em_difficulty
 
         if md.param[key] then

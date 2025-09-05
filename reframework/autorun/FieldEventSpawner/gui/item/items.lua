@@ -56,7 +56,7 @@ function this.get_difficulties()
         end
 
         for k, v in pairs(ret) do
-            ret[k] = table_util.set(v)
+            ret[k] = table_util.unique(v)
         end
     end
 
