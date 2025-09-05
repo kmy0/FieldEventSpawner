@@ -185,8 +185,10 @@ end
 ---@param value T | fun(o: T): boolean
 ---@return integer?
 function this.index(t, value)
+    local is_fn = type(value) == "function"
+
     for i, v in pairs(t) do
-        if (type(value) == "function" and value(v)) or v == value then
+        if (is_fn and value(v)) or v == value then
             return i
         end
     end
@@ -197,7 +199,7 @@ end
 ---@param key (fun(o: T): any)?
 ---@param ... T[]
 ---@return T[]
-function this.set(t, key, ...)
+function this.unique(t, key, ...)
     local tables = { t, ... }
     local ret = {}
     for _, tbl in pairs(tables) do
@@ -293,6 +295,25 @@ function this.array_merge_t(...)
     return this.array_merge(...)
 end
 
+---@param ... any[]
+---@return any[]
+function this.array_merge_copy(...)
+    local arrays_to_merge = { ... }
+    local ret = this.deep_copy(arrays_to_merge[1])
+    for i = 2, #arrays_to_merge do
+        local t = arrays_to_merge[i]
+        table.move(t, 1, #t, #ret + 1, ret)
+    end
+    return ret
+end
+
+---@generic T
+---@param ... T[]
+---@return T[]
+function this.array_merge_copy_t(...)
+    return this.array_merge_copy(...)
+end
+
 ---@param t table
 ---@param keys any[]
 ---@param t_merge table
@@ -331,7 +352,7 @@ end
 ---@return boolean
 function this.any(t, predicate)
     for key, value in pairs(t) do
-        if predicate and predicate(key, value) or not predicate and value == true then
+        if (predicate and predicate(key, value)) or (not predicate and value == true) then
             return true
         end
     end
@@ -376,11 +397,13 @@ end
 
 ---@generic K, V
 ---@param t table<K, V>
----@param key K | fun(value: V): boolean
+---@param key K | fun(key: K, value: V): boolean
 ---@return V?
 function this.pop_item(t, key)
+    local is_fn = type(key) == "function"
+
     for k, v in pairs(t) do
-        if (type(key) == "function" and key(v)) or k == key then
+        if (is_fn and key(k, v)) or k == key then
             t[k] = nil
             return v
         end
@@ -610,6 +633,43 @@ function this.insert_front(t, ...)
         table.insert(t, 1, values[i])
     end
     return t
+end
+
+---@generic T
+---@param t T[]?
+---@return T?
+function this.normalize(t)
+    if type(t) == "table" then
+        return t[1]
+    end
+    return t
+end
+
+---@generic T
+---@param t table<integer, T>
+---@return table<T, integer>
+function this.array_to_map(t)
+    local ret = {}
+    for k, v in pairs(t) do
+        ret[v] = k
+    end
+    return ret
+end
+
+---@param t table
+---@return string
+function this.to_string(t)
+    if type(t) == "table" then
+        local parts = {}
+        for i, v in ipairs(t) do
+            parts[i] = this.to_string(v)
+        end
+        return "{" .. table.concat(parts, ", ") .. "}"
+    elseif type(t) == "string" then
+        return '"' .. t .. '"'
+    else
+        return tostring(t)
+    end
 end
 
 return this

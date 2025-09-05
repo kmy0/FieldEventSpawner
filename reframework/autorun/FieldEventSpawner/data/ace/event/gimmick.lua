@@ -23,7 +23,7 @@ local function cache_to_ret(cache)
     for _, struct in pairs(cache) do
         for _, map_data in pairs(struct.map) do
             if not table_util.empty(map_data.area) then
-                map_data.area = table_util.set(map_data.area)
+                map_data.area = table_util.unique(map_data.area)
                 table.sort(map_data.area)
             end
         end
