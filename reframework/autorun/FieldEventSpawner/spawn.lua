@@ -15,6 +15,7 @@ local this = {}
 ---@param rewards GuiRewardData[]?
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
+---@param size integer?
 ---@return SpawnResult
 function this.monster(
     monster_data,
@@ -29,7 +30,8 @@ function this.monster(
     spoffer,
     rewards,
     difficulty,
-    environ
+    environ,
+    size
 )
     local fac = event.monster:new(
         monster_data,
@@ -44,7 +46,8 @@ function this.monster(
         spoffer,
         rewards,
         difficulty,
-        environ
+        environ,
+        size
     )
     return fac:spawn()
 end
@@ -60,6 +63,7 @@ end
 ---@param rewards GuiRewardData[]?
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
+---@param size integer?
 ---@return SpawnResult
 function this.battlefield(
     monster_data,
@@ -72,7 +76,8 @@ function this.battlefield(
     area,
     rewards,
     difficulty,
-    environ
+    environ,
+    size
 )
     local fac = event.battlefield:new(
         monster_data,
@@ -85,7 +90,8 @@ function this.battlefield(
         area,
         rewards,
         difficulty,
-        environ
+        environ,
+        size
     )
     return fac:spawn()
 end
@@ -103,6 +109,7 @@ end
 ---@param rewards GuiRewardData[]?
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
+---@param size integer?
 ---@return SpawnResult
 function this.swarm(
     monster_data,
@@ -117,7 +124,8 @@ function this.swarm(
     area,
     rewards,
     difficulty,
-    environ
+    environ,
+    size
 )
     local fac = event.swarm:new(
         monster_data,
@@ -132,7 +140,8 @@ function this.swarm(
         area,
         rewards,
         difficulty,
-        environ
+        environ,
+        size
     )
     return fac:spawn()
 end

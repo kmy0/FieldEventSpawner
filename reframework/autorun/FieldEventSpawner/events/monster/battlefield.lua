@@ -65,6 +65,7 @@ setmetatable(this, { __index = monster_factory })
 ---@param rewards GuiRewardData[]?
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
+---@param size integer?
 ---@return BattlefieldEventFactory
 function this:new(
     monster_data,
@@ -77,7 +78,8 @@ function this:new(
     area,
     rewards,
     difficulty,
-    environ
+    environ,
+    size
 )
     local o = monster_factory.new(
         self,
@@ -93,7 +95,8 @@ function this:new(
         nil,
         rewards,
         difficulty,
-        environ
+        environ,
+        size
     )
     setmetatable(o, self)
     ---@cast o BattlefieldEventFactory
@@ -195,7 +198,9 @@ function this:build()
                     rt.enum.event_collision_flag.ID
                 ),
             },
-            sub_events
+            sub_events,
+            nil,
+            self.size
         )
 end
 

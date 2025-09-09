@@ -105,10 +105,6 @@ function this.ex_director_update_pre(args)
         exanimalman:unloadAllExEventSet()
         this.state.clear_flag = false
     end
-
-    if this.state.force_spawn_flag then
-        this.state.updated = true
-    end
 end
 
 function this.ex_director_save_sched_pre(args)
@@ -356,6 +352,16 @@ function this.stop_em_combat_post(retval)
                 ::continue::
             end
         end
+    end
+
+    return retval
+end
+
+function this.force_em_size_post(retval)
+    --FIXME: for whatever reason game does not call lotteryModelRandomSize for the last memeber of the swarm
+    -- when leader is an alpha...
+    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.size then
+        return sdk.to_ptr(this.state.em_args.size)
     end
 
     return retval

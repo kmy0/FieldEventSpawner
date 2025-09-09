@@ -1,5 +1,6 @@
 local config = require("FieldEventSpawner.config")
 local lang = require("FieldEventSpawner.lang")
+local util = require("FieldEventSpawner.util")
 
 config.init()
 lang.init()
@@ -120,6 +121,13 @@ sdk.hook(
         "relotEmReward(app.cExFieldDirector.cScheduleTimeline, app.cExFieldEvent_PopEnemy, System.Collections.Generic.List`1<app.cExFieldEvent_EmReward>, app.FieldDef.STAGE)"
     ) --[[@as REMethodDefinition]],
     sched.hook.force_pop_many_reward_pre
+)
+sdk.hook(
+    sdk.find_type_definition("app.EnemyUtil"):get_method(
+        "lotteryModelRandomSize_Boss(app.EnemyDef.ID, app.EnemyDef.LEGENDARY_ID, System.Guid, app.cRandomHolder)"
+    ) --[[@as REMethodDefinition]],
+    function(args) end,
+    sched.hook.force_em_size_post
 )
 
 re.on_draw_ui(function()

@@ -102,7 +102,8 @@ function state.callbacks.spawn()
                 item.area:value(),
                 rewards,
                 difficulty,
-                environ
+                environ,
+                item.em_size:value()
             )
         elseif em_param == "battlefield_repel" or em_param == "battlefield_slay" then
             return spawn.battlefield(
@@ -116,7 +117,8 @@ function state.callbacks.spawn()
                 item.area:value(),
                 rewards,
                 difficulty,
-                environ
+                environ,
+                item.em_size:value()
             )
         else
             return spawn.monster(
@@ -132,7 +134,8 @@ function state.callbacks.spawn()
                 spoffer,
                 rewards,
                 difficulty,
-                environ
+                environ,
+                item.em_size:value()
             )
         end
     elseif event_type == "gimmick" then
@@ -230,6 +233,25 @@ local function check_current_event()
         state.spawn_button.state = rt.enum.spawn_button_state.OK
     end
     return ret
+end
+
+---@return string
+local function get_monster_crown_text()
+    if item.values.event:empty() or item.event_type:value() ~= "monster" then
+        return ""
+    end
+
+    local event = item.values.get_event(item.event:value())
+    ---@cast event MonsterData
+    return string.format(
+        "%s <= %s, %s >= %s, %s >= %s",
+        lang.tr("em_size_slider.crowns.small"),
+        event.crown.small,
+        lang.tr("em_size_slider.crowns.large"),
+        event.crown.large,
+        lang.tr("em_size_slider.crowns.king"),
+        event.crown.king
+    )
 end
 
 function this.draw()
@@ -358,6 +380,8 @@ function this.draw()
         item.em_param_mod:draw(gui_util.tr("em_param_mod_combo"))
         item.em_difficulty:draw(gui_util.tr("em_param_difficulty_combo"))
         item.em_difficulty_rank:draw(gui_util.tr("em_param_difficulty_rank_combo"))
+        item.em_size:draw(gui_util.tr("em_size_slider"))
+        gui_util.tooltip(get_monster_crown_text(), true)
         item.swarm_count:draw(gui_util.tr("swarm_count_slider"))
         gui_util.tooltip(lang.tr("swarm_count_slider.tooltip.name"))
         item.spoffer:draw(gui_util.tr("spoffer_combo"))
@@ -380,6 +404,9 @@ function this.draw()
             gui_util.tooltip(lang.tr("not_available_tooltip.name"), true)
         end
         item.is_force_difficulty:draw(gui_util.tr("force_difficulty"))
+        item.is_force_size:draw(gui_util.tr("force_size"))
+        imgui.same_line()
+        item.is_custom_size:draw(gui_util.tr("custom_size"))
         item.is_force_rewards:draw(gui_util.tr("force_rewards_box"))
         imgui.same_line()
         item.edit_rewards:draw(gui_util.tr("open_rewards_builder_button"))

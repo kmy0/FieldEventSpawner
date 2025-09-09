@@ -13,10 +13,12 @@ local ace = data.ace
 ---@type GuiDataState
 local state
 
+---@class GuiItems
 local this = {}
 
 function this.switch_arrays()
     iv.switch_event_arrays(
+        this,
         this.event_type:value(),
         this.event:value(),
         this.em_param:value(),
@@ -24,7 +26,8 @@ function this.switch_arrays()
         this.em_difficulty:value(),
         rt.state.stage,
         rt.state.environ,
-        this.is_ignore_environ:value()
+        this.is_ignore_environ:value(),
+        this.is_custom_size:value()
     )
     iv.switch_reward_array(this.reward_filter:value())
 end
@@ -185,6 +188,17 @@ this.swarm_count = item.config:new("mod.swarm_count", imgui.slider_int, { 0, 5 }
         or (em_param == "legendary" and not iv.current.em_param_struct.boss)
 end)
 
+this.em_size = item.config:new(
+    "mod.em_size",
+    imgui.slider_int,
+    { config.em_size_min, config.em_size_max },
+    nil,
+    nil,
+    function()
+        return not this.is_force_size:value()
+    end
+)
+
 this.time = item.config:new("mod.time", imgui.slider_int, { 1, 60 })
 this.is_ignore_environ = item.config:new("mod.is_ignore_environ", imgui.checkbox)
 this.is_force_area = item.config:new("mod.is_force_area", imgui.checkbox, nil, false, nil, function()
@@ -222,6 +236,12 @@ end)
 
 this.is_force_difficulty = item.config:new("mod.is_force_difficulty", imgui.checkbox, nil, false, nil, function()
     return iv.em_difficulty:empty()
+end)
+this.is_force_size = item.config:new("mod.is_force_size", imgui.checkbox, nil, false, nil, function()
+    return not this.em_difficulty:value()
+end)
+this.is_custom_size = item.config:new("mod.is_custom_size", imgui.checkbox, nil, false, nil, function()
+    return not this.is_force_size:value()
 end)
 
 this.spawn = item.callback:new(

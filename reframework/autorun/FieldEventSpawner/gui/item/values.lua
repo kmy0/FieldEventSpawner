@@ -7,6 +7,7 @@
 ---@field ignore_environ boolean
 ---@field em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
 ---@field environ app.EnvironmentType.ENVIRONMENT
+---@field em_size_custom boolean
 
 ---@class (exact) CurrentData : SwitchData
 ---@field reward_filter string
@@ -15,6 +16,7 @@
 ---@field lang string
 
 ---@class RuntimeGuiData
+---@field ref GuiItems?
 ---@field event_table table<string, AreaEventData>
 ---@field reward FilterGuiItemData
 ---@field event GuiItemData
@@ -336,7 +338,7 @@ local function switch_em_difficulty_rank_array(params)
         or not params.em_param_mod
         or not is_state_changed(
             params,
-            { "event", "stage", "environ", "ignore_environ", "em_param", "em_param", "em_difficulty" }
+            { "event", "stage", "environ", "ignore_environ", "em_param", "em_param_mod", "em_difficulty" }
         )
     then
         return
@@ -389,6 +391,57 @@ local function switch_spoffer_array()
     restore_index("mod.spoffer", this.spoffer.array, current_value)
 end
 
+---@param params SwitchData
+local function switch_em_size_range(params)
+    if
+        not this.ref
+        or not is_monster_event()
+        or not params.em_param_mod
+        or not is_state_changed(
+            params,
+            { "event", "em_param", "em_param_mod", "em_difficulty", "em_difficulty_rank", "em_size_custom" }
+        )
+    then
+        return
+    end
+
+    local current_value = config.current.mod.em_size
+    local event = this.event_table[params.event]
+
+    if not event then
+        return
+    end
+    ---@cast event MonsterData
+
+    local em_param_mod = this.em_param_mod.map and this.em_param_mod.map[config.current.mod.em_param_mod] or nil
+    if not em_param_mod then
+        return
+    end
+
+    local em_difficulty_rank = this.em_difficulty_rank.array
+            and this.em_difficulty_rank.array[config.current.mod.em_difficulty_rank]
+        or nil
+    if not em_difficulty_rank then
+        return
+    end
+
+    local min, max = 100, 100
+    if not config.current.mod.is_custom_size then
+        local size = event.map[params.stage].size_by_param_mod[em_param_mod] --[[@as table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>]]
+        local size_data = size[tonumber(util.split_string(em_difficulty_rank, "##")[1])] --[[@as MonsterSizeData]]
+        min = size_data.min
+        max = size_data.max
+    else
+        min = config.em_size_min
+        max = config.em_size_max
+    end
+
+    this.ref.em_size:update_draw_args({ min, max })
+    if current_value < min or current_value > max then
+        config.current.mod.em_size = 100
+    end
+end
+
 ---@param query string
 function this.switch_reward_array(query)
     if this.current.reward_filter == query then
@@ -435,6 +488,7 @@ function this.switch_lang(language)
     translate_em_param_mod_combo()
 end
 
+---@param item_ref GuiItems
 ---@param event_type string
 ---@param event string
 ---@param em_param string
@@ -443,7 +497,9 @@ end
 ---@param stage app.FieldDef.STAGE
 ---@param environ app.EnvironmentType.ENVIRONMENT
 ---@param ignore_environ boolean
+---@param em_size_custom boolean
 function this.switch_event_arrays(
+    item_ref,
     event_type,
     event,
     em_param,
@@ -451,8 +507,11 @@ function this.switch_event_arrays(
     em_difficulty,
     stage,
     environ,
-    ignore_environ
+    ignore_environ,
+    em_size_custom
 )
+    this.ref = item_ref
+
     ---@type SwitchData
     local params = {
         stage = stage,
@@ -463,6 +522,7 @@ function this.switch_event_arrays(
         em_param = em_param,
         em_param_mod = em_param_mod,
         em_difficulty = em_difficulty,
+        em_size_custom = em_size_custom,
     }
 
     switch_event_type(params)
@@ -486,6 +546,7 @@ function this.switch_event_arrays(
         switch_em_difficulty_rank_array(params)
         switch_area_array(params)
         switch_spoffer_array()
+        switch_em_size_range(params)
     end
 
     this.current = table_util.merge_t(this.current, params)

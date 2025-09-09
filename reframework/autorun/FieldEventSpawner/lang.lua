@@ -1,6 +1,5 @@
 local config = require("FieldEventSpawner.config")
 local table_util = require("FieldEventSpawner.table_util")
-local util = require("FieldEventSpawner.util")
 
 local this = {
     ---@type table<string, table<string, any>>
@@ -79,6 +78,14 @@ local default = {
         name = "Swarm Count",
         tooltip = {
             name = "Number of extra monsters to include",
+        },
+    },
+    em_size_slider = {
+        name = "Monster Size",
+        crowns = {
+            small = "Small",
+            large = "Large",
+            king = "King",
         },
     },
     time_slider = {
@@ -202,6 +209,12 @@ local default = {
     },
     allow_invalid_quest = {
         name = "Allow Invalid Quests",
+    },
+    force_size = {
+        name = "Force Size",
+    },
+    custom_size = {
+        name = "Custom Size",
     },
 }
 

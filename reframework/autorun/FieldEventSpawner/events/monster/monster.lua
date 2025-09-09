@@ -9,6 +9,7 @@
 ---@field rewards GuiRewardData[]?
 ---@field difficulty System.Guid[]?
 ---@field environ app.EnvironmentType.ENVIRONMENT[]?
+---@field size integer?
 ---@field protected _field_director app.cExFieldDirector
 ---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
 
@@ -70,6 +71,7 @@ setmetatable(this, { __index = factory })
 ---@param rewards GuiRewardData[]?
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
+---@param size integer?
 ---@return MonsterEventFactory
 function this:new(
     monster_data,
@@ -84,7 +86,8 @@ function this:new(
     spoffer,
     rewards,
     difficulty,
-    environ
+    environ,
+    size
 )
     local o = factory.new(self, monster_data, stage, time, area)
     setmetatable(o, self)
@@ -99,6 +102,7 @@ function this:new(
     o.rewards = rewards
     o.difficulty = difficulty
     o.environ = environ
+    o.size = size
     o._field_director, o._schedule_timeline = rt.get_field_director()
     o._area_array = monster_data:get_area_array(
         stage,
@@ -171,7 +175,8 @@ function this:build()
         nil,
         nil,
         sched.spawn_event.subevent_ctor(reward_data.reward_array),
-        spoffer_rewards
+        spoffer_rewards,
+        self.size
     )
     return rt.enum.spawn_result.OK, ret
 end

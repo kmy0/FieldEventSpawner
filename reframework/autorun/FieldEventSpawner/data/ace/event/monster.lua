@@ -3,6 +3,20 @@
 ---@field none boolean
 ---@field legendary_king boolean
 
+---@class (exact) MonsterSizeData
+---@field min integer
+---@field max integer
+
+---@class (exact) MonsterCrown
+---@field small integer
+---@field large integer
+---@field king integer
+
+---@class (exact) MonsterSize
+---@field legendary table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>
+---@field none table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>
+---@field legendary_king table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>
+
 ---@class (exact) MonsterDifficulty
 ---@field legendary table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
 ---@field none table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
@@ -28,10 +42,12 @@
 ---@field difficulty_by_param table<string, MonsterDifficulty>
 ---@field difficulty_by_env_by_param table<app.EnvironmentType.ENVIRONMENT, table<string, MonsterDifficulty>>
 ---@field env_by_param table<string, app.EnvironmentType.ENVIRONMENT[]>
+---@field size_by_param_mod MonsterSize
 
 ---@class (exact) MonsterData : AreaEventData
 ---@field id app.EnemyDef.ID
 ---@field map table<app.FieldDef.STAGE, MonsterMapData>
+---@field crown MonsterCrown
 ---@field monster_map_data_ctor fun(stage: app.FieldDef.STAGE, is_battlefield: boolean?): MonsterMapData
 
 local ace_data = require("FieldEventSpawner.data.ace.ace")
@@ -54,12 +70,14 @@ local rl = data_util.reverse_lookup
 ---@param name_english string
 ---@param name_local string
 ---@param type app.EX_FIELD_EVENT_TYPE
+---@param crown MonsterCrown
 ---@return MonsterData
-function MonsterData:new(id, name_english, name_local, type)
+function MonsterData:new(id, name_english, name_local, type, crown)
     local o = event.new(self, name_english, name_local, type)
     setmetatable(o, self)
     ---@cast o MonsterData
     o.id = id
+    o.crown = crown
     return o
 end
 
@@ -75,6 +93,8 @@ function MonsterData.monster_map_data_ctor(stage)
     ret.area_by_param = {}
     ret.area_by_env_by_param = {}
     ret.env_by_param = {}
+    ---@diagnostic disable-next-line: missing-fields
+    ret.size_by_param_mod = {}
     return ret
 end
 
@@ -429,12 +449,81 @@ local function filter_map_data(map_data)
     end
 end
 
+---@return table<app.EnemyDef.ID, {crown: MonsterCrown, sizes: MonsterSize}>
+local function get_size_data()
+    local legendary = {
+        [rl(ace_data.enum.legendary, "NONE")] = "none",
+        [rl(ace_data.enum.legendary, "NORMAL")] = "legendary",
+        [rl(ace_data.enum.legendary, "KING")] = "legendary_king",
+    }
+    ---@type table<app.EnemyDef.ID, {crown: MonsterCrown, sizes: MonsterSize}>
+    local ret = {}
+    local enemyman = sdk.get_managed_singleton("app.EnemyManager")
+    ---@cast enemyman app.EnemyManager
+    local em_setting = enemyman:get_Setting()
+    local em_rand_size = em_setting:get_RandomSize()
+    local em_size = em_setting:get_Size()
+    local em_tbl_data = em_rand_size._EnemyRandomSizeTblArray
+
+    util.do_something(em_tbl_data, function(_, _, tbl_data)
+        local em_size_tbl = tbl_data._SizeTable
+        local param = legendary[tbl_data:get_LegendaryId()]
+        local em_id = data_util.fixed_to_enum("app.EnemyDef.ID", tbl_data:get_EmIdFixed())
+
+        if not ret[em_id] then
+            local size_data = em_size:getSizeData(em_id)
+            ret[em_id] = {
+                sizes = {
+                    none = {},
+                    legendary = {},
+                    legendary_king = {},
+                },
+                crown = {
+                    small = size_data:get_CrownSize_Small(),
+                    large = size_data:get_CrownSize_Big(),
+                    king = size_data:get_CrownSize_King(),
+                },
+            }
+        end
+
+        util.do_something(em_size_tbl, function(_, _, size_tbl)
+            ---@type {[integer]: boolean}
+            local sizes = {}
+            for i = 1, 5 do
+                local rand_size_tbl_guid = size_tbl:call("getSizeTableId(System.Int32)", i)
+                local guid = rand_size_tbl_guid.Value
+                local rand_size_tbl = em_rand_size:getRandomSizeTblData(guid)
+                local prob_data_tbl = rand_size_tbl._ProbDataTbl
+
+                util.do_something(prob_data_tbl, function(_, _, prob_tbl)
+                    if prob_tbl:get_Prob() > 0 then
+                        sizes[prob_tbl:get_Scale()] = true
+                    end
+                end)
+            end
+
+            local lower_bound = data_util.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_L())
+            local upper_bound = data_util.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_U())
+            local sizes_arr = table_util.keys(sizes)
+            local size_max = math.max(table.unpack(sizes_arr))
+            local size_min = math.min(table.unpack(sizes_arr))
+
+            for i = lower_bound, upper_bound do
+                table_util.set_nested_value(ret[em_id], { "sizes", param, i }, { min = size_min, max = size_max })
+            end
+        end)
+    end)
+
+    return ret
+end
+
 ---@param ex_field_param app.user_data.ExFieldParam
 ---@return MonsterData[]
 function this.get_data(ex_field_param)
     local em_ids = {}
     local field_ids = {}
     local lang = util.get_language()
+    local size_data = get_size_data()
 
     data_util.get_enum("app.EnemyDef.ID", em_ids)
     data_util.get_enum("app.FieldDef.STAGE", field_ids)
@@ -445,7 +534,7 @@ function this.get_data(ex_field_param)
     local cache = {}
 
     for em_id, _ in pairs(em_ids) do
-        if not util.isEmValid:call(nil, em_id) or not util.isBossID:call(nil, em_id) then
+        if not util.isEmValid:call(nil, em_id) or not util.isBossID:call(nil, em_id) or not size_data[em_id] then
             goto continue
         end
 
@@ -461,7 +550,8 @@ function this.get_data(ex_field_param)
             em_id,
             util.get_message_local(name_guid, 1),
             util.get_message_local(name_guid, lang, true),
-            type
+            type,
+            size_data[em_id].crown
         )
 
         local map_data_param, battlefield_data_param, all_data_param
@@ -484,6 +574,10 @@ function this.get_data(ex_field_param)
         if all_data_param then
             monster_data.map = all_data_param
             cache[em_id] = monster_data
+
+            for _, md in pairs(monster_data.map) do
+                md.size_by_param_mod = size_data[em_id].sizes
+            end
         end
 
         ::continue::

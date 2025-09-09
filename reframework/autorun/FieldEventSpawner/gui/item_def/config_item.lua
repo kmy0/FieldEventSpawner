@@ -51,6 +51,12 @@ function this:new(
     return o
 end
 
+---@param imgui_draw_args any[]
+function this:update_draw_args(imgui_draw_args)
+    table.insert(imgui_draw_args, 1, config.get(self.config_key))
+    self.imgui_draw_args = imgui_draw_args
+end
+
 ---@return any
 function this:value()
     if self.is_disabled and self.is_disabled() then

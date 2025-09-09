@@ -37,6 +37,7 @@ setmetatable(this, { __index = monster_factory })
 ---@param rewards GuiRewardData[]?
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
+---@param size integer?
 ---@return SwarmEventFactory
 function this:new(
     monster_data,
@@ -51,7 +52,8 @@ function this:new(
     area,
     rewards,
     difficulty,
-    environ
+    environ,
+    size
 )
     local o = monster_factory.new(
         self,
@@ -67,7 +69,8 @@ function this:new(
         nil,
         rewards,
         difficulty,
-        environ
+        environ,
+        size
     )
     setmetatable(o, self)
     ---@cast o SwarmEventFactory

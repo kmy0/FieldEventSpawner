@@ -5,6 +5,7 @@
 ---@field unique_index integer?
 ---@field spoffer integer?
 ---@field spoffer_rewards EditedRewardData?
+---@field size integer?
 
 ---@class (exact) ScheduledEvent
 ---@field event_data app.cExFieldScheduleExportData.cEventData
@@ -58,6 +59,7 @@ end
 ---@param children CachedEventChild[]?
 ---@param sub_events ScheduledEvent[]?
 ---@param spoffer_rewards EditedRewardData?
+---@param size integer?
 ---@return MonsterSpawnEvent
 function this.monster_ctor(
     event_data,
@@ -70,7 +72,8 @@ function this.monster_ctor(
     collision_flag,
     children,
     sub_events,
-    spoffer_rewards
+    spoffer_rewards,
+    size
 )
     local ret = this.ctor(event_data, name, area, collision_flag, children, sub_events)
     ---@cast ret MonsterSpawnEvent
@@ -80,6 +83,7 @@ function this.monster_ctor(
         spoffer = spoffer,
         village_boost = village_boost,
         spoffer_rewards = spoffer_rewards,
+        size = size,
     }
     return ret
 end

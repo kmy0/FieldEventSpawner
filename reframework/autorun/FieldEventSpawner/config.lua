@@ -40,6 +40,9 @@
 ---@field reward_config RewardSettings
 ---@field em_difficulty integer
 ---@field em_difficulty_rank integer
+---@field em_size integer
+---@field is_force_size boolean
+---@field is_custom_size boolean
 
 ---@class (exact) SpawnCooldown
 ---@field normal integer
@@ -66,6 +69,8 @@
 ---@field spawn_cooldown SpawnCooldown
 ---@field display_cheat_timer integer
 ---@field display_cheat_timer_name string
+---@field em_size_min integer
+---@field em_size_max integer
 ---@field force_area_timer integer
 ---@field default Settings
 ---@field current Settings
@@ -89,6 +94,8 @@ this.default_lang_path = this.name .. "/lang/en-us.json"
 this.display_cheat_timer_name = "cheat_timer"
 this.display_cheat_timer = 30
 this.force_area_timer = 60
+this.em_size_max = 500
+this.em_size_min = 1
 this.font = {
     size = 16,
 }
@@ -133,6 +140,7 @@ this.default = {
         spoffer = 1,
         em_difficulty = 1,
         em_difficulty_rank = 1,
+        em_size = 100,
         is_ignore_environ = false,
         is_yummy = false,
         is_village_boost = false,
@@ -141,6 +149,8 @@ this.default = {
         is_force_rewards = false,
         is_force_difficulty = false,
         is_allow_invalid_quest = false,
+        is_custom_size = false,
+        is_force_size = false,
         time = 30,
         reward_config = {
             array = {},
