@@ -200,7 +200,7 @@ this.em_size = item.config:new(
 )
 
 this.time = item.config:new("mod.time", imgui.slider_int, { 1, 60 })
-this.is_ignore_environ = item.config:new("mod.is_ignore_environ", imgui.checkbox)
+this.is_ignore_environ = item.config:new("mod.is_ignore_environ", imgui.checkbox, nil, false)
 this.is_force_area = item.config:new("mod.is_force_area", imgui.checkbox, nil, false, nil, function()
     return iv.area:empty() or (this.event_type:value() == "monster" and this.em_param:value() == "battlefield_slay")
 end)
