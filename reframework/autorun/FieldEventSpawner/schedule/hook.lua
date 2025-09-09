@@ -62,6 +62,7 @@ end
 
 function this.spawn_check_post(retval)
     if this.state.force_spawn_flag then
+        this.state.updated = true
         return sdk.to_ptr(true)
     end
     return retval
