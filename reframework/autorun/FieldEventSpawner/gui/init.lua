@@ -414,13 +414,15 @@ function this.draw()
         imgui.separator()
     end
 
+    local button_height = imgui.get_cursor_screen_pos().y
     ---@diagnostic disable-next-line: param-type-mismatch
     item.spawn:draw(state.spawn_button:update(item.spawn))
+    button_height = imgui.get_cursor_screen_pos().y - button_height
     if state.spawn_button.result ~= rt.enum.spawn_result.OK and state.spawn_button.cooldown > 0 then
-        gui_util.highlight(gui.colors.bad, 0, -27)
+        gui_util.highlight(gui.colors.bad, 0, -button_height)
         gui_util.tooltip(rl(rt.enum.spawn_result, state.spawn_button.result))
     elseif state.spawn_button.state ~= rt.enum.spawn_button_state.OK then
-        gui_util.highlight(gui.colors.bad, 0, -27)
+        gui_util.highlight(gui.colors.bad, 0, -button_height)
         gui_util.tooltip(
             lang.tr(string.format("event_error.%s.name", rl(rt.enum.spawn_button_state, state.spawn_button.state)))
         )
