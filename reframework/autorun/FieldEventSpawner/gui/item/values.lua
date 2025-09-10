@@ -66,8 +66,14 @@ local this = {
     },
 }
 
+---@return boolean
 local function is_monster_event()
-    return this.current.event_type == "monster"
+    return this.event_type.map[config.current.mod.event_type] == "monster"
+end
+
+---@return AreaEventData
+local function get_current_event()
+    return this.event_table[this.event.map[config.current.mod.event]]
 end
 
 ---@param new_values SwitchData
@@ -225,7 +231,7 @@ local function switch_area_array(params)
     end
 
     local current_value = this.area.map and this.area.map[config.current.mod.area] or nil
-    local event = this.event_table[params.event]
+    local event = get_current_event()
 
     if not event then
         return
@@ -257,7 +263,7 @@ local function switch_em_param_array(params)
     end
 
     local current_value = this.em_param.array and this.em_param.array[config.current.mod.em_param] or nil
-    local event = this.event_table[params.event]
+    local event = get_current_event()
     ---@cast event MonsterData
 
     if not event then
@@ -303,7 +309,7 @@ local function switch_em_difficulty_array(params)
     end
 
     local current_value = this.em_difficulty.array and this.em_difficulty.array[config.current.mod.em_difficulty] or nil
-    local event = this.event_table[params.event]
+    local event = get_current_event()
 
     if not event then
         return
@@ -347,7 +353,7 @@ local function switch_em_difficulty_rank_array(params)
     local current_value = this.em_difficulty_rank.array
             and this.em_difficulty_rank.array[config.current.mod.em_difficulty_rank]
         or nil
-    local event = this.event_table[params.event]
+    local event = get_current_event()
 
     if not event then
         return
@@ -406,7 +412,7 @@ local function switch_em_size_range(params)
     end
 
     local current_value = config.current.mod.em_size
-    local event = this.event_table[params.event]
+    local event = get_current_event()
 
     if not event then
         return
