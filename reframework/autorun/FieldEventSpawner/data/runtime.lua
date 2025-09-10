@@ -210,8 +210,14 @@ function this.update_background()
     return is_background, changed
 end
 
+---@return boolean
 function this.is_ok()
+    if not this.get_envman() then
+        return false
+    end
+
     local field_director = this.get_field_director()
+    ---@diagnostic disable-next-line: return-type-mismatch
     return this.is_in_game()
         and this.state.stage
         and field_director
