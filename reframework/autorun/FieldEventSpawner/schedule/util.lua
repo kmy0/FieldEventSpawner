@@ -1,11 +1,11 @@
-local util = require("FieldEventSpawner.util")
+local util_game = require("FieldEventSpawner.util.game.init")
 
 local this = {}
 
 ---@param events System.Array<app.cExFieldEventBase>
 ---@return app.cExFieldScheduleExportData.cEventData[]
 function this.unpack_events(events)
-    local enum = util.get_array_enum(events)
+    local enum = util_game.get_array_enum(events)
     ---@type app.cExFieldScheduleExportData.cEventData[]
     local t = {}
     while enum:MoveNext() do

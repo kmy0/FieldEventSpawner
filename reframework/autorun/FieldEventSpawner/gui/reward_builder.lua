@@ -3,10 +3,10 @@
 ---@field name string
 ---@field count integer
 
-local config = require("FieldEventSpawner.config")
+local config = require("FieldEventSpawner.config.init")
 local gui_util = require("FieldEventSpawner.gui.util")
-local item = require("FieldEventSpawner.gui.item")
-local lang = require("FieldEventSpawner.lang")
+local item = require("FieldEventSpawner.gui.item.init")
+local util_imgui = require("FieldEventSpawner.util.imgui.init")
 
 local this = {
     window = {
@@ -20,16 +20,23 @@ local this = {
 }
 
 local function draw_reward_table()
+    local confg_reward = config.current.mod.reward_config
+
     if
-        imgui.begin_table(this.table.name, 3, this.table.flags --[[@as ImGuiTableFlags]], Vector2f.new(0, 10 * 28))
+        imgui.begin_table(
+            this.table.name,
+            3,
+            this.table.flags --[[@as ImGuiTableFlags]],
+            Vector2f.new(0, 10 * 28)
+        )
     then
-        imgui.table_setup_column(gui_util.tr("reward_table.headers.reward_header"), 1 << 3)
-        imgui.table_setup_column(gui_util.tr("reward_table.headers.count_header"))
-        imgui.table_setup_column(gui_util.tr("reward_table.headers.remove_button_header"))
+        imgui.table_setup_column(gui_util.tr("mod.table_reward_headers.header_reward"), 1 << 3)
+        imgui.table_setup_column(gui_util.tr("mod.table_reward_headers.header_count"))
+        imgui.table_setup_column(gui_util.tr("mod.table_reward_headers.header_remove_button"))
 
         imgui.table_headers_row()
-        local rewards = config.current.mod.reward_config.array
-        local _rewards = {}
+        local rewards = confg_reward.array
+        local filtered = {}
         for row = 1, #rewards do
             local reward = rewards[row]
             imgui.table_next_row()
@@ -39,48 +46,48 @@ local function draw_reward_table()
             ---@diagnostic disable-next-line: param-type-mismatch
             imgui.text(reward.count)
             imgui.table_set_column_index(2)
-            if not imgui.button(gui_util.tr("reward_table.remove_button") .. string.format("_%s", row)) then
-                table.insert(_rewards, reward)
+            if not imgui.button(gui_util.tr("mod.button_remove_reward", tostring(row))) then
+                table.insert(filtered, reward)
             end
         end
 
-        config.current.mod.reward_config.array = _rewards
+        confg_reward.array = filtered
         imgui.end_table()
     end
 end
 
 function this.draw()
+    local gui_reward = config.gui.current.gui.reward_builder
+
     imgui.set_next_window_pos(
-        Vector2f.new(config.current.gui.reward_builder.pos_x, config.current.gui.reward_builder.pos_y),
+        Vector2f.new(gui_reward.pos_x, gui_reward.pos_y),
         this.window.condition
     )
     imgui.set_next_window_size(
-        Vector2f.new(config.current.gui.reward_builder.size_x, config.current.gui.reward_builder.size_y),
+        Vector2f.new(gui_reward.size_x, gui_reward.size_y),
         this.window.condition
     )
 
-    config.current.gui.reward_builder.is_opened = imgui.begin_window(
-        gui_util.tr("reward_builder"),
-        config.current.gui.reward_builder.is_opened,
+    gui_reward.is_opened = imgui.begin_window(
+        gui_util.tr("mod.window_reward_builder"),
+        gui_reward.is_opened,
         this.window.flags
     )
 
     imgui.spacing()
     imgui.indent(3)
 
-    item.reward_filter:draw(gui_util.tr("reward_filter"))
-    gui_util.tooltip(lang.tr("reward_filter.tooltip"))
-    item.reward:draw(gui_util.tr("reward_combo"))
-    item.reward_count:draw(gui_util.tr("reward_count_slider"))
-    item.reward_add:draw(gui_util.tr("reward_add_button"))
+    item.reward_filter:draw(gui_util.tr("mod.input_reward_filter"))
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_reward_filter"))
+    item.reward:draw(gui_util.tr("mod.combo_reward"))
+    item.reward_count:draw(gui_util.tr("mod.slider_reward_count"))
+    item.reward_add:draw(gui_util.tr("mod.button_add_reward"))
     draw_reward_table()
 
-    if not config.current.gui.reward_builder.is_opened then
-        local pos = imgui.get_window_pos()
-        local size = imgui.get_window_size()
-        config.current.gui.reward_builder.pos_x, config.current.gui.reward_builder.pos_y = pos.x, pos.y
-        config.current.gui.reward_builder.size_x, config.current.gui.reward_builder.size_y = size.x, size.y
-    end
+    local pos = imgui.get_window_pos()
+    local size = imgui.get_window_size()
+    gui_reward.pos_x, gui_reward.pos_y = pos.x, pos.y
+    gui_reward.size_x, gui_reward.size_y = size.x, size.y
 
     imgui.unindent(3)
     imgui.end_window()

@@ -4,9 +4,7 @@
 ---@field item ItemDataBy
 ---@field ex_field_param app.user_data.ExFieldParam
 ---@field map AceMap
----@field init fun()
----@field get_monster_name fun(pop_em: app.cExFieldEvent_PopEnemy): string
----@field is_spoffer_pair fun(first: app.QuestDef.EM_REWARD_RANK, second: app.QuestDef.EM_REWARD_RANK): boolean
+---@field init fun(): boolean
 
 ---@class (exact) AceEnum
 ---@field ex_event table<app.EX_FIELD_EVENT_TYPE, string>

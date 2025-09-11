@@ -10,7 +10,7 @@
 ---@field protected _updated_frame integer
 ---@field protected _auto_update boolean
 
-local frame_counter = require("HudController.util.misc.frame_counter")
+local frame_counter = require("FieldEventSpawner.util.misc.frame_counter")
 
 ---@class Timer
 local this = {}

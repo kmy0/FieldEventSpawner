@@ -1,4 +1,4 @@
-local event = require("FieldEventSpawner.events")
+local event = require("FieldEventSpawner.events.init")
 
 local this = {}
 

@@ -1,15 +1,16 @@
-local animal_data = require("FieldEventSpawner.data.ace.event.animal")
-local data_util = require("FieldEventSpawner.data.util")
-local gimmick_data = require("FieldEventSpawner.data.ace.event.gimmick")
-local gui_data = require("FieldEventSpawner.data.gui")
-local item_data = require("FieldEventSpawner.data.ace.item")
-local monster_data = require("FieldEventSpawner.data.ace.event.monster")
-local table_util = require("FieldEventSpawner.table_util")
-local util = require("FieldEventSpawner.util")
+local data_animal = require("FieldEventSpawner.data.ace.event.animal")
+local data_gimmick = require("FieldEventSpawner.data.ace.event.gimmick")
+local data_gui = require("FieldEventSpawner.data.gui")
+local data_item = require("FieldEventSpawner.data.ace.item")
+local data_monster = require("FieldEventSpawner.data.ace.event.monster")
+local game_data = require("FieldEventSpawner.util.game.data")
+local s = require("FieldEventSpawner.util.ref.singletons")
+local util_game = require("FieldEventSpawner.util.game.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = require("FieldEventSpawner.data.ace.ace")
 
-local rl = data_util.reverse_lookup
+local rl = game_data.reverse_lookup
 
 ---@param ... AreaEventData[]
 ---@return table<app.FieldDef.STAGE, table<string, table<string, AreaEventData>>>
@@ -33,7 +34,8 @@ local function events_by_stage_ctor(...)
     for _, event_t in pairs(events) do
         for _, event in pairs(event_t) do
             for stage, map in pairs(event.map) do
-                local event_type = rl(gui_data.map.event_type_to_ex_event, this.enum.ex_event[event.type])
+                local event_type =
+                    rl(data_gui.map.event_type_to_ex_event, this.enum.ex_event[event.type])
                 local t = get_table(map.stage, event_type)
                 t[string.format("%s_%s_%s_event_name", stage, event_type, event.id)] = event
             end
@@ -64,13 +66,13 @@ local function get_spoffer_pairings(ex_field_param)
     local ret = {}
     local spoffer_by_rank = ex_field_param._SpOfferSecondTargetWeightsByFirstEmRank
 
-    util.do_something(spoffer_by_rank, function(_, _, value)
+    util_game.do_something(spoffer_by_rank, function(_, _, value)
         local first_rank = value:get_FirstEmRank()
         local targets = value:get_SecondTargetWeights()
 
-        util.do_something(targets, function(_, _, value2)
+        util_game.do_something(targets, function(_, _, value2)
             local second_rank = value2:get_EmRank()
-            local key = table_util.sort({ first_rank, second_rank })
+            local key = util_table.sort({ first_rank, second_rank })
             ret[string.format("%s,%s", table.unpack(key))] = value2:get_Weight() > 0
         end)
     end)
@@ -78,48 +80,38 @@ local function get_spoffer_pairings(ex_field_param)
     return ret
 end
 
----@param first app.QuestDef.EM_REWARD_RANK
----@param second app.QuestDef.EM_REWARD_RANK
 ---@return boolean
-function this.is_spoffer_pair(first, second)
-    local key = table_util.sort({ first, second })
-    local ret = this.map.spoffer_pairings[string.format("%s,%s", table.unpack(key))]
-    return ret or ret == nil
-end
-
----@param pop_em app.cExFieldEvent_PopEnemy
----@return string
-function this.get_monster_name(pop_em)
-    local id = pop_em:get_EmID()
-    local guid
-
-    if pop_em._FreeMiniValue2 >> 0 == rl(this.enum.em_role, "BOSS") then
-        guid = util.getEnemyExtraName:call(nil, id)
-    elseif pop_em._FreeMiniValue2 >> 0 == rl(this.enum.em_role, "FRENZY") then
-        guid = util.getEnemyFrenzyName:call(nil, id)
-    elseif pop_em._FreeMiniValue2 >> 4 == rl(this.enum.legendary, "NORMAL") then
-        guid = util.getEnemyLegendaryName:call(nil, id)
-    elseif pop_em._FreeMiniValue2 >> 4 == rl(this.enum.legendary, "KING") then
-        guid = util.getEnemyLegendaryKingName:call(nil, id)
-    else
-        guid = util.getEnemyNameGuid:call(nil, id)
-    end
-    return util.get_message_local(guid, util.get_language(), true)
-end
-
 function this.init()
-    data_util.get_enum("app.EX_FIELD_EVENT_TYPE", this.enum.ex_event)
-    data_util.get_enum("app.ExDef.POP_EM_TYPE_Fixed", this.enum.pop_em_fixed)
-    data_util.get_enum("app.EnemyDef.LEGENDARY_ID", this.enum.legendary)
-    data_util.get_enum("app.EnemyDef.ROLE_ID", this.enum.em_role)
-    data_util.get_enum("app.EnvironmentType.ENVIRONMENT", this.enum.environ)
-    data_util.get_enum("app.QuestDef.RANK", this.enum.quest_rank)
-    data_util.get_enum("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE", this.enum.ex_gimmick)
-    data_util.get_enum("this.GimmickDef.BASE_STATE", this.enum.gimmick_state)
-    data_util.get_enum("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE", this.enum.battlefield_state)
-    data_util.get_enum("app.QuestCheckUtil.INCORRECT_STATUS", this.enum.incorrect_status)
+    if not s.get("app.VariousDataManager") or not s.get("app.EnemyManager") then
+        return false
+    end
 
-    local dataman = sdk.get_managed_singleton("app.VariousDataManager")
+    game_data.get_enum("app.EX_FIELD_EVENT_TYPE", this.enum.ex_event)
+    game_data.get_enum("app.ExDef.POP_EM_TYPE_Fixed", this.enum.pop_em_fixed)
+    game_data.get_enum("app.EnemyDef.LEGENDARY_ID", this.enum.legendary)
+    game_data.get_enum("app.EnemyDef.ROLE_ID", this.enum.em_role)
+    game_data.get_enum("app.EnvironmentType.ENVIRONMENT", this.enum.environ)
+    game_data.get_enum("app.QuestDef.RANK", this.enum.quest_rank)
+    game_data.get_enum("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE", this.enum.ex_gimmick)
+    game_data.get_enum("ace.GimmickDef.BASE_STATE", this.enum.gimmick_state)
+    game_data.get_enum(
+        "app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE",
+        this.enum.battlefield_state
+    )
+    game_data.get_enum("app.QuestCheckUtil.INCORRECT_STATUS", this.enum.incorrect_status)
+
+    if
+        util_table.any(
+            this.enum --[[@as table<string, table<integer, string>>]],
+            function(key, value)
+                return util_table.empty(value)
+            end
+        )
+    then
+        return false
+    end
+
+    local dataman = s.get("app.VariousDataManager")
     ---@cast dataman app.VariousDataManager
     local dataman_settting = dataman:get_Setting()
     this.ex_field_param = dataman_settting:get_ExFieldParam()
@@ -127,15 +119,20 @@ function this.init()
     ---@diagnostic disable-next-line: missing-fields
     this.event = {
         by_type = {
-            monster = monster_data.get_data(this.ex_field_param),
-            animal = animal_data.get_data(this.ex_field_param),
-            gimmick = gimmick_data.get_data(this.ex_field_param),
+            monster = data_monster.get_data(this.ex_field_param),
+            animal = data_animal.get_data(this.ex_field_param),
+            gimmick = data_gimmick.get_data(this.ex_field_param),
         },
     }
-    this.event.by_stage =
-        events_by_stage_ctor(this.event.by_type.monster, this.event.by_type.gimmick, this.event.by_type.animal)
-    this.item = item_by_ctor(item_data.get_data())
+    this.event.by_stage = events_by_stage_ctor(
+        this.event.by_type.monster,
+        this.event.by_type.gimmick,
+        this.event.by_type.animal
+    )
+    this.item = item_by_ctor(data_item.get_data())
     this.map.spoffer_pairings = get_spoffer_pairings(this.ex_field_param)
+
+    return true
 end
 
 return this

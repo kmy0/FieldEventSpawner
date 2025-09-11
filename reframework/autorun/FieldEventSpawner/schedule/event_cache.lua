@@ -23,8 +23,8 @@
 ---@field unique_index integer
 ---@field exec_time integer
 
-local config = require("FieldEventSpawner.config")
-local table_util = require("FieldEventSpawner.table_util")
+local config = require("FieldEventSpawner.config.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {
     ---@class EventCache
@@ -88,45 +88,35 @@ function this.get_event(stage, unique_index)
 end
 
 function this.overwrite_saved()
-    this.event_cache.saved = table_util.deep_copy(this.event_cache.current)
+    this.event_cache.saved = util_table.deep_copy(this.event_cache.current)
     this.save()
 end
 
 function this.overwrite_current()
-    this.event_cache.current = table_util.deep_copy(this.event_cache.saved)
+    this.event_cache.current = util_table.deep_copy(this.event_cache.saved)
     this.save()
 end
 
 function this.save()
-    local t = {}
-    for k, v in pairs(this.event_cache) do
-        t[k] = {}
-        for stage, evts in pairs(v) do
-            local stage_tbl = {}
-            t[k][tostring(stage)] = stage_tbl
-            for unique_index, cached_event in pairs(evts) do
-                stage_tbl[tostring(unique_index)] = cached_event
-            end
-        end
-    end
-    json.dump_file(config.cache_path, t)
+    json.dump_file(config.cache_path, util_table.key_to_string(this.event_cache))
 end
 
 function this.load()
     local loaded = json.load_file(config.cache_path)
     if loaded then
-        for k, v in pairs(this.event_cache) do
+        loaded = util_table.key_to_any(loaded, function(parent_key, key, level)
+            if not parent_key or (level and level > 3) then
+                return key
+            end
+
+            return tonumber(key)
+        end)
+        for k, _ in pairs(this.event_cache) do
             if not loaded[k] then
                 goto continue
             end
 
-            for stage, evts in pairs(loaded[k]) do
-                local stage_tbl = {}
-                v[tonumber(stage)] = stage_tbl
-                for unique_index, cached_event in pairs(evts) do
-                    stage_tbl[tonumber(unique_index)] = cached_event
-                end
-            end
+            this.event_cache[k] = loaded[k]
             ::continue::
         end
     end

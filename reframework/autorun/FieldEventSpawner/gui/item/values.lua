@@ -32,19 +32,15 @@
 ---@field key any
 ---@field text string
 
-local config = require("FieldEventSpawner.config")
-local data = require("FieldEventSpawner.data")
-local filter_item_data = require("FieldEventSpawner.gui.item_def.filter_item_data")
-local gui_util = require("FieldEventSpawner.gui.util")
-local item_data = require("FieldEventSpawner.gui.item_def.item_data")
-local lang = require("FieldEventSpawner.lang")
-local table_util = require("FieldEventSpawner.table_util")
-local util = require("FieldEventSpawner.util")
-
-local ace = data.ace
-local rt = data.runtime
-local gui = data.gui
-local tr = lang.tr
+local config = require("FieldEventSpawner.config.init")
+local data_ace = require("FieldEventSpawner.data.ace.init")
+local data_gui = require("FieldEventSpawner.data.gui")
+local data_rt = require("FieldEventSpawner.data.runtime")
+local filter_item_data = require("FieldEventSpawner.util.imgui.item_def.filter_item_data")
+local item_data = require("FieldEventSpawner.util.imgui.item_def.item_data")
+local util_imgui = require("FieldEventSpawner.util.imgui.init")
+local util_misc = require("FieldEventSpawner.util.misc.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 ---@class RuntimeGuiData
 local this = {
@@ -78,7 +74,7 @@ end
 ---@param new_values SwitchData
 ---@param fields string[]
 local function is_state_changed(new_values, fields)
-    return table_util.any(fields, function(key, value)
+    return util_table.any(fields, function(key, value)
         return this.current[value] ~= new_values[value]
     end)
 end
@@ -94,8 +90,8 @@ end
 ---@param b SortStruct
 ---@return boolean
 local function numeric_sort_fn(a, b)
-    local a_num = tonumber(util.split_string(a.text, "##")[1])
-    local b_num = tonumber(util.split_string(b.text, "##")[1])
+    local a_num = tonumber(util_misc.split_string(a.text, "##")[1])
+    local b_num = tonumber(util_misc.split_string(b.text, "##")[1])
     return a_num < b_num
 end
 
@@ -107,11 +103,11 @@ local function restore_index(config_key, array, value)
         return
     end
 
-    local index = table_util.index(array, value)
+    local index = util_table.index(array, value)
     if index then
-        config.set(config_key, index)
+        config:set(config_key, index)
     else
-        config.set(config_key, 1)
+        config:set(config_key, 1)
     end
 end
 
@@ -148,7 +144,7 @@ local function sort_struct_fn(key, map_key, map_value)
     local t = type(map_key)
     return {
         key = map_key,
-        text = gui_util.id(map_value, key, (t == "string" or t == "number") and map_key or nil),
+        text = util_imgui.id(map_value, key, (t == "string" or t == "number") and map_key or nil),
     }
 end
 
@@ -158,7 +154,11 @@ end
 local function sort_struct_translated_fn(key, map_key, map_value)
     return {
         key = map_value,
-        text = gui_util.id(tr(string.format("%s_combo.values.%s", key, map_value)), key, map_value),
+        text = util_imgui.id(
+            config.lang:tr(string.format("mod.combo_%s_values.%s", key, map_value)),
+            key,
+            map_value
+        ),
     }
 end
 
@@ -168,9 +168,15 @@ local function translate_em_param_combo()
     end
 
     local key = "em_param"
-    update_combo_values(key, gui.combo[key], sort_struct_translated_fn, nil, function(map_key, map_value)
-        return this.current.em_param_struct[map_value]
-    end)
+    update_combo_values(
+        key,
+        data_gui.combo[key],
+        sort_struct_translated_fn,
+        nil,
+        function(map_key, map_value)
+            return this.current.em_param_struct[map_value]
+        end
+    )
 end
 
 local function translate_em_param_mod_combo()
@@ -179,18 +185,24 @@ local function translate_em_param_mod_combo()
     end
 
     local key = "em_param_mod"
-    update_combo_values(key, gui.combo[key], sort_struct_translated_fn, nil, function(map_key, map_value)
-        local t = this.current.em_param_struct[this.em_param.map[config.current.mod.em_param]]
-        if t then
-            return t[map_value]
+    update_combo_values(
+        key,
+        data_gui.combo[key],
+        sort_struct_translated_fn,
+        nil,
+        function(map_key, map_value)
+            local t = this.current.em_param_struct[this.em_param.map[config.current.mod.em_param]]
+            if t then
+                return t[map_value]
+            end
+            return false
         end
-        return false
-    end)
+    )
 end
 
 local function translate_event_type_combo()
     local key = "event_type"
-    update_combo_values(key, gui.combo[key], sort_struct_translated_fn)
+    update_combo_values(key, data_gui.combo[key], sort_struct_translated_fn)
 end
 
 ---@param params SwitchData
@@ -199,15 +211,15 @@ local function switch_event_type(params)
         return
     end
 
-    this.event_table = ace.event.by_stage[params.stage][params.event_type] or {}
-    if table_util.empty(this.event_table) then
+    this.event_table = data_ace.event.by_stage[params.stage][params.event_type] or {}
+    if util_table.empty(this.event_table) then
         return
     end
 
     local current_value = this.event.map[config.current.mod.event] or nil
     update_combo_values(
         "event",
-        table_util.map_table(this.event_table, nil, function(o)
+        util_table.map_table(this.event_table, nil, function(o)
             return o.name_local
         end),
         sort_struct_fn
@@ -247,7 +259,7 @@ local function switch_area_array(params)
     ) or {}
     update_combo_values(
         "area",
-        table_util.map_array(areas, function(o)
+        util_table.map_array(areas, function(o)
             return o
         end, function(o)
             return tostring(o)
@@ -260,11 +272,15 @@ end
 
 ---@param params SwitchData
 local function switch_em_param_array(params)
-    if not is_monster_event() or not is_state_changed(params, { "event", "stage", "environ", "ignore_environ" }) then
+    if
+        not is_monster_event()
+        or not is_state_changed(params, { "event", "stage", "environ", "ignore_environ" })
+    then
         return
     end
 
-    local current_value = this.em_param.array and this.em_param.array[config.current.mod.em_param] or nil
+    local current_value = this.em_param.array and this.em_param.array[config.current.mod.em_param]
+        or nil
     local event = get_current_event()
     ---@cast event MonsterData
 
@@ -280,24 +296,29 @@ local function switch_em_param_array(params)
 
     local config_key = "mod.em_param"
     restore_index(config_key, this.em_param.array, current_value)
-    params.em_param = this.em_param.map[config.get(config_key)]
+    params.em_param = this.em_param.map[config:get(config_key)]
 end
 
 ---@param params SwitchData
 local function switch_em_param_mod_array(params)
     if
         not is_monster_event()
-        or not is_state_changed(params, { "event", "stage", "environ", "ignore_environ", "em_param" })
+        or not is_state_changed(
+            params,
+            { "event", "stage", "environ", "ignore_environ", "em_param" }
+        )
     then
         return
     end
 
-    local current_value = this.em_param_mod.array and this.em_param_mod.array[config.current.mod.em_param_mod] or nil
+    local current_value = this.em_param_mod.array
+            and this.em_param_mod.array[config.current.mod.em_param_mod]
+        or nil
     translate_em_param_mod_combo()
 
     local config_key = "mod.em_param_mod"
     restore_index(config_key, this.em_param_mod.array, current_value)
-    params.em_param_mod = this.em_param_mod.map[config.get(config_key)]
+    params.em_param_mod = this.em_param_mod.map[config:get(config_key)]
 end
 
 ---@param params SwitchData
@@ -305,12 +326,17 @@ local function switch_em_difficulty_array(params)
     if
         not is_monster_event()
         or not params.em_param_mod
-        or not is_state_changed(params, { "event", "stage", "environ", "ignore_environ", "em_param", "em_param_mod" })
+        or not is_state_changed(
+            params,
+            { "event", "stage", "environ", "ignore_environ", "em_param", "em_param_mod" }
+        )
     then
         return
     end
 
-    local current_value = this.em_difficulty.array and this.em_difficulty.array[config.current.mod.em_difficulty] or nil
+    local current_value = this.em_difficulty.array
+            and this.em_difficulty.array[config.current.mod.em_difficulty]
+        or nil
     local event = get_current_event()
 
     if not event then
@@ -326,7 +352,7 @@ local function switch_em_difficulty_array(params)
     ) or {}
     update_combo_values(
         "em_difficulty",
-        table_util.map_array(table_util.keys(diff_table), function(o)
+        util_table.map_array(util_table.keys(diff_table), function(o)
             return diff_table[o]
         end, function(o)
             return tostring(o)
@@ -372,7 +398,7 @@ local function switch_em_difficulty_rank_array(params)
     local diff_rank_table = this.em_difficulty.map[config.current.mod.em_difficulty] or {} --[[@as table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>]]
     update_combo_values(
         "em_difficulty_rank",
-        table_util.map_array(table_util.keys(diff_rank_table), function(o)
+        util_table.map_array(util_table.keys(diff_rank_table), function(o)
             return diff_rank_table[o]
         end, function(o)
             return tostring(o)
@@ -388,17 +414,18 @@ local function switch_spoffer_array()
         return
     end
 
-    local current_value = this.spoffer.array and this.spoffer.array[config.current.mod.spoffer] or nil
+    local current_value = this.spoffer.array and this.spoffer.array[config.current.mod.spoffer]
+        or nil
     update_combo_values(
         "spoffer",
-        table_util.map_array(table_util.values(rt.state.spoffer), function(o)
+        util_table.map_array(util_table.values(data_rt.state.spoffer), function(o)
             return o.unique_index
         end, function(o)
             return o.name
         end),
         sort_struct_fn,
         function(a, b)
-            return rt.state.spoffer[a.key].exec_min < rt.state.spoffer[b.key].exec_min
+            return data_rt.state.spoffer[a.key].exec_min < data_rt.state.spoffer[b.key].exec_min
         end
     )
     restore_index("mod.spoffer", this.spoffer.array, current_value)
@@ -410,7 +437,10 @@ local function switch_em_size_range(params)
         not this.ref
         or not is_monster_event()
         or not params.em_param_mod
-        or not is_state_changed(params, { "event", "em_param", "em_param_mod", "em_difficulty", "em_difficulty_rank" })
+        or not is_state_changed(
+            params,
+            { "event", "em_param", "em_param_mod", "em_difficulty", "em_difficulty_rank" }
+        )
     then
         return
     end
@@ -423,7 +453,9 @@ local function switch_em_size_range(params)
     end
     ---@cast event MonsterData
 
-    local em_param_mod = this.em_param_mod.map and this.em_param_mod.map[config.current.mod.em_param_mod] or nil
+    local em_param_mod = this.em_param_mod.map
+            and this.em_param_mod.map[config.current.mod.em_param_mod]
+        or nil
     if not em_param_mod then
         return
     end
@@ -436,7 +468,7 @@ local function switch_em_size_range(params)
     end
 
     local size = event.map[params.stage].size_by_param_mod[em_param_mod] --[[@as table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>]]
-    local size_data = size[tonumber(util.split_string(em_difficulty_rank, "##")[1])] --[[@as MonsterSizeData]]
+    local size_data = size[tonumber(util_misc.split_string(em_difficulty_rank, "##")[1])] --[[@as MonsterSizeData]]
     local min = size_data.min
     local max = size_data.max
 
@@ -475,7 +507,7 @@ function this.switch_reward_array(query)
 
     local current_value = this.reward.filtered_array[config.current.mod.reward_config.reward]
     if this.reward:empty() then
-        update_combo_values("reward", ace.item.by_key, function(key, map_key, map_value)
+        update_combo_values("reward", data_ace.item.by_key, function(key, map_key, map_value)
             return { key = map_key, text = map_value.name_local }
         end)
     end
@@ -487,11 +519,11 @@ function this.switch_reward_array(query)
 
         local number = tonumber(query)
         if number then
-            return ace.item.by_key[map_value].id_not_fixed == number
+            return data_ace.item.by_key[map_value].id_not_fixed == number
         end
 
         local query_lower = query:lower()
-        local name_lower = ace.item.by_key[map_value].name_local:lower()
+        local name_lower = data_ace.item.by_key[map_value].name_local:lower()
         return name_lower:find(query_lower) ~= nil
     end)
     restore_index("mod.reward_config.reward", this.reward.filtered_array, current_value)
@@ -547,7 +579,7 @@ function this.switch_event_arrays(
 
     switch_event_type(params)
 
-    if table_util.empty(this.event_table) then
+    if util_table.empty(this.event_table) then
         for _, key in pairs({
             "event",
             "area",
@@ -569,7 +601,7 @@ function this.switch_event_arrays(
         switch_em_size_range(params)
     end
 
-    this.current = table_util.merge_t(this.current, params)
+    this.current = util_table.merge_t(this.current, params)
 end
 
 ---@param key string

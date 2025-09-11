@@ -1,4 +1,6 @@
-local table_util = require("FieldEventSpawner.table_util")
+---@diagnostic disable: no-unknown
+
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
 local rl = {}
@@ -31,8 +33,7 @@ local function get_enums(fixed_type, enum_type)
     return fixed_t, enum_t
 end
 
----@generic K
----@generic V
+---@generic K, V
 ---@param table table<K, V>
 ---@param value V
 ---@param clear boolean?
@@ -40,10 +41,12 @@ end
 function this.reverse_lookup(table, value, clear)
     if not rl[table] or clear then
         rl[table] = {}
+
         for k, v in pairs(table) do
             rl[table][v] = k
         end
     end
+
     return rl[table][value]
 end
 
@@ -64,7 +67,7 @@ function this.iter_fields(type_def_name, as_string, ignore_values)
             string.lower(name) == "max"
             or string.lower(name) == "value__"
             or string.lower(name) == "invalid"
-            or (ignore_values and table_util.contains(ignore_values, name))
+            or (ignore_values and util_table.contains(ignore_values, name))
         then
             goto continue
         end
@@ -73,16 +76,39 @@ function this.iter_fields(type_def_name, as_string, ignore_values)
         if as_string then
             data = tostring(data)
         end
+
         coroutine.yield(name, data)
         ::continue::
     end
 end
 
 ---@param type_def_name string
----@param table table
+---@return table<string, any>
+function this.get_data(type_def_name)
+    local ret = {}
+    local co = coroutine.create(this.iter_fields)
+    local status = true
+    ---@type integer
+    local data
+    ---@type integer | string
+    local name
+    while status do
+        status, name, data = coroutine.resume(co, type_def_name)
+        if name and data then
+            ret[name] = data
+        end
+    end
+
+    return ret
+end
+
+---@generic T
+---@param type_def_name `T`
+---@param t {[T]: string}
 ---@param as_string boolean?
 ---@param ignore_values string[]?
-function this.get_enum(type_def_name, table, as_string, ignore_values)
+---@return {[T]: string}
+function this.get_enum(type_def_name, t, as_string, ignore_values)
     local co = coroutine.create(this.iter_fields)
     local status = true
     ---@type integer
@@ -92,9 +118,11 @@ function this.get_enum(type_def_name, table, as_string, ignore_values)
     while status do
         status, name, data = coroutine.resume(co, type_def_name, as_string, ignore_values)
         if name and data then
-            table[data] = name
+            t[data] = name
         end
     end
+
+    return t
 end
 
 ---@generic T
