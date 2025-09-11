@@ -7,7 +7,6 @@
 ---@field ignore_environ boolean
 ---@field em_difficulty table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>
 ---@field environ app.EnvironmentType.ENVIRONMENT
----@field em_size_custom boolean
 
 ---@class (exact) CurrentData : SwitchData
 ---@field reward_filter string
@@ -147,7 +146,10 @@ end
 ---@param map_value string
 local function sort_struct_fn(key, map_key, map_value)
     local t = type(map_key)
-    return { key = map_key, text = gui_util.id(map_value, key, (t == "string" or t == "number") and map_key or nil) }
+    return {
+        key = map_key,
+        text = gui_util.id(map_value, key, (t == "string" or t == "number") and map_key or nil),
+    }
 end
 
 ---@param key string
@@ -342,10 +344,15 @@ local function switch_em_difficulty_rank_array(params)
     if
         not is_monster_event()
         or not params.em_param_mod
-        or not is_state_changed(
-            params,
-            { "event", "stage", "environ", "ignore_environ", "em_param", "em_param_mod", "em_difficulty" }
-        )
+        or not is_state_changed(params, {
+            "event",
+            "stage",
+            "environ",
+            "ignore_environ",
+            "em_param",
+            "em_param_mod",
+            "em_difficulty",
+        })
     then
         return
     end
@@ -403,10 +410,7 @@ local function switch_em_size_range(params)
         not this.ref
         or not is_monster_event()
         or not params.em_param_mod
-        or not is_state_changed(
-            params,
-            { "event", "em_param", "em_param_mod", "em_difficulty", "em_difficulty_rank", "em_size_custom" }
-        )
+        or not is_state_changed(params, { "event", "em_param", "em_param_mod", "em_difficulty", "em_difficulty_rank" })
     then
         return
     end
@@ -431,20 +435,33 @@ local function switch_em_size_range(params)
         return
     end
 
-    local min, max = 100, 100
-    if not config.current.mod.is_custom_size then
-        local size = event.map[params.stage].size_by_param_mod[em_param_mod] --[[@as table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>]]
-        local size_data = size[tonumber(util.split_string(em_difficulty_rank, "##")[1])] --[[@as MonsterSizeData]]
-        min = size_data.min
-        max = size_data.max
-    else
+    local size = event.map[params.stage].size_by_param_mod[em_param_mod] --[[@as table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>]]
+    local size_data = size[tonumber(util.split_string(em_difficulty_rank, "##")[1])] --[[@as MonsterSizeData]]
+    local min = size_data.min
+    local max = size_data.max
+
+    if config.em_size_min ~= -1 then
         min = config.em_size_min
+    end
+
+    if config.em_size_max ~= -1 then
         max = config.em_size_max
     end
 
     this.ref.em_size:update_draw_args({ min, max })
     if current_value < min or current_value > max then
-        config.current.mod.em_size = 100
+        local min_abs = math.abs(current_value - min)
+        local max_abs = math.abs(current_value - max)
+
+        if min_abs < max_abs then
+            current_value = min
+        elseif max_abs < min_abs then
+            current_value = max
+        else
+            current_value = math.floor(math.abs(min - max) / 2)
+        end
+
+        config.current.mod.em_size = current_value ~= 0 and current_value or min
     end
 end
 
@@ -503,7 +520,6 @@ end
 ---@param stage app.FieldDef.STAGE
 ---@param environ app.EnvironmentType.ENVIRONMENT
 ---@param ignore_environ boolean
----@param em_size_custom boolean
 function this.switch_event_arrays(
     item_ref,
     event_type,
@@ -513,8 +529,7 @@ function this.switch_event_arrays(
     em_difficulty,
     stage,
     environ,
-    ignore_environ,
-    em_size_custom
+    ignore_environ
 )
     this.ref = item_ref
 
@@ -528,7 +543,6 @@ function this.switch_event_arrays(
         em_param = em_param,
         em_param_mod = em_param_mod,
         em_difficulty = em_difficulty,
-        em_size_custom = em_size_custom,
     }
 
     switch_event_type(params)

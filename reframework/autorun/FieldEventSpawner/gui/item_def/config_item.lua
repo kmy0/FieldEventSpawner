@@ -1,10 +1,10 @@
 ---@class (exact) ConfigItem : ItemBase
 ---@field default_value any
 ---@field config_key string
----@field is_disabled (fun(): boolean)?
----@field on_changed_callback (fun())?
+---@field is_disabled (fun(self: ConfigItem): boolean)?
+---@field on_changed_callback (fun(self: ConfigItem))?
 ---@field is_changed (fun(self: ConfigItem, value: any): boolean)?
----@field protected _getter (fun(config_value): any)?
+---@field protected _getter (fun(self: ConfigItem, config_value: any): any)?
 
 local config = require("FieldEventSpawner.config")
 local item_base = require("FieldEventSpawner.gui.item_def.item_base")
@@ -19,8 +19,8 @@ setmetatable(this, { __index = item_base })
 ---@param imgui_draw_func fun(...)
 ---@param imgui_draw_args any[]?
 ---@param default_value any?
----@param getter_func (fun(config_value): any)?
----@param is_disabled_func (fun(): boolean)?
+---@param getter_func (fun(self: ConfigItem, config_value: any): any)?
+---@param is_disabled_func (fun(self: ConfigItem): boolean)?
 ---@param on_changed_callback (fun(self: ConfigItem))?
 ---@param changed_func (fun(self: ConfigItem, value: any): boolean)?
 ---@return ConfigItem
@@ -59,13 +59,13 @@ end
 
 ---@return any
 function this:value()
-    if self.is_disabled and self.is_disabled() then
+    if self.is_disabled and self:is_disabled() then
         return self.default_value
     end
 
     local value = config.get(self.config_key)
     if self._getter then
-        return self._getter(value)
+        return self:_getter(value)
     elseif value then
         return value
     end

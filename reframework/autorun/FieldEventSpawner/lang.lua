@@ -213,9 +213,6 @@ local default = {
     force_size = {
         name = "Force Size",
     },
-    custom_size = {
-        name = "Custom Size",
-    },
 }
 
 function this.init()

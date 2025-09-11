@@ -1,7 +1,7 @@
 ---@class (exact) ItemBase
----@field is_disabled (fun(): boolean)?
+---@field is_disabled (fun(self: ItemBase): boolean)?
 ---@field imgui_draw_args any[]
----@field protected _draw fun(self: ConfigItem, label: string): any
+---@field protected _draw fun(self: ItemBase, label: string): any
 ---@field protected _imgui_draw fun(...)
 
 ---@class ItemBase
@@ -11,7 +11,7 @@ this.__index = this
 
 ---@param draw_func fun(...)
 ---@param draw_args any[]?
----@param is_disabled_func (fun(): boolean)?
+---@param is_disabled_func (fun(self: ItemBase): boolean)?
 ---@return ItemBase
 function this:new(draw_func, draw_args, is_disabled_func)
     local o = {
@@ -26,10 +26,15 @@ end
 
 ---@param label string
 function this:draw(label)
-    imgui.begin_disabled(self.is_disabled and self.is_disabled() or false)
+    imgui.begin_disabled(self.is_disabled and self:is_disabled() or false)
     local ret = { self._imgui_draw(label, table.unpack(self.imgui_draw_args)) }
     imgui.end_disabled()
     return table.unpack(ret)
+end
+
+---@param imgui_draw_args any[]
+function this:update_draw_args(imgui_draw_args)
+    self.imgui_draw_args = imgui_draw_args
 end
 
 return this

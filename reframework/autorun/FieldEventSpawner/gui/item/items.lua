@@ -26,8 +26,7 @@ function this.switch_arrays()
         this.em_difficulty:value(),
         rt.state.stage,
         rt.state.environ,
-        this.is_ignore_environ:value(),
-        this.is_custom_size:value()
+        this.is_ignore_environ:value()
     )
     iv.switch_reward_array(this.reward_filter:value())
 end
@@ -90,7 +89,7 @@ this.event_type = item.config:new(
     imgui.combo,
     { iv.event_type.array },
     "monster",
-    function(config_value)
+    function(self, config_value)
         return iv.event_type.map[config_value]
     end,
     nil,
@@ -99,25 +98,25 @@ this.event_type = item.config:new(
     end
 )
 
-this.event = item.config:new("mod.event", imgui.combo, { iv.event.array }, nil, function(config_value)
+this.event = item.config:new("mod.event", imgui.combo, { iv.event.array }, nil, function(self, config_value)
     return iv.event.map[config_value]
-end, function()
+end, function(self)
     return iv.event:empty()
 end, function(self)
     this.switch_arrays()
 end, is_combo_changed)
 
-this.area = item.config:new("mod.area", imgui.combo, { iv.area.array }, nil, function(config_value)
+this.area = item.config:new("mod.area", imgui.combo, { iv.area.array }, nil, function(self, config_value)
     return iv.area.map[config_value]
-end, function()
+end, function(self)
     return not this.is_force_area:value() or iv.area:empty()
 end, function(self)
     this.switch_arrays()
 end, is_combo_changed)
 
-this.em_param = item.config:new("mod.em_param", imgui.combo, { iv.em_param.array }, nil, function(config_value)
+this.em_param = item.config:new("mod.em_param", imgui.combo, { iv.em_param.array }, nil, function(self, config_value)
     return iv.em_param.map[config_value]
-end, function()
+end, function(self)
     return iv.em_param:empty()
 end, function(self)
     this.switch_arrays()
@@ -128,10 +127,10 @@ this.em_param_mod = item.config:new(
     imgui.combo,
     { iv.em_param_mod.array },
     nil,
-    function(config_value)
+    function(self, config_value)
         return iv.em_param_mod.map[config_value]
     end,
-    function()
+    function(self)
         return iv.em_param_mod:empty()
     end,
     function(self)
@@ -145,10 +144,10 @@ this.em_difficulty = item.config:new(
     imgui.combo,
     { iv.em_difficulty.array },
     nil,
-    function(config_value)
+    function(self, config_value)
         return iv.em_difficulty.map[config_value]
     end,
-    function()
+    function(self)
         return iv.em_difficulty:empty() or not this.is_force_difficulty:value()
     end,
     function(self)
@@ -162,10 +161,10 @@ this.em_difficulty_rank = item.config:new(
     imgui.combo,
     { iv.em_difficulty_rank.array },
     nil,
-    function(config_value)
+    function(self, config_value)
         return iv.em_difficulty_rank.map[config_value]
     end,
-    function()
+    function(self)
         return iv.em_difficulty_rank:empty() or not this.is_force_difficulty:value()
     end,
     function(self)
@@ -174,59 +173,59 @@ this.em_difficulty_rank = item.config:new(
     is_combo_changed
 )
 
-this.spoffer = item.config:new("mod.spoffer", imgui.combo, { iv.spoffer.array }, nil, function(config_value)
+this.spoffer = item.config:new("mod.spoffer", imgui.combo, { iv.spoffer.array }, nil, function(self, config_value)
     return iv.spoffer.map[config_value]
-end, function()
+end, function(self)
     return not this.is_spoffer:value()
 end, function(self)
     this.switch_arrays()
 end, is_combo_changed)
 
-this.swarm_count = item.config:new("mod.swarm_count", imgui.slider_int, { 0, 5 }, 0, nil, function()
+this.swarm_count = item.config:new("mod.swarm_count", imgui.slider_int, { 0, 5 }, 0, nil, function(self)
     local em_param = this.em_param:value()
     return (em_param ~= "swarm" and em_param ~= "boss")
         or (em_param == "legendary" and not iv.current.em_param_struct.boss)
 end)
 
-this.em_size = item.config:new(
-    "mod.em_size",
-    imgui.slider_int,
-    { config.em_size_min, config.em_size_max },
-    nil,
-    nil,
-    function()
-        return not this.is_force_size:value()
-    end
-)
+this.em_size = item.config:new("mod.em_size", imgui.slider_int, { 88, 125 }, nil, nil, function(self)
+    return not this.is_force_size:value()
+end)
 
 this.time = item.config:new("mod.time", imgui.slider_int, { 1, 60 })
 this.is_ignore_environ = item.config:new("mod.is_ignore_environ", imgui.checkbox, nil, false)
-this.is_force_area = item.config:new("mod.is_force_area", imgui.checkbox, nil, false, nil, function()
+this.is_force_area = item.config:new("mod.is_force_area", imgui.checkbox, nil, false, nil, function(self)
     return iv.area:empty() or (this.event_type:value() == "monster" and this.em_param:value() == "battlefield_slay")
 end)
 
-this.is_yummy = item.config:new("mod.is_yummy", imgui.checkbox, nil, false, nil, function()
+this.is_yummy = item.config:new("mod.is_yummy", imgui.checkbox, nil, false, nil, function(self)
     return (this.swarm_count:value() > 0 and this.em_param:value() == "normal")
         or rt.is_in_quest()
         or this.is_force_rewards:value()
 end)
 
-this.is_village_boost = item.config:new("mod.is_village_boost", imgui.checkbox, nil, false, nil, function()
+this.is_village_boost = item.config:new("mod.is_village_boost", imgui.checkbox, nil, false, nil, function(self)
     return rt.is_in_quest()
         or not rt.is_village_boost_unlocked(rt.state.stage)
         or is_battlefield()
         or (this.swarm_count:value() > 0 and this.em_param:value() ~= "boss")
 end)
 
-this.is_allow_invalid_quest = item.config:new("mod.is_allow_invalid_quest", imgui.checkbox, nil, false, nil, function()
+this.is_allow_invalid_quest = item.config:new(
+    "mod.is_allow_invalid_quest",
+    imgui.checkbox,
+    nil,
+    false,
+    nil,
+    function(self)
+        return rt.is_in_quest()
+    end
+)
+
+this.is_force_rewards = item.config:new("mod.is_force_rewards", imgui.checkbox, nil, false, nil, function(self)
     return rt.is_in_quest()
 end)
 
-this.is_force_rewards = item.config:new("mod.is_force_rewards", imgui.checkbox, nil, false, nil, function()
-    return rt.is_in_quest()
-end)
-
-this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, nil, function()
+this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, nil, function(self)
     return rt.is_in_quest()
         or not rt.is_spoffer_unlocked(rt.state.stage)
         or is_battlefield()
@@ -234,18 +233,15 @@ this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, 
         or iv.spoffer:empty()
 end)
 
-this.is_force_difficulty = item.config:new("mod.is_force_difficulty", imgui.checkbox, nil, false, nil, function()
+this.is_force_difficulty = item.config:new("mod.is_force_difficulty", imgui.checkbox, nil, false, nil, function(self)
     return iv.em_difficulty:empty()
 end)
-this.is_force_size = item.config:new("mod.is_force_size", imgui.checkbox, nil, false, nil, function()
-    return not this.em_difficulty:value()
-end)
-this.is_custom_size = item.config:new("mod.is_custom_size", imgui.checkbox, nil, false, nil, function()
-    return not this.is_force_size:value()
+this.is_force_size = item.config:new("mod.is_force_size", imgui.checkbox, nil, false, nil, function(self)
+    return not this.em_difficulty:value() or this.em_size.imgui_draw_args[2] == this.em_size.imgui_draw_args[3]
 end)
 
 this.spawn = item.callback:new(
-    function()
+    function(self)
         state.spawn_button.result = state.callbacks.spawn()
         if not config.current.mod.disable_button_cooldown or state.spawn_button.result ~= rt.enum.spawn_result.OK then
             timer.new(
@@ -257,7 +253,7 @@ this.spawn = item.callback:new(
     end,
     imgui.button,
     nil,
-    function()
+    function(self)
         return state.spawn_button.state ~= rt.enum.spawn_button_state.OK
             or state.spawn_button.cooldown > 0
             or not this.event:value()
@@ -269,7 +265,7 @@ this.spawn = item.callback:new(
 )
 
 this.clear_schedule = item.callback:new(
-    function()
+    function(self)
         if not config.current.mod.disable_button_cooldown then
             timer.new(state.spawn_button.key, config.spawn_cooldown.clear_schedule)
         end
@@ -277,14 +273,14 @@ this.clear_schedule = item.callback:new(
     end,
     imgui.button,
     nil,
-    function()
+    function(self)
         ---@diagnostic disable-next-line: return-type-mismatch
         return rt.is_in_quest()
     end
 )
 
 this.rebuild_schedule = item.callback:new(
-    function()
+    function(self)
         if not config.current.mod.disable_button_cooldown then
             timer.new(state.spawn_button.key, config.spawn_cooldown.rebuild_schedule)
         end
@@ -292,7 +288,7 @@ this.rebuild_schedule = item.callback:new(
     end,
     imgui.button,
     nil,
-    function()
+    function(self)
         ---@diagnostic disable-next-line: return-type-mismatch
         return rt.is_in_quest()
     end
@@ -309,7 +305,7 @@ this.reward = item.config:new(
     imgui.combo,
     { iv.reward.filtered_array },
     nil,
-    function(config_value)
+    function(self, config_value)
         local key = iv.reward.filtered_map[config_value]
         local item_data = ace.item.by_key[key]
         if not key or not item_data then
@@ -322,7 +318,7 @@ this.reward = item.config:new(
             count = this.reward_count:value(),
         }
     end,
-    function()
+    function(self)
         return table_util.empty(iv.reward.filtered_array)
     end,
     function(self)
@@ -332,23 +328,23 @@ this.reward = item.config:new(
 )
 
 this.reward_add = item.callback:new(
-    function()
+    function(self)
         table.insert(config.current.mod.reward_config.array, this.reward:value())
     end,
     imgui.button,
     nil,
-    function()
+    function(self)
         return #config.current.mod.reward_config.array >= 10 or not this.reward:value()
     end
 )
 
 this.edit_rewards = item.callback:new(
-    function()
+    function(self)
         state.open_reward_builder = true
     end,
     imgui.button,
     nil,
-    function()
+    function(self)
         return not this.is_force_rewards:value()
     end
 )

@@ -19,6 +19,7 @@
 ---@class app.cEmModuleBase : via.clr.ManagedObject
 ---@class app.cContextCreateArg : via.clr.ManagedObject
 ---@class app.cExFieldEvent_SpecialOffer : app.cExFieldEventBase
+---@class app.cEmParamGuid_RandomSize_RandomSizeTbl : app.cEmParamGuidBase
 
 ---@class app.GUIManager : ace.GUIManagerBase
 ---@field getSystemLanguageToApp fun(self: app.GUIManager) : via.Language
@@ -342,6 +343,40 @@
 
 ---@class app.user_data.EnemyManagerSetting : via.UserData
 ---@field get_Difficulty2 fun(self: app.user_data.EnemyManagerSetting): app.user_data.EmParamDifficulty2
+---@field get_RandomSize fun(self: app.user_data.EnemyManagerSetting): app.user_data.EmParamRandomSize
+---@field get_Size fun(self: app.user_data.EnemyManagerSetting): app.user_data.EmParamSize
+
+---@class app.user_data.EmParamRandomSize : via.UserData
+---@field _EnemyRandomSizeTblArray System.Array<app.user_data.EmParamRandomSize.cEnemyTableData>
+---@field getRandomSizeTblData fun(self: app.user_data.EmParamRandomSize, guid: System.Guid): app.user_data.EmParamRandomSize.cRandomSizeData
+
+---@class app.user_data.EmParamRandomSize.cRandomSizeData : via.clr.ManagedObject
+---@field _ProbDataTbl System.Array<app.user_data.EmParamRandomSize.cProbData>
+
+---@class app.user_data.EmParamRandomSize.cProbData : via.clr.ManagedObject
+---@field get_Prob fun(self: app.user_data.EmParamRandomSize.cProbData): System.UInt16
+---@field get_Scale fun(self: app.user_data.EmParamRandomSize.cProbData): System.UInt16
+
+---@class app.user_data.EmParamRandomSize.cEnemyTableData : via.clr.ManagedObject
+---@field _SizeTable System.Array<app.user_data.EmParamRandomSize.cSizeTableData>
+---@field get_LegendaryId fun(self: app.user_data.EmParamRandomSize.cEnemyTableData): app.EnemyDef.LEGENDARY_ID
+---@field get_EmIdFixed fun(self: app.user_data.EmParamRandomSize.cEnemyTableData): app.EnemyDef.ID_Fixed
+
+---@class app.user_data.EmParamRandomSize.cSizeTableData : via.clr.ManagedObject
+---@field get_RewardRank_L fun(self: app.user_data.EmParamRandomSize.cSizeTableData): app.QuestDef.EM_REWARD_RANK_Fixed
+---@field get_RewardRank_U fun(self: app.user_data.EmParamRandomSize.cSizeTableData): app.QuestDef.EM_REWARD_RANK_Fixed
+---@field getSizeTableId fun(self: app.user_data.EmParamRandomSize.cSizeTableData, id: System.Int32): app.cEmParamGuid_RandomSize_RandomSizeTbl
+
+---@class app.cEmParamGuidBase : via.clr.ManagedObject
+---@field Value System.Guid
+
+---@class app.user_data.EmParamSize : via.UserData
+---@field getSizeData fun(self: app.user_data.EmParamSize, em_id: app.EnemyDef.ID): app.user_data.EmParamSize.cSizeData
+
+---@class app.user_data.EmParamSize.cSizeData : via.clr.ManagedObject
+---@field get_CrownSize_Small fun(self: app.user_data.EmParamSize.cSizeData): System.UInt16
+---@field get_CrownSize_Big fun(self: app.user_data.EmParamSize.cSizeData): System.UInt16
+---@field get_CrownSize_King fun(self: app.user_data.EmParamSize.cSizeData): System.UInt16
 
 ---@class app.user_data.EmParamDifficulty2
 ---@field getDifficultyRate fun(self: app.user_data.EmParamDifficulty2, guid: System.Guid): app.user_data.EmParamDifficulty2.cDifficultyRate

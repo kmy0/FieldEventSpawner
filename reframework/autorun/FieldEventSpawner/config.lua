@@ -42,7 +42,6 @@
 ---@field em_difficulty_rank integer
 ---@field em_size integer
 ---@field is_force_size boolean
----@field is_custom_size boolean
 
 ---@class (exact) SpawnCooldown
 ---@field normal integer
@@ -94,8 +93,8 @@ this.default_lang_path = this.name .. "/lang/en-us.json"
 this.display_cheat_timer_name = "cheat_timer"
 this.display_cheat_timer = 30
 this.force_area_timer = 60
-this.em_size_max = 500
-this.em_size_min = 1
+this.em_size_max = -1
+this.em_size_min = -1
 this.font = {
     size = 16,
 }
@@ -149,7 +148,6 @@ this.default = {
         is_force_rewards = false,
         is_force_difficulty = false,
         is_allow_invalid_quest = false,
-        is_custom_size = false,
         is_force_size = false,
         time = 30,
         reward_config = {
