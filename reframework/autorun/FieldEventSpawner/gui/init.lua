@@ -405,8 +405,6 @@ function this.draw()
         end
         item.is_force_difficulty:draw(gui_util.tr("force_difficulty"))
         item.is_force_size:draw(gui_util.tr("force_size"))
-        imgui.same_line()
-        item.is_custom_size:draw(gui_util.tr("custom_size"))
         item.is_force_rewards:draw(gui_util.tr("force_rewards_box"))
         imgui.same_line()
         item.edit_rewards:draw(gui_util.tr("open_rewards_builder_button"))
