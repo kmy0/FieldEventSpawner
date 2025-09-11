@@ -1,6 +1,5 @@
 local config = require("FieldEventSpawner.config")
 local lang = require("FieldEventSpawner.lang")
-local util = require("FieldEventSpawner.util")
 
 config.init()
 lang.init()
@@ -10,8 +9,6 @@ local sched = require("FieldEventSpawner.schedule")
 sched.init()
 
 local config_menu = require("FieldEventSpawner.gui")
-
-config_menu.init()
 
 sdk.hook(
     sdk.find_type_definition("app.QuestCheckUtil"):get_method("checkExQuest(System.Int32, app.cKeepQuestData)") --[[@as REMethodDefinition]],

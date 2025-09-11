@@ -20,7 +20,10 @@ local this = {
         ---@type MonsterSpawnEventArgs
         em_args = nil,
         updated = false,
-        cheat_message = "",
+        cheat = {
+            message = "",
+            timer = timer:new(config.display_cheat_timer),
+        },
         ---@type table<integer, {timer: Timer, area: integer}>
         force_area = {},
     },
@@ -245,10 +248,10 @@ function this.allow_invalid_quests_post(retval)
                 end
             end
 
-            timer.new(config.display_cheat_timer_name, config.display_cheat_timer)
-            this.state.cheat_message = table.concat(errors, "\n")
+            this.state.cheat.timer:restart()
+            this.state.cheat.message = table.concat(errors, "\n")
         else
-            timer.reset_key(config.display_cheat_timer_name)
+            this.state.cheat.timer:abort()
         end
     end
 
@@ -302,7 +305,7 @@ function this.force_context_area_pre(args)
         local context_args = sdk.to_managed_object(args[3]) --[[@as app.cContextCreateArg_Enemy]]
         context_args:set_AreaNo(this.state.em_args.force_area)
         this.state.force_area[this.state.em_args.unique_index] = {
-            timer = timer.new(tostring(this.state.em_args.unique_index), config.force_area_timer),
+            timer = timer:new(config.force_area_timer, nil, true),
             area = this.state.em_args.force_area,
         }
     end

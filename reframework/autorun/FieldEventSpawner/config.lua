@@ -67,7 +67,6 @@
 ---@field default_lang_path string
 ---@field spawn_cooldown SpawnCooldown
 ---@field display_cheat_timer integer
----@field display_cheat_timer_name string
 ---@field em_size_min integer
 ---@field em_size_max integer
 ---@field force_area_timer integer
@@ -90,7 +89,6 @@ this.name = "FieldEventSpawner"
 this.config_path = this.name .. "/config.json"
 this.cache_path = this.name .. "/cache.json"
 this.default_lang_path = this.name .. "/lang/en-us.json"
-this.display_cheat_timer_name = "cheat_timer"
 this.display_cheat_timer = 30
 this.force_area_timer = 60
 this.em_size_max = -1

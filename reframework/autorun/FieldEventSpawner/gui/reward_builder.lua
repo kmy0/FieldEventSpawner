@@ -8,19 +8,20 @@ local gui_util = require("FieldEventSpawner.gui.util")
 local item = require("FieldEventSpawner.gui.item")
 local lang = require("FieldEventSpawner.lang")
 
-local this = {}
-local window = {
-    flags = 0,
-    condition = 1 << 1,
-}
-local table_data = {
-    name = "reward_info",
-    flags = 1 << 8 | 1 << 7 | 1 << 10 | 1 << 13 | 1 << 25,
+local this = {
+    window = {
+        flags = 0,
+        condition = 1 << 1,
+    },
+    table = {
+        name = "reward_info",
+        flags = 1 << 8 | 1 << 7 | 1 << 10 | 1 << 13 | 1 << 25,
+    },
 }
 
 local function draw_reward_table()
     if
-        imgui.begin_table(table_data.name, 3, table_data.flags --[[@as ImGuiTableFlags]], Vector2f.new(0, 10 * 28))
+        imgui.begin_table(this.table.name, 3, this.table.flags --[[@as ImGuiTableFlags]], Vector2f.new(0, 10 * 28))
     then
         imgui.table_setup_column(gui_util.tr("reward_table.headers.reward_header"), 1 << 3)
         imgui.table_setup_column(gui_util.tr("reward_table.headers.count_header"))
@@ -51,15 +52,18 @@ end
 function this.draw()
     imgui.set_next_window_pos(
         Vector2f.new(config.current.gui.reward_builder.pos_x, config.current.gui.reward_builder.pos_y),
-        window.condition
+        this.window.condition
     )
     imgui.set_next_window_size(
         Vector2f.new(config.current.gui.reward_builder.size_x, config.current.gui.reward_builder.size_y),
-        window.condition
+        this.window.condition
     )
 
-    config.current.gui.reward_builder.is_opened =
-        imgui.begin_window(gui_util.tr("reward_builder"), config.current.gui.reward_builder.is_opened, window.flags)
+    config.current.gui.reward_builder.is_opened = imgui.begin_window(
+        gui_util.tr("reward_builder"),
+        config.current.gui.reward_builder.is_opened,
+        this.window.flags
+    )
 
     imgui.spacing()
     imgui.indent(3)

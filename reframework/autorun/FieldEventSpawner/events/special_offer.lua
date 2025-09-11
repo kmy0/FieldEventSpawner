@@ -21,9 +21,8 @@
 ]]
 
 local data = require("FieldEventSpawner.data")
+local sched_util = require("FieldEventSpawner.schedule.util")
 local util = require("FieldEventSpawner.util")
----@module "FieldEventSpawner.schedule"
-local sched
 
 local ace = data.ace
 local rl = data.util.reverse_lookup
@@ -34,14 +33,9 @@ local this = {}
 ---@param edited_reward_data app.cExFieldScheduleExportData.cEventData?
 ---@return app.cExFieldEvent_EmReward
 local function swap_rewards(original_reward, edited_reward_data)
-    -- lovely circulars :))
-    if not sched then
-        sched = require("FieldEventSpawner.schedule")
-    end
-
     local unique_index = original_reward._UniqueIndex
     if not edited_reward_data then
-        edited_reward_data = sched.util.create_event_data()
+        edited_reward_data = sched_util.create_event_data()
         edited_reward_data._EventType = rl(ace.enum.ex_event, "EM_REWARD")
     end
 
