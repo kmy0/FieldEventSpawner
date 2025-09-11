@@ -20,13 +20,12 @@
     unused item id slots are filled with 1 for whatever reason
 ]]
 
-local data = require("FieldEventSpawner.data")
-local util = require("FieldEventSpawner.util")
----@module "FieldEventSpawner.schedule"
-local sched
+local data_ace = require("FieldEventSpawner.data.ace.ace")
+local game_data = require("FieldEventSpawner.util.game.data")
+local m = require("FieldEventSpawner.util.ref.methods")
+local sched_util = require("FieldEventSpawner.schedule.util")
 
-local ace = data.ace
-local rl = data.util.reverse_lookup
+local rl = game_data.reverse_lookup
 
 local this = {}
 
@@ -34,19 +33,14 @@ local this = {}
 ---@param edited_reward_data app.cExFieldScheduleExportData.cEventData?
 ---@return app.cExFieldEvent_EmReward
 local function swap_rewards(original_reward, edited_reward_data)
-    -- lovely circulars :))
-    if not sched then
-        sched = require("FieldEventSpawner.schedule")
-    end
-
     local unique_index = original_reward._UniqueIndex
     if not edited_reward_data then
-        edited_reward_data = sched.util.create_event_data()
-        edited_reward_data._EventType = rl(ace.enum.ex_event, "EM_REWARD")
+        edited_reward_data = sched_util.create_event_data()
+        edited_reward_data._EventType = rl(data_ace.enum.ex_event, "EM_REWARD")
     end
 
     edited_reward_data._UniqueIndex = unique_index
-    local edited_reward = util.createEventInstance:call(nil, edited_reward_data) --[[@as app.cExFieldEvent_EmReward]]
+    local edited_reward = m.createEventInstance(edited_reward_data) --[[@as app.cExFieldEvent_EmReward]]
     for i = 0, 5 do
         local field = string.format("_FreeValue%s", i)
         if edited_reward:get_field(field) == 0 then

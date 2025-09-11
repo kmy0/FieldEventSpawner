@@ -2,7 +2,7 @@
 ---@field array string[]
 ---@field map string[]
 
-local table_util = require("FieldEventSpawner.table_util")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 ---@class GuiItemData
 local this = {}
@@ -19,12 +19,12 @@ function this:new()
 end
 
 function this:clear()
-    table_util.clear(self.array)
-    table_util.clear(self.map)
+    util_table.clear(self.array)
+    util_table.clear(self.map)
 end
 
 function this:empty()
-    return table_util.empty(self.array)
+    return util_table.empty(self.array)
 end
 
 return this

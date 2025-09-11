@@ -27,13 +27,13 @@
     _FreeMiniValue6 = Bit array, eg. if there is an item in _FreeValue3, you set bit 3 to 1 etc.
 ]]
 
-local data = require("FieldEventSpawner.data")
-local sched = require("FieldEventSpawner.schedule")
-local table_util = require("FieldEventSpawner.table_util")
+local data_ace = require("FieldEventSpawner.data.ace.init")
+local data_rt = require("FieldEventSpawner.data.runtime")
+local game_data = require("FieldEventSpawner.util.game.data")
+local sched = require("FieldEventSpawner.schedule.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
-local rl = data.util.reverse_lookup
-local rt = data.runtime
-local ace = data.ace
+local rl = game_data.reverse_lookup
 
 ---@class RewardFactory
 local this = {}
@@ -49,7 +49,7 @@ function this:new(reward_array, stage)
         stage = stage,
     }
     setmetatable(o, self)
-    _, o._schedule_timeline = rt.get_field_director()
+    _, o._schedule_timeline = data_rt.get_field_director()
     ---@cast o RewardFactory
     return o
 end
@@ -59,15 +59,15 @@ function this:build()
     ---@type app.cExFieldScheduleExportData.cEventData[]
     local packs = {}
     for _, pack in ipairs({
-        table_util.slice(self.reward_array, 1, 6, true),
-        table_util.slice(self.reward_array, 7, 10, true),
+        util_table.slice(self.reward_array, 1, 6, true),
+        util_table.slice(self.reward_array, 7, 10, true),
     }) do
         if pack then
             table.insert(packs, self:_build(pack))
         end
     end
 
-    if table_util.empty(packs) then
+    if util_table.empty(packs) then
         return
     end
 
@@ -89,7 +89,7 @@ end
 function this:_build(reward_array)
     local byte_array = 0
     local event_data = sched.util.create_event_data()
-    event_data._EventType = rl(ace.enum.ex_event, "EM_REWARD")
+    event_data._EventType = rl(data_ace.enum.ex_event, "EM_REWARD")
 
     for i = 1, #reward_array do
         local reward = reward_array[i]

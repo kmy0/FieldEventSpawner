@@ -2,8 +2,8 @@
 ---@field filtered_array string[]
 ---@field filtered_map string[]
 
-local item_data = require("FieldEventSpawner.gui.item_def.item_data")
-local table_util = require("FieldEventSpawner.table_util")
+local item_data = require("FieldEventSpawner.util.imgui.item_def.item_data")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 ---@class FilterGuiItemData
 local this = {}
@@ -23,8 +23,8 @@ end
 
 ---@param predicate fun(map_value: string): boolean
 function this:filter(predicate)
-    table_util.clear(self.filtered_array)
-    table_util.clear(self.filtered_map)
+    util_table.clear(self.filtered_array)
+    util_table.clear(self.filtered_map)
 
     for i = 1, #self.map do
         local key = self.map[i]
@@ -37,10 +37,10 @@ function this:filter(predicate)
 end
 
 function this:clear()
-    table_util.clear(self.filtered_array)
-    table_util.clear(self.filtered_map)
-    table_util.clear(self.array)
-    table_util.clear(self.map)
+    util_table.clear(self.filtered_array)
+    util_table.clear(self.filtered_map)
+    util_table.clear(self.array)
+    util_table.clear(self.map)
 end
 
 return this

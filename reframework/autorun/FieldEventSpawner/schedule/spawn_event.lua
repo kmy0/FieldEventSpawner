@@ -1,6 +1,6 @@
 ---@class (exact) MonsterSpawnEventArgs
 ---@field id app.EnemyDef.ID
----@field force_area integer?
+---@field area integer?
 ---@field village_boost boolean?
 ---@field unique_index integer?
 ---@field spoffer integer?
@@ -17,10 +17,8 @@
 ---@class (exact)MonsterSpawnEvent : SpawnEvent
 ---@field args MonsterSpawnEventArgs
 
-local data = require("FieldEventSpawner.data")
-
-local ace = data.ace
-local rt = data.runtime
+local data_ace = require("FieldEventSpawner.data.ace.init")
+local data_rt = require("FieldEventSpawner.data.runtime")
 
 local this = {}
 
@@ -36,11 +34,13 @@ function this.ctor(event_data, name, area, collision_flag, children, sub_events)
     return {
         event_data = event_data,
         cache_base = {
-            type = rt.enum.cached_event_type.PARENT,
+            type = data_rt.enum.cached_event_type.PARENT,
             name = name,
             area = area,
             event_type = event_data._EventType,
-            id = event_data:get_field(ace.map.ex_event_to_id_field[ace.enum.ex_event[event_data._EventType]]),
+            id = event_data:get_field(
+                data_ace.map.ex_event_to_id_field[data_ace.enum.ex_event[event_data._EventType]]
+            ),
             collision_flag = collision_flag and collision_flag or 0,
             children = children,
         },
@@ -79,7 +79,7 @@ function this.monster_ctor(
     ---@cast ret MonsterSpawnEvent
     ret.args = {
         id = id,
-        force_area = force_area,
+        area = force_area,
         spoffer = spoffer,
         village_boost = village_boost,
         spoffer_rewards = spoffer_rewards,
@@ -117,12 +117,14 @@ end
 function this.child_ctor(unique_index, event_data, area, collision_flag)
     ---@type CachedEventChild
     local ret = {
-        type = rt.enum.cached_event_type.CHILD,
+        type = data_rt.enum.cached_event_type.CHILD,
         unique_index = unique_index,
     }
     if event_data then
         ret.base = {
-            id = event_data:get_field(ace.map.ex_event_to_id_field[ace.enum.ex_event[event_data._EventType]]),
+            id = event_data:get_field(
+                data_ace.map.ex_event_to_id_field[data_ace.enum.ex_event[event_data._EventType]]
+            ),
             event_type = event_data._EventType,
             area = area and area or 0,
             collision_flag = collision_flag and collision_flag or 0,

@@ -28,14 +28,14 @@
         end
 ]]
 
-local data = require("FieldEventSpawner.data")
+local data_ace = require("FieldEventSpawner.data.ace.ace")
+local data_rt = require("FieldEventSpawner.data.runtime")
 local factory = require("FieldEventSpawner.events.area_event_factory")
-local sched = require("FieldEventSpawner.schedule")
-local util = require("FieldEventSpawner.util")
+local game_data = require("FieldEventSpawner.util.game.data")
+local sched = require("FieldEventSpawner.schedule.init")
+local util_game = require("FieldEventSpawner.util.game.init")
 
-local rl = data.util.reverse_lookup
-local rt = data.runtime
-local ace = data.ace
+local rl = game_data.reverse_lookup
 
 ---@class GimmickEventFactory
 local this = {}
@@ -52,41 +52,45 @@ setmetatable(this, { __index = factory })
 function this:new(gimmick_data, stage, time, ignore_environ_type, area)
     local o = factory.new(self, gimmick_data, stage, time, area)
     setmetatable(o, self)
-    o._area_array = gimmick_data:get_area_array(stage, not ignore_environ_type and rt.get_environ(stage) or nil)
+    o._area_array = gimmick_data:get_area_array(
+        stage,
+        not ignore_environ_type and data_rt.get_environ(stage) or nil
+    )
     ---@cast o GimmickEventFactory
     return o
 end
 
 ---@return SpawnResult, SpawnEvent[]?
 function this:build()
-    local environ_type = rt.get_environ(self.stage)
-    local event_ex_name = ace.enum.ex_gimmick[self.event_data.ex_id]
-    local event_type = rl(ace.enum.ex_event, "GIMMICK_EVENT")
-    local event_flag = ace.map.ex_gimmick_to_flag[event_ex_name]
+    local environ_type = data_rt.get_environ(self.stage)
+    local event_ex_name = data_ace.enum.ex_gimmick[self.event_data.ex_id]
+    local event_type = rl(data_ace.enum.ex_event, "GIMMICK_EVENT")
+    local event_flag = data_ace.map.ex_gimmick_to_flag[event_ex_name]
     local guid_hash = 0
 
     ---@param event app.cExFieldEventBase
     ---@return boolean
     local function predicate(event)
-        return event:get_ExFieldEventType() == event_type and event._FreeMiniValue6 >> 0 == event_flag
+        return event:get_ExFieldEventType() == event_type
+            and event._FreeMiniValue6 >> 0 == event_flag
     end
 
     local other_events = self:_get_other_events(predicate)
     local area = self.area and self.area or self:_get_area(other_events, self._area_array)
 
     if not area then
-        return rt.enum.spawn_result.NO_AREA
+        return data_rt.enum.spawn_result.NO_AREA
     end
 
     if event_ex_name == "ASSIST_NPC" then
         local gimmick_data = self.event_data
         ---@cast gimmick_data NpcData
-        guid_hash = util.hash_guid(gimmick_data.guid)
+        guid_hash = util_game.hash_guid(gimmick_data.guid)
     end
 
     local event_data = sched.util.create_event_data()
     event_data._EventType = event_type
-    event_data._FreeValue0 = data.util.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue0 = game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue1 = self.event_data.id
     event_data._FreeValue2 = self.event_data:get_area_fixed(self.stage, area)
     event_data._FreeValue3 = guid_hash
@@ -95,10 +99,11 @@ function this:build()
     event_data._FreeMiniValue2 = event_ex_name == "ASSIST_NPC" and 255 or environ_type
     event_data._FreeMiniValue6 = event_flag
 
-    local collision_flag = rt.enum.event_collision_flag.ID
-        | (event_ex_name == "ASSIST_NPC" and 0 or rt.enum.event_collision_flag.AREA)
-        | rt.enum.event_collision_flag.TIME
-    return rt.enum.spawn_result.OK, sched.spawn_event.ctor(event_data, self.event_data.name_local, area, collision_flag)
+    local collision_flag = data_rt.enum.event_collision_flag.ID
+        | (event_ex_name == "ASSIST_NPC" and 0 or data_rt.enum.event_collision_flag.AREA)
+        | data_rt.enum.event_collision_flag.TIME
+    return data_rt.enum.spawn_result.OK,
+        sched.spawn_event.ctor(event_data, self.event_data.name_local, area, collision_flag)
 end
 
 return this

@@ -6,12 +6,10 @@
 ---@field protected _area_array integer[]?
 ---@field build fun(): SpawnResult, SpawnEvent?
 
-local data = require("FieldEventSpawner.data")
-local sched = require("FieldEventSpawner.schedule")
-local table_util = require("FieldEventSpawner.table_util")
-local util = require("FieldEventSpawner.util")
-
-local rt = data.runtime
+local data_rt = require("FieldEventSpawner.data.runtime")
+local sched = require("FieldEventSpawner.schedule.init")
+local util_game = require("FieldEventSpawner.util.game.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 ---@class AreaEventFactory
 local this = {}
@@ -38,7 +36,7 @@ end
 ---@return SpawnResult
 function this:spawn()
     if not self._area_array then
-        return rt.enum.spawn_result.NO_AREA
+        return data_rt.enum.spawn_result.NO_AREA
     end
 
     local res, event = self:build()
@@ -55,25 +53,25 @@ end
 ---@return integer
 function this:_get_area(other_events, areas)
     ---@type integer[]
-    local candidates = table_util.deep_copy(areas)
+    local candidates = util_table.deep_copy(areas)
     for _, event in pairs(other_events) do
         if not event:get_IsWorking() then
             goto continue
         end
 
         local area = event:get_AreaNo()
-        local index = table_util.index(candidates, area)
+        local index = util_table.index(candidates, area)
         if index ~= nil then
             table.remove(candidates, index)
         end
 
-        if table_util.empty(candidates) then
+        if util_table.empty(candidates) then
             break
         end
         ::continue::
     end
 
-    if not table_util.empty(candidates) then
+    if not util_table.empty(candidates) then
         return candidates[math.random(#candidates)]
     end
     return areas[math.random(#areas)]
@@ -83,9 +81,9 @@ end
 ---@param predicate fun(event:app.cExFieldEventBase): boolean
 ---@return app.cExFieldEventBase[]
 function this:_get_other_events(predicate)
-    local _, schedule_timeline = rt.get_field_director()
+    local _, schedule_timeline = data_rt.get_field_director()
     local event_array = schedule_timeline:get_KeyList()
-    local event_enum = util.get_array_enum(event_array)
+    local event_enum = util_game.get_array_enum(event_array)
     ---@type app.cExFieldEventBase[]
     local ret = {}
 

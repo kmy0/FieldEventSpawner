@@ -1,57 +1,89 @@
-local cache = require("FieldEventSpawner.schedule.cache")
-local config = require("FieldEventSpawner.config")
-local data = require("FieldEventSpawner.data")
-local special_offer = require("FieldEventSpawner.events.special_offer")
-local table_util = require("FieldEventSpawner.table_util")
-local timer = require("FieldEventSpawner.timer")
-local util = require("FieldEventSpawner.util")
+---@class (exact) HookState
+---@field flags HookFlags
+---@field actions HookActions
+---@field cheat {message: string, timer: Timer}
 
-local ace = data.ace
-local rt = data.runtime
-local rl = data.util.reverse_lookup
+---@class (exact) HookFlags
+---@field rebuild boolean
+---@field clear boolean
+---@field spawn boolean
+---@field done boolean
+
+---@class (exact) HookActions
+---@field repop_gm CachedEvent?
+---@field force_size integer?
+---@field force_spoffer {pop_index_first: integer, pop_index_second: integer, rewards: EditedRewardData?}?
+---@field force_area HookForceArea
+---@field force_village_boost boolean
+
+---@class (excat) HookForceArea
+---@field once {pop_index: integer, area: integer}?
+---@field ongoing table<integer, Timer>
+
+local config = require("FieldEventSpawner.config.init")
+local data_ace = require("FieldEventSpawner.data.ace.init")
+local data_rt = require("FieldEventSpawner.data.runtime")
+local event_cache = require("FieldEventSpawner.schedule.event_cache")
+local game_data = require("FieldEventSpawner.util.game.data")
+local m = require("FieldEventSpawner.util.ref.methods")
+local s = require("FieldEventSpawner.util.ref.singletons")
+local special_offer = require("FieldEventSpawner.events.special_offer")
+local timer = require("FieldEventSpawner.util.misc.timer")
+local util_game = require("FieldEventSpawner.util.game.init")
+local util_ref = require("FieldEventSpawner.util.ref.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
+
+local rl = game_data.reverse_lookup
 
 local this = {
+    ---@type HookState
     state = {
-        rebuild_flag = false,
-        clear_flag = false,
-        force_spawn_flag = false,
-        ---@type CachedEvent
-        repop_gm = nil,
-        ---@type MonsterSpawnEventArgs
-        em_args = nil,
-        updated = false,
-        cheat_message = "",
-        ---@type table<integer, {timer: Timer, area: integer}>
-        force_area = {},
+        flags = {
+            rebuild = false,
+            clear = false,
+            spawn = false,
+            done = false,
+        },
+        actions = {
+            force_area = { ongoing = {} },
+            force_village_boost = false,
+        },
+        cheat = {
+            message = "",
+            timer = timer:new(config.display_cheat_timer),
+        },
     },
 }
+local state = this.state
+local flags = state.flags
+local actions = state.actions
 
 ---@param gimmick_fixed app.ExDef.GIMMICK_EVENT_Fixed
 ---@param area integer
 local function repop_gimmick(gimmick_fixed, area)
-    local gimmick_event = data.util.fixed_to_enum("app.ExDef.GIMMICK_EVENT", gimmick_fixed)
-    local gimmick_id = util.getGimmickID:call(nil, gimmick_event)
-    local gimmick_base_array = rt.get_gimman():findGimmick_ID(gimmick_id)
+    local gimmick_event = game_data.fixed_to_enum("app.ExDef.GIMMICK_EVENT", gimmick_fixed)
+    local gimmick_id = m.getGimmickID(gimmick_event)
+    local gimmick_base_array = s.get("app.GimmickManager"):findGimmick_ID(gimmick_id)
 
     if not gimmick_base_array then
         return
     end
 
-    local gimmick_base_enum = util.get_array_enum(gimmick_base_array)
+    local gimmick_base_enum = util_game.get_array_enum(gimmick_base_array)
     while gimmick_base_enum:MoveNext() do
         local gimmick_base = gimmick_base_enum:get_Current()
         ---@cast gimmick_base app.GimmickBaseApp
         local gimmick_context = gimmick_base:get_GimmickContext()
         local field_area = gimmick_context:get_FieldAreaInfo()
         if field_area:get_MapAreaNumSafety() == area then
-            gimmick_base:changeState(rl(ace.enum.gimmick_state, "ENABLE"))
+            gimmick_base:changeState(rl(data_ace.enum.gimmick_state, "ENABLE"))
         end
     end
 end
 
 local function destroy_all_em()
-    local chars = util.get_all_t("app.EnemyCharacter")
-    local enum = util.get_array_enum(chars)
+    local chars = util_game.get_all_components("app.EnemyCharacter")
+    local enum = util_game.get_array_enum(chars)
     while enum:MoveNext() do
         local char = enum:get_Current()
         ---@cast char app.EnemyCharacter
@@ -60,50 +92,84 @@ local function destroy_all_em()
     end
 end
 
+---@param val boolean
+function this.set_spawn_flag(val)
+    flags.spawn = val
+end
+
+---@param val boolean
+function this.set_clear_flag(val)
+    flags.clear = val
+end
+
+---@param val boolean
+function this.set_rebuild_flag(val)
+    flags.rebuild = val
+end
+
+---@param event CachedEvent
+function this.repop_gimmick(event)
+    actions.repop_gm = event
+end
+
+---@param em_args MonsterSpawnEventArgs
+function this.set_em_args(em_args)
+    if em_args.spoffer then
+        actions.force_spoffer = {
+            pop_index_first = em_args.unique_index,
+            pop_index_second = em_args.spoffer,
+            rewards = em_args.spoffer_rewards,
+        }
+    end
+
+    if em_args.area then
+        actions.force_area.once = {
+            area = em_args.area,
+            pop_index = em_args.unique_index,
+        }
+    end
+
+    if em_args.village_boost then
+        actions.force_village_boost = true
+    end
+
+    if em_args.size then
+        actions.force_size = em_args.size
+    end
+end
+
+---@return string?
+function this.get_cheat_message()
+    if state.cheat.timer:active() then
+        return state.cheat.message
+    end
+end
+
 function this.spawn_check_post(retval)
-    if this.state.force_spawn_flag then
-        this.state.updated = true
+    if flags.spawn then
+        flags.done = true
         return sdk.to_ptr(true)
     end
-    return retval
-end
-
-function this.force_em_area_pre(args)
-    if
-        this.state.force_spawn_flag
-        and this.state.em_args
-        and this.state.em_args.force_area
-        and sdk.to_int64(args[3]) == this.state.em_args.id
-    then
-        thread.get_hook_storage()["force_area"] = true
-    end
-end
-
-function this.force_em_area_post(retval)
-    if this.state.force_spawn_flag and this.state.em_args and thread.get_hook_storage()["force_area"] then
-        return
-    end
-    return retval
 end
 
 function this.ex_director_update_pre(args)
-    if this.state.rebuild_flag then
+    if flags.rebuild then
         local field_director = sdk.to_managed_object(args[2])
         ---@cast field_director app.cExFieldDirector
-        field_director:rebuildExEventByStage(rt.state.stage, false)
-        this.state.rebuild_flag = false
-        cache.clear(rt.state.stage)
-    elseif this.state.clear_flag then
+        field_director:rebuildExEventByStage(data_rt.state.stage, false)
+        flags.rebuild = false
+        event_cache.clear(data_rt.state.stage)
+    elseif flags.clear then
         local field_director = sdk.to_managed_object(args[2])
         ---@cast field_director app.cExFieldDirector
-        field_director:clearExEventByStage(rt.state.stage)
+        field_director:clearExEventByStage(data_rt.state.stage)
         -- sometimes when there is a lot of stuff on the map (like 80+ monsters), some monsters are not destroted properly
         -- events are gone but you are leftover with zombie monsters that will never leave
         destroy_all_em()
-        local exanimalman = rt.get_animalman():get_ExManager()
+        local exanimalman = s.get("app.AnimalManager"):get_ExManager()
         -- same story as above
         exanimalman:unloadAllExEventSet()
-        this.state.clear_flag = false
+        flags.clear = false
     end
 end
 
@@ -116,34 +182,33 @@ function this.ex_director_save_sched_pre(args)
 end
 
 function this.ex_director_update_post(retval)
-    if this.state.updated then
-        this.state.force_spawn_flag = false
-        this.state.em_args = nil
-        this.state.updated = false
+    if flags.done then
+        flags.spawn = false
+        flags.done = false
+        actions.force_area.once = nil
+        actions.force_spoffer = nil
+        actions.force_size = nil
+        actions.force_village_boost = false
+        actions.repop_gm = nil
     end
-    return retval
 end
 
 function this.gimmick_execute_post(retval)
-    if this.state.force_spawn_flag and this.state.repop_gm then
-        repop_gimmick(this.state.repop_gm.id, this.state.repop_gm.area)
-        this.state.repop_gm = nil
+    if flags.spawn and actions.repop_gm then
+        repop_gimmick(actions.repop_gm.id, actions.repop_gm.area)
     end
-    return retval
 end
 
 function this.on_game_save_post(retval)
-    cache.overwrite_saved()
-    return retval
+    event_cache.overwrite_saved()
 end
 
 function this.on_game_load_post(retval)
-    cache.overwrite_current()
-    return retval
+    event_cache.overwrite_current()
 end
 
 function this.create_spoffer_pre(args)
-    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.spoffer then
+    if flags.spawn and actions.force_spoffer then
         local spoffer_stage = sdk.to_managed_object(args[3])
         ---@cast spoffer_stage app.cExSpOfferFactory.cSpOfferByStage
         thread.get_hook_storage()["spoffer_stage"] = spoffer_stage
@@ -153,25 +218,19 @@ function this.create_spoffer_pre(args)
 end
 
 function this.create_spoffer_post(retval)
-    if
-        this.state.force_spawn_flag
-        and this.state.em_args
-        and this.state.em_args.spoffer
-        and this.state.em_args.spoffer_rewards
-    then
+    if flags.spawn and actions.force_spoffer and actions.force_spoffer.rewards then
         local spoffer_stage = thread.get_hook_storage()["spoffer_stage"]
         local spoffer_array = spoffer_stage:get_SpOfferList() --[[@as System.Array<app.cExSpOfferFactory.SpOfferInfo>]]
         if spoffer_array:get_Count() == 1 then
             local spoffer_info = spoffer_array:get_Item(0)
             ---@cast spoffer_info app.cExSpOfferFactory.SpOfferInfo
-            special_offer.swap_rewards(spoffer_info, this.state.em_args.spoffer_rewards)
+            special_offer.swap_rewards(spoffer_info, actions.force_spoffer.rewards)
         end
     end
-    return retval
 end
 
 function this.force_check_spoffer_pre(args)
-    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.spoffer then
+    if flags.spawn and actions.force_spoffer then
         local spoffer_stage = sdk.to_managed_object(args[3])
         ---@cast spoffer_stage app.cExSpOfferFactory.cSpOfferByStage
         spoffer_stage:set_LotCreateSpOfferGameMinute(0)
@@ -180,85 +239,83 @@ function this.force_check_spoffer_pre(args)
 end
 
 function this.force_lot_spoffer_post(retval)
-    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.spoffer then
+    if flags.spawn and actions.force_spoffer then
         return sdk.to_ptr(true)
     end
-    return retval
 end
 
 function this.force_spoffer_array_post(retval)
-    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.spoffer then
-        local _, schedule_timeline = rt.get_field_director()
+    if flags.spawn and actions.force_spoffer then
+        local _, schedule_timeline = data_rt.get_field_director()
         local pop_em_array = sdk.to_managed_object(retval)
         ---@cast pop_em_array System.Array<app.cExFieldEvent_PopEnemy>
         pop_em_array:Clear()
-        local pop_em = schedule_timeline:findKeyFromUniqueIndex(this.state.em_args.spoffer)
-        local main_pop_em = schedule_timeline:findKeyFromUniqueIndex(this.state.em_args.unique_index)
+        local pop_em =
+            schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer.pop_index_second)
+        local main_pop_em =
+            schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer.pop_index_first)
         pop_em_array:AddWithResize(main_pop_em)
         pop_em_array:AddWithResize(pop_em)
     end
-    return retval
 end
 
 function this.spoffer_village_boost_post(retval)
-    if
-        this.state.force_spawn_flag
-        and this.state.em_args
-        and this.state.em_args.spoffer
-        and this.state.em_args.village_boost
-    then
+    if flags.spawn and actions.force_spoffer and actions.force_village_boost then
         return sdk.to_ptr(true)
     end
-    return retval
 end
 
 function this.allow_invalid_quests_pre(args)
-    if config.current.mod.is_allow_invalid_quest then
+    local config_mod = config.current.mod
+
+    if config_mod.is_allow_invalid_quest then
         local ptr = sdk.to_int64(args[2])
         fes_util.write_qword(ptr, 0)
 
         return sdk.PreHookResult.SKIP_ORIGINAL
     end
 
-    if config.current.mod.display_cheat_errors then
+    if config_mod.display_cheat_errors then
         thread.get_hook_storage()["bit"] = args[2]
     end
 end
 
 function this.allow_invalid_quests_post(retval)
-    if config.current.mod.is_allow_invalid_quest then
+    local config_mod = config.current.mod
+
+    if config_mod.is_allow_invalid_quest then
         return sdk.to_ptr(true)
     end
 
-    if config.current.mod.display_cheat_errors then
+    if config_mod.display_cheat_errors then
         ---@diagnostic disable-next-line: param-type-mismatch
-        local bit = util.deref_ptr(thread.get_hook_storage()["bit"])
-        if bit ~= 0 and sdk.to_int64(retval) & 1 == 0 then
-            local keys = table_util.sort(table_util.keys(ace.enum.incorrect_status))
+        local bit = util_ref.deref_ptr(thread.get_hook_storage()["bit"])
+
+        if bit ~= 0 and not util_ref.to_bool(retval) then
+            local keys = util_table.sort(util_table.keys(data_ace.enum.incorrect_status))
             ---@type string[]
             local errors = {}
             for i = 0, #keys do
                 local status = keys[i]
-                local status_bit = util.getIncorrectStatusBit:call(nil, status)
+                local status_bit = m.getIncorrectStatusBit(status)
                 if bit & status_bit == status_bit then
-                    table.insert(errors, ace.enum.incorrect_status[status])
+                    table.insert(errors, data_ace.enum.incorrect_status[status])
                 end
             end
 
-            timer.new(config.display_cheat_timer_name, config.display_cheat_timer)
-            this.state.cheat_message = table.concat(errors, "\n")
+            state.cheat.timer:restart()
+            state.cheat.message = table.concat(errors, "\n")
         else
-            timer.reset_key(config.display_cheat_timer_name)
+            state.cheat.timer:abort()
         end
     end
-
-    return retval
 end
 
 function this.force_pop_many_spawn_pre(args)
-    if this.state.force_spawn_flag then
-        thread.get_hook_storage()["out"] = args[3]
-        thread.get_hook_storage()["in"] = args[4]
+    if flags.spawn then
+        local storage = thread.get_hook_storage() --[[@as table]]
+        storage["out"] = args[3]
+        storage["in"] = args[4]
     end
 end
 
@@ -266,9 +323,10 @@ end
 -- for whatever reason he has only one EmPopParam, POP_MANY_2, in which he has 75% chance to spawn.....
 -- not sure if its by design or an oversight
 function this.force_pop_many_spawn_post(retval)
-    if this.state.force_spawn_flag then
-        local out_pop_em = sdk.to_managed_object(util.deref_ptr(thread.get_hook_storage()["out"])) --[[@as app.cExFieldEvent_PopEnemy?]]
-        local in_pop_em = sdk.to_managed_object(thread.get_hook_storage()["in"]) --[[@as app.cExFieldEvent_PopEnemy]]
+    if this.state.flags.spawn then
+        local storage = thread.get_hook_storage() --[[@as table]]
+        local out_pop_em = sdk.to_managed_object(util_ref.deref_ptr(storage["out"])) --[[@as app.cExFieldEvent_PopEnemy?]]
+        local in_pop_em = sdk.to_managed_object(storage["in"]) --[[@as app.cExFieldEvent_PopEnemy]]
 
         if out_pop_em then
             out_pop_em._FreeValue0 = in_pop_em._FreeValue0
@@ -287,53 +345,51 @@ function this.force_pop_many_spawn_post(retval)
             out_pop_em._UniqueIndex = in_pop_em._UniqueIndex
         end
     end
-
-    return retval
 end
 
 function this.force_pop_many_reward_pre(args)
-    if this.state.force_spawn_flag then
+    if flags.spawn then
         return sdk.PreHookResult.SKIP_ORIGINAL
     end
 end
 
 function this.force_context_area_pre(args)
-    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.force_area then
+    if flags.spawn and actions.force_area.once then
         local context_args = sdk.to_managed_object(args[3]) --[[@as app.cContextCreateArg_Enemy]]
-        context_args:set_AreaNo(this.state.em_args.force_area)
-        this.state.force_area[this.state.em_args.unique_index] = {
-            timer = timer.new(tostring(this.state.em_args.unique_index), config.force_area_timer),
-            area = this.state.em_args.force_area,
-        }
+        context_args:set_AreaNo(actions.force_area.once.area)
+        actions.force_area.ongoing[actions.force_area.once.pop_index] =
+            timer:new(config.force_area_timer, nil, true)
     end
 end
 
 function this.stop_em_combat_pre(args)
-    if not table_util.empty(this.state.force_area) then
-        thread.get_hook_storage()["ctx_holder1"] = args[3]
-        thread.get_hook_storage()["ctx_holder2"] = args[6]
+    if not util_table.empty(actions.force_area.ongoing) then
+        local storage = thread.get_hook_storage() --[[@as table]]
+        storage["ctx_holder1"] = args[3]
+        storage["ctx_holder2"] = args[6]
     end
 end
 
 function this.stop_em_combat_post(retval)
-    if not table_util.empty(this.state.force_area) then
-        for index, d in pairs(this.state.force_area) do
-            if d.timer:finished() then
-                this.state.force_area[index] = nil
+    if not util_table.empty(actions.force_area.ongoing) then
+        for index, t in pairs(actions.force_area.ongoing) do
+            if t:finished() then
+                actions.force_area.ongoing[index] = nil
             end
         end
 
-        local ctx_holder1 = sdk.to_managed_object(thread.get_hook_storage()["ctx_holder1"]) --[[@as app.cEnemyContextHolder?]]
-        local ctx_holder2 = sdk.to_managed_object(thread.get_hook_storage()["ctx_holder2"]) --[[@as app.cEnemyContextHolder?]]
-        if not table_util.empty(this.state.force_area) and ctx_holder1 and ctx_holder2 then
-            local _, schedule_timeline = rt.get_field_director()
+        local storage = thread.get_hook_storage() --[[@as table]]
+        local ctx_holder1 = sdk.to_managed_object(storage["ctx_holder1"]) --[[@as app.cEnemyContextHolder?]]
+        local ctx_holder2 = sdk.to_managed_object(storage["ctx_holder2"]) --[[@as app.cEnemyContextHolder?]]
+        if not util_table.empty(actions.force_area.ongoing) and ctx_holder1 and ctx_holder2 then
+            local _, schedule_timeline = data_rt.get_field_director()
             local ctx1 = ctx_holder1:get_Em()
             local ctx2 = ctx_holder2:get_Em()
 
-            for index, _ in pairs(this.state.force_area) do
+            for index, _ in pairs(actions.force_area.ongoing) do
                 local pop_em = schedule_timeline:findKeyFromUniqueIndex(index) --[[@as app.cExFieldEvent_PopEnemy]]
                 if not pop_em then
-                    this.state.force_area[index] = nil
+                    actions.force_area.ongoing[index] = nil
                     goto continue
                 end
 
@@ -341,7 +397,7 @@ function this.stop_em_combat_post(retval)
                 local pop_em_ctx = pop_em_ctx_holder:get_Em()
 
                 if pop_em_ctx.Area:get_IsTargetArrival() then
-                    this.state.force_area[index] = nil
+                    actions.force_area.ongoing[index] = nil
                     goto continue
                 end
 
@@ -353,18 +409,14 @@ function this.stop_em_combat_post(retval)
             end
         end
     end
-
-    return retval
 end
 
 function this.force_em_size_post(retval)
-    --FIXME: for whatever reason game does not call lotteryModelRandomSize for the last memeber of the swarm
+    --FIXME: for whatever reason game does not call lotteryModelRandomSize for the last member of the swarm
     -- when leader is an alpha...
-    if this.state.force_spawn_flag and this.state.em_args and this.state.em_args.size then
-        return sdk.to_ptr(this.state.em_args.size)
+    if flags.spawn and actions.force_size then
+        return sdk.to_ptr(actions.force_size)
     end
-
-    return retval
 end
 
 return this

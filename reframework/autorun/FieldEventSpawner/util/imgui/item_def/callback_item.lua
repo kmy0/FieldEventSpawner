@@ -1,7 +1,7 @@
 ---@class (exact) CallbackItem : ItemBase
 ---@field callback fun(self: CallbackItem)
 
-local item_base = require("FieldEventSpawner.gui.item_def.item_base")
+local item_base = require("FieldEventSpawner.util.imgui.item_def.item_base")
 
 ---@class CallbackItem
 local this = {}

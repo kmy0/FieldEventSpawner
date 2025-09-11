@@ -1,164 +1,36 @@
-local config = require("FieldEventSpawner.config")
-local data = require("FieldEventSpawner.data")
-local gui_util = require("FieldEventSpawner.gui.util")
-local item = require("FieldEventSpawner.gui.item")
-local lang = require("FieldEventSpawner.lang")
+local config = require("FieldEventSpawner.config.init")
+local data_gui = require("FieldEventSpawner.data.gui")
+local data_rt = require("FieldEventSpawner.data.runtime")
+local hook = require("FieldEventSpawner.schedule.hook")
+local item = require("FieldEventSpawner.gui.item.init")
 local reward_builder = require("FieldEventSpawner.gui.reward_builder")
-local sched = require("FieldEventSpawner.schedule")
-local spawn = require("FieldEventSpawner.spawn")
-local table_util = require("FieldEventSpawner.table_util")
-local timer = require("FieldEventSpawner.timer")
-local util = require("FieldEventSpawner.util")
+local sched = require("FieldEventSpawner.schedule.init")
+local util_gui = require("FieldEventSpawner.gui.util")
+local util_imgui = require("FieldEventSpawner.util.imgui.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
-local ace = data.ace
-local gui = data.gui
-local rt = data.runtime
-local rl = data.util.reverse_lookup
-
-local this = {}
-local window = {
-    flags = 1024,
-    condition = 1 << 1,
-}
-local table_data = {
-    name = "events_info",
-    flags = 1 << 8 | 1 << 7 | 1 << 10 | 1 << 13 | 1 << 25,
-}
-
----@class GuiDataState
-local state = {
-    spawn_button = {
-        key = "spawn_button",
-        cooldown = 0,
-        result = rt.enum.spawn_result.OK,
-        state = rt.enum.spawn_button_state.OK,
-        ---@param self table
-        ---@param cb_item CallbackItem
-        update = function(self, cb_item)
-            self.cooldown = math.ceil(timer.remaining_key(self.key))
-            local text = gui_util.tr("spawn_button")
-            local text_split = util.split_string(text, "##")[1]
-            local size = imgui.calc_text_size(text_split)
-            size.x = size.x + 6
-            size.y = size.y + 6
-            cb_item.imgui_draw_args[1] = size
-            if self.cooldown == 0 then
-                self.result = rt.enum.spawn_result.OK
-            end
-            return self.cooldown > 0 and self.cooldown or text
-        end,
+local this = {
+    window = {
+        flags = 1024,
+        condition = 1 << 1,
     },
-    callbacks = {},
+    table = {
+        name = "events_info",
+        flags = 1 << 7 | 1 << 13 | 1 << 25,
+    },
 }
-state.spawn_button.self = state.spawn_button
-
-function state.callbacks.spawn()
-    local event = item.values.get_event(item.event:value())
-    local event_type = item.event_type:value()
-
-    if event_type == "monster" then
-        ---@cast event MonsterData
-        local em_param = item.em_param:value()
-        local role = gui.map.em_param_to_role[em_param]
-        local role_id = rl(ace.enum.em_role, role)
-        local legendary = gui.map.em_param_mod_to_legendary[item.em_param_mod:value()]
-        local legendary_id = rl(ace.enum.legendary, legendary)
-        local pop_em_type = gui.map.em_param_to_pop_em[em_param]
-        local rewards = item.is_force_rewards:value() and config.current.mod.reward_config.array or nil
-        local environ = item.is_ignore_environ:value()
-                and event.map[
-                    rt.state.stage --[[@as app.FieldDef.STAGE]]
-                ].env_by_param[em_param]
-            or nil
-        local spoffer = item.spoffer:value()
-        local difficulty = item.em_difficulty_rank:value()
-
-        -- ensure valid difficulties for specified spoffer
-        if spoffer and not difficulty then
-            local spoffer_rank = rt.state.spoffer[spoffer].rank
-            local candidates = item.get_difficulties() --[[@as table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>]]
-            difficulty = {}
-
-            for rank, guids in pairs(candidates) do
-                if ace.is_spoffer_pair(rank, spoffer_rank) then
-                    difficulty = table_util.merge(difficulty, guids)
-                end
-            end
-
-            difficulty = table_util.unique(difficulty)
-        end
-
-        if item.swarm_count:value() > 0 then
-            return spawn.swarm(
-                event,
-                role_id,
-                rl(ace.enum.pop_em_fixed, pop_em_type),
-                legendary_id,
-                rt.state.stage,
-                item.time:value(),
-                item.is_village_boost:value(),
-                item.is_yummy:value(),
-                item.swarm_count:value(),
-                item.area:value(),
-                rewards,
-                difficulty,
-                environ,
-                item.em_size:value()
-            )
-        elseif em_param == "battlefield_repel" or em_param == "battlefield_slay" then
-            return spawn.battlefield(
-                event,
-                role_id,
-                legendary_id,
-                rt.state.stage,
-                item.time:value(),
-                item.is_yummy:value(),
-                rt.enum.battlefield_state[em_param],
-                item.area:value(),
-                rewards,
-                difficulty,
-                environ,
-                item.em_size:value()
-            )
-        else
-            return spawn.monster(
-                event,
-                role_id,
-                rl(ace.enum.pop_em_fixed, pop_em_type),
-                legendary_id,
-                rt.state.stage,
-                item.time:value(),
-                item.is_village_boost:value(),
-                item.is_yummy:value(),
-                item.area:value(),
-                spoffer,
-                rewards,
-                difficulty,
-                environ,
-                item.em_size:value()
-            )
-        end
-    elseif event_type == "gimmick" then
-        ---@cast event GimmickData
-        return spawn.gimmick(
-            event,
-            rt.state.stage,
-            item.time:value(),
-            item.is_ignore_environ:value(),
-            item.area:value()
-        )
-    elseif event_type == "animal" then
-        ---@cast event AnimalData
-        return spawn.animal(event, rt.state.stage, item.time:value(), item.is_ignore_environ:value(), item.area:value())
-    end
-end
 
 local function draw_event_table()
-    local events = sched.cache.get_stage_table(rt.state.stage)
+    local events = sched.event_cache.get_stage_table(data_rt.state.stage)
     if
-        imgui.begin_table(table_data.name, 3, table_data.flags --[[@as ImGuiTableFlags]], Vector2f.new(0, 4 * 46))
+        imgui.begin_table(
+            this.table.name,
+            3,
+            this.table.flags --[[@as ImGuiTableFlags]],
+            Vector2f.new(300, 4 * 46)
+        )
     then
-        local sorted = table_util.values(events)
+        local sorted = util_table.values(events)
         ---@cast sorted CachedEvent[]
         table.sort(sorted, function(a, b)
             if a.exec_time == b.exec_time then
@@ -166,9 +38,9 @@ local function draw_event_table()
             end
             return a.exec_time > b.exec_time
         end)
-        imgui.table_setup_column(gui_util.tr("event_table.headers.event_header"), 1 << 3)
-        imgui.table_setup_column(gui_util.tr("event_table.headers.area_header"))
-        imgui.table_setup_column(gui_util.tr("event_table.headers.remove_button_header"))
+        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_event"), 1 << 3)
+        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_area"))
+        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_remove_button"))
 
         imgui.table_headers_row()
 
@@ -181,12 +53,15 @@ local function draw_event_table()
             ---@diagnostic disable-next-line: param-type-mismatch
             imgui.text(event.area)
             imgui.table_set_column_index(2)
-            if imgui.button(gui_util.tr("event_table.remove_button") .. string.format("_%s", row)) then
-                if not config.current.mod.disable_button_cooldown then
-                    timer.new(state.spawn_button.key, config.spawn_cooldown.remove)
+            if imgui.button(util_gui.tr("mod.button_remove_event", tostring(row))) then
+                local config_mod = config.current.mod
+
+                if not config_mod.disable_button_cooldown then
+                    item.spawn.timer:update_args(config.spawn_cooldown.remove)
+                    item.spawn.timer:restart()
                 end
 
-                sched.remove(rt.state.stage, event.unique_index)
+                sched.remove(data_rt.state.stage, event.unique_index)
             end
         end
         imgui.end_table()
@@ -194,45 +69,11 @@ local function draw_event_table()
 end
 
 local function draw_cheat()
-    if timer.remaining_key(config.display_cheat_timer_name) > 0 then
-        imgui.text_colored(sched.hook.state.cheat_message, gui.colors.bad)
+    local message = hook.get_cheat_message()
+    if message then
+        imgui.text_colored(message, data_gui.colors.bad)
         imgui.separator()
     end
-end
-
----@return SpawnState
-local function check_current_event()
-    ---@type SpawnState
-    local ret = rt.enum.spawn_button_state.OK
-
-    if
-        not item.values.event:empty()
-        and (item.values.area:empty() or (item.event_type:value() == "monster" and item.values.em_param:empty()))
-    then
-        ret = rt.enum.spawn_button_state.BAD_ENVIRONMENT
-    elseif not item.values.event:empty() then
-        local event = item.values.get_event(item.event:value())
-        if
-            item.event_type:value() == "monster"
-            and rt.is_monster_banned(
-                rt.state.stage,
-                event.id,
-                rl(ace.enum.pop_em_fixed, gui.map.em_param_to_pop_em[item.em_param:value()])
-            )
-        then
-            ret = rt.enum.spawn_button_state.EVENT_NOT_AVAILABLE
-        elseif
-            ---@cast event GimmickData
-            item.event_type:value() == "gimmick"
-            and event.ex_id == rl(ace.enum.ex_gimmick, "ASSIST_NPC")
-            and not rt.is_npc_unlocked(event.id_not_fixed)
-        then
-            ret = rt.enum.spawn_button_state.EVENT_NOT_AVAILABLE
-        end
-    else
-        state.spawn_button.state = rt.enum.spawn_button_state.OK
-    end
-    return ret
 end
 
 ---@return string
@@ -245,119 +86,117 @@ local function get_monster_crown_text()
     ---@cast event MonsterData
     return string.format(
         "%s <= %s, %s >= %s, %s >= %s",
-        lang.tr("em_size_slider.crowns.small"),
+        config.lang:tr("mod.crown.small"),
         event.crown.small,
-        lang.tr("em_size_slider.crowns.large"),
+        config.lang:tr("mod.crown.large"),
         event.crown.large,
-        lang.tr("em_size_slider.crowns.king"),
+        config.lang:tr("mod.crown.king"),
         event.crown.king
     )
 end
 
 function this.draw()
-    if lang.font then
-        imgui.push_font(lang.font)
+    local gui_main = config.gui.current.gui.main
+    local gui_reward = config.gui.current.gui.reward_builder
+    local config_mod = config.current.mod
+    local config_lang = config_mod.lang
+
+    if config.lang.font then
+        imgui.push_font(config.lang.font)
     end
 
-    item.values.switch_lang(config.current.gui.lang)
+    item.values.switch_lang(config_lang.file)
 
-    imgui.set_next_window_pos(
-        Vector2f.new(config.current.gui.main.pos_x, config.current.gui.main.pos_y),
-        window.condition
-    )
+    imgui.set_next_window_pos(Vector2f.new(gui_main.pos_x, gui_main.pos_y), this.window.condition)
     imgui.set_next_window_size(
-        Vector2f.new(config.current.gui.main.size_x, config.current.gui.main.size_y),
-        window.condition
+        Vector2f.new(gui_main.size_x, gui_main.size_y),
+        this.window.condition
     )
 
-    config.current.gui.main.is_opened = imgui.begin_window(
+    gui_main.is_opened = imgui.begin_window(
         string.format("%s %s", config.name, config.version),
-        config.current.gui.main.is_opened,
-        window.flags
+        gui_main.is_opened,
+        this.window.flags
     )
 
     local pos = imgui.get_window_pos()
     local size = imgui.get_window_size()
-    config.current.gui.main.pos_x, config.current.gui.main.pos_y = pos.x, pos.y
-    config.current.gui.main.size_x, config.current.gui.main.size_y = size.x, size.y
+    gui_main.pos_x, gui_main.pos_y = pos.x, pos.y
+    gui_main.size_x, gui_main.size_y = size.x, size.y
 
-    if not config.current.gui.main.is_opened then
-        if lang.font then
+    if not gui_main.is_opened then
+        if config.lang.font then
             imgui.pop_font()
         end
 
-        config.save()
-        rt.clear_feature_unlock()
+        config.save_no_timer_global()
+        data_rt.clear_feature_unlock()
         imgui.end_window()
         return
     end
 
     if imgui.begin_menu_bar() then
-        if imgui.begin_menu(gui_util.tr("menu.config"), true) then
-            imgui.spacing()
-            imgui.indent(2)
-
+        if imgui.begin_menu(util_gui.tr("menu.config.name"), true) then
             if
-                imgui.menu_item(
-                    gui_util.tr("menu.config.entries.disable_button_cooldown"),
-                    nil,
-                    config.current.mod.disable_button_cooldown
+                util_imgui.menu_item(
+                    util_gui.tr("menu.config.disable_button_cooldown"),
+                    config_mod.disable_button_cooldown
                 )
             then
-                config.current.mod.disable_button_cooldown = not config.current.mod.disable_button_cooldown
+                config_mod.disable_button_cooldown = not config_mod.disable_button_cooldown
             end
 
             if
-                imgui.menu_item(
-                    gui_util.tr("menu.config.entries.display_cheat_errors"),
-                    nil,
-                    config.current.mod.display_cheat_errors
+                util_imgui.menu_item(
+                    util_gui.tr("menu.config.display_cheat_errors"),
+                    config_mod.display_cheat_errors
                 )
             then
-                config.current.mod.display_cheat_errors = not config.current.mod.display_cheat_errors
+                config_mod.display_cheat_errors = not config_mod.display_cheat_errors
             end
 
-            imgui.unindent(2)
-            imgui.spacing()
             imgui.end_menu()
         end
 
-        if imgui.begin_menu(gui_util.tr("menu.language"), true) then
-            imgui.spacing()
-            imgui.indent(2)
-
-            for i = 1, #lang.sorted do
-                local menu_item = lang.sorted[i]
-                if imgui.menu_item(menu_item, nil, config.current.gui.lang == menu_item) then
-                    config.current.gui.lang = menu_item
-                    lang.change()
+        if imgui.begin_menu(util_gui.tr("menu.language.name"), true) then
+            for i = 1, #config.lang.sorted do
+                local menu_item = config.lang.sorted[i]
+                if util_imgui.menu_item(menu_item, config_lang.file == menu_item) then
+                    config_lang.file = menu_item
+                    config.lang:change()
                 end
             end
 
             imgui.separator()
 
             if
-                imgui.menu_item(gui_util.tr("menu.language.entries.fallback"), nil, config.current.gui.lang_fallback)
+                util_imgui.menu_item(util_gui.tr("menu.language.fallback"), config_lang.fallback)
             then
-                config.current.gui.lang_fallback = not config.current.gui.lang_fallback
+                config_lang.fallback = not config_lang.fallback
             end
-            gui_util.tooltip(lang.tr("menu.language.entries.fallback.tooltip"))
+            util_imgui.tooltip(config.lang:tr("menu.language.tooltip_fallback"))
 
-            imgui.unindent(2)
-            imgui.spacing()
+            imgui.end_menu()
+        end
+
+        if imgui.begin_menu(util_gui.tr("menu.my_events.name"), true) then
+            draw_event_table()
+
             imgui.end_menu()
         end
 
         imgui.end_menu_bar()
     end
 
-    if rt.state.schedule ~= rt.enum.schedule_state["OK"] then
+    if data_rt.state.schedule ~= data_rt.enum.schedule_state["OK"] then
         imgui.indent(3)
-        imgui.text_colored(lang.tr("wait_text.name"), gui.colors.bad)
+        imgui.text_colored(config.lang:tr("mod.text_wait"), data_gui.colors.bad)
         imgui.unindent(3)
-        if lang.font then
+
+        if config.lang.font then
             imgui.pop_font()
         end
+
         imgui.end_window()
         return
     end
@@ -365,104 +204,77 @@ function this.draw()
     imgui.spacing()
     imgui.indent(3)
 
-    if config.current.mod.display_cheat_errors then
+    if config_mod.display_cheat_errors then
         draw_cheat()
     end
 
     item.switch_arrays()
 
-    item.event_type:draw(gui_util.tr("event_type_combo"))
-    item.event:draw(gui_util.tr("event_combo"))
-    item.area:draw(gui_util.tr("area_combo"))
-
-    if item.event_type:value() == "monster" then
-        item.em_param:draw(gui_util.tr("em_param_combo"))
-        item.em_param_mod:draw(gui_util.tr("em_param_mod_combo"))
-        item.em_difficulty:draw(gui_util.tr("em_param_difficulty_combo"))
-        item.em_difficulty_rank:draw(gui_util.tr("em_param_difficulty_rank_combo"))
-        item.em_size:draw(gui_util.tr("em_size_slider"))
-        gui_util.tooltip(get_monster_crown_text(), true)
-        item.swarm_count:draw(gui_util.tr("swarm_count_slider"))
-        gui_util.tooltip(lang.tr("swarm_count_slider.tooltip.name"))
-        item.spoffer:draw(gui_util.tr("spoffer_combo"))
-    end
-
-    item.time:draw(gui_util.tr("time_slider"))
-    item.is_ignore_environ:draw(gui_util.tr("ignore_environ_box"))
-    gui_util.tooltip(lang.tr("ignore_environ_box.tooltip.name"))
-    item.is_force_area:draw(gui_util.tr("force_area_box"))
-
-    if item.event_type:value() == "monster" then
-        imgui.separator()
-        item.is_yummy:draw(gui_util.tr("yummy_box"))
-        item.is_village_boost:draw(gui_util.tr("village_boost_box"))
-        if not rt.is_village_boost_unlocked(rt.state.stage) then
-            gui_util.tooltip(lang.tr("not_available_tooltip.name"), true)
-        end
-        item.is_spoffer:draw(gui_util.tr("spoffer_box"))
-        if not rt.is_spoffer_unlocked(rt.state.stage) then
-            gui_util.tooltip(lang.tr("not_available_tooltip.name"), true)
-        end
-        item.is_force_difficulty:draw(gui_util.tr("force_difficulty"))
-        item.is_force_size:draw(gui_util.tr("force_size"))
-        item.is_force_rewards:draw(gui_util.tr("force_rewards_box"))
+    util_imgui.draw_child_window("main_buttons", function()
+        item.spawn:draw()
         imgui.same_line()
-        item.edit_rewards:draw(gui_util.tr("open_rewards_builder_button"))
-        item.is_allow_invalid_quest:draw(gui_util.tr("allow_invalid_quest"))
+        item.clear_schedule:draw(util_gui.tr("mod.button_clear_schedule"))
+        util_imgui.tooltip(config.lang:tr("mod.tootlip_clear_schedule"))
+        imgui.same_line()
+        item.rebuild_schedule:draw(util_gui.tr("mod.button_rebuild_schedule"))
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_rebuild_schedule"))
         imgui.separator()
+    end, 28, 2)
+
+    imgui.begin_child_window("everything_else", { 0, 0 }, false)
+
+    item.event_type:draw(util_gui.tr("mod.combo_event_type"))
+    item.event:draw(util_gui.tr("mod.combo_event"))
+    item.area:draw(util_gui.tr("mod.combo_area"))
+
+    if item.event_type:value() == "monster" then
+        item.em_param:draw(util_gui.tr("mod.combo_em_param"))
+        item.em_param_mod:draw(util_gui.tr("mod.combo_em_param_mod"))
+        item.em_difficulty:draw(util_gui.tr("mod.combo_em_param_difficulty"))
+        item.em_difficulty_rank:draw(util_gui.tr("mod.combo_em_param_difficulty_rank"))
+        item.em_size:draw(util_gui.tr("mod.slider_em_size"))
+        util_imgui.tooltip(get_monster_crown_text(), true)
+        item.swarm_count:draw(util_gui.tr("mod.slider_swarm_count"))
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_swarm_count"))
+        item.spoffer:draw(util_gui.tr("mod.combo_spoffer"))
     end
 
-    local button_height = imgui.get_cursor_screen_pos().y
-    ---@diagnostic disable-next-line: param-type-mismatch
-    item.spawn:draw(state.spawn_button:update(item.spawn))
-    button_height = imgui.get_cursor_screen_pos().y - button_height
-    if state.spawn_button.result ~= rt.enum.spawn_result.OK and state.spawn_button.cooldown > 0 then
-        gui_util.highlight(gui.colors.bad, 0, -button_height)
-        gui_util.tooltip(rl(rt.enum.spawn_result, state.spawn_button.result))
-    elseif state.spawn_button.state ~= rt.enum.spawn_button_state.OK then
-        gui_util.highlight(gui.colors.bad, 0, -button_height)
-        gui_util.tooltip(
-            lang.tr(string.format("event_error.%s.name", rl(rt.enum.spawn_button_state, state.spawn_button.state)))
-        )
+    item.time:draw(util_gui.tr("mod.slider_time"))
+    item.is_ignore_environ:draw(util_gui.tr("mod.box_ignore_environ"))
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_ignore_environ"))
+    item.is_force_area:draw(util_gui.tr("mod.box_force_area"))
+
+    if item.event_type:value() == "monster" then
+        imgui.separator()
+        item.is_yummy:draw(util_gui.tr("mod.box_yummy"))
+        item.is_village_boost:draw(util_gui.tr("mod.box_village_boost"))
+        if not data_rt.is_village_boost_unlocked(data_rt.state.stage) then
+            util_imgui.tooltip(config.lang:tr("mod.tooltip_not_available"), true)
+        end
+        item.is_spoffer:draw(util_gui.tr("mod.box_spoffer"))
+        if not data_rt.is_spoffer_unlocked(data_rt.state.stage) then
+            util_imgui.tooltip(config.lang:tr("mod.tooltip_not_available"), true)
+        end
+        item.is_force_difficulty:draw(util_gui.tr("mod.box_force_difficulty"))
+        item.is_force_size:draw(util_gui.tr("mod.box_force_size"))
+        item.is_force_rewards:draw(util_gui.tr("mod.box_force_rewards"))
+        imgui.same_line()
+        item.edit_rewards:draw(util_gui.tr("mod.button_open_rewards_builder"))
+        item.is_allow_invalid_quest:draw(util_gui.tr("mod.box_allow_invalid_quest"))
     end
 
-    imgui.same_line()
-    item.clear_schedule:draw(gui_util.tr("clear_schedule_button"))
-    gui_util.tooltip(lang.tr("clear_schedule_button.tooltip.name"))
-    imgui.same_line()
-    item.rebuild_schedule:draw(gui_util.tr("rebuild_schedule_button"))
-    gui_util.tooltip(lang.tr("rebuild_schedule_button.tooltip.name"))
-
-    if imgui.tree_node(gui_util.tr("event_table_tree_node")) then
-        draw_event_table()
-        imgui.tree_pop()
-    end
-
-    state.spawn_button.state = check_current_event()
-
-    if state.open_reward_builder then
-        config.current.gui.reward_builder.is_opened = true
-    end
-
-    if config.current.gui.reward_builder.is_opened then
+    if gui_reward.is_opened then
         reward_builder.draw()
     end
 
-    if not config.current.gui.reward_builder.is_opened then
-        state.open_reward_builder = false
-    end
-
-    if lang.font then
+    if config.lang.font then
         imgui.pop_font()
     end
 
     imgui.spacing()
     imgui.unindent(3)
+    imgui.end_child_window()
     imgui.end_window()
-end
-
-function this.init()
-    item.init(state)
 end
 
 return this

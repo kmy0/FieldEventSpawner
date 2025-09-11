@@ -6,8 +6,8 @@
 ---@field is_changed (fun(self: ConfigItem, value: any): boolean)?
 ---@field protected _getter (fun(self: ConfigItem, config_value: any): any)?
 
-local config = require("FieldEventSpawner.config")
-local item_base = require("FieldEventSpawner.gui.item_def.item_base")
+local config = require("FieldEventSpawner.config.init")
+local item_base = require("FieldEventSpawner.util.imgui.item_def.item_base")
 
 ---@class ConfigItem
 local this = {}
@@ -35,9 +35,9 @@ function this:new(
     changed_func
 )
     if not imgui_draw_args then
-        imgui_draw_args = { config.get(config_key) }
+        imgui_draw_args = { config:get(config_key) }
     else
-        table.insert(imgui_draw_args, 1, config.get(config_key))
+        table.insert(imgui_draw_args, 1, config:get(config_key))
     end
 
     local o = item_base.new(self, imgui_draw_func, imgui_draw_args, is_disabled_func)
@@ -53,7 +53,7 @@ end
 
 ---@param imgui_draw_args any[]
 function this:update_draw_args(imgui_draw_args)
-    table.insert(imgui_draw_args, 1, config.get(self.config_key))
+    table.insert(imgui_draw_args, 1, config:get(self.config_key))
     self.imgui_draw_args = imgui_draw_args
 end
 
@@ -63,7 +63,7 @@ function this:value()
         return self.default_value
     end
 
-    local value = config.get(self.config_key)
+    local value = config:get(self.config_key)
     if self._getter then
         return self:_getter(value)
     elseif value then
@@ -75,11 +75,11 @@ end
 ---@param label string
 ---@return boolean
 function this:draw(label)
-    self.imgui_draw_args[1] = config.get(self.config_key)
+    self.imgui_draw_args[1] = config:get(self.config_key)
     local changed, value = item_base.draw(self, label)
 
     if changed or self.is_changed and self:is_changed(value) then
-        config.set(self.config_key, value)
+        config:set(self.config_key, value)
         if self.on_changed_callback then
             self:on_changed_callback()
         end
