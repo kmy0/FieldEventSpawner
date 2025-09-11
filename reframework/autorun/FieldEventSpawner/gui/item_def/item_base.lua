@@ -32,4 +32,9 @@ function this:draw(label)
     return table.unpack(ret)
 end
 
+---@param imgui_draw_args any[]
+function this:update_draw_args(imgui_draw_args)
+    self.imgui_draw_args = imgui_draw_args
+end
+
 return this
