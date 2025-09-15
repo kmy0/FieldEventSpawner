@@ -129,31 +129,24 @@ function this.draw()
             imgui.pop_font()
         end
 
-        config.save_no_timer_global()
+        config.save_global()
         data_rt.clear_feature_unlock()
         imgui.end_window()
         return
     end
 
     if imgui.begin_menu_bar() then
-        if imgui.begin_menu(util_gui.tr("menu.config.name"), true) then
-            if
-                util_imgui.menu_item(
-                    util_gui.tr("menu.config.disable_button_cooldown"),
-                    config_mod.disable_button_cooldown
-                )
-            then
-                config_mod.disable_button_cooldown = not config_mod.disable_button_cooldown
-            end
+        local changed = false
 
-            if
-                util_imgui.menu_item(
-                    util_gui.tr("menu.config.display_cheat_errors"),
-                    config_mod.display_cheat_errors
-                )
-            then
-                config_mod.display_cheat_errors = not config_mod.display_cheat_errors
-            end
+        if imgui.begin_menu(util_gui.tr("menu.config.name"), true) then
+            changed, config_mod.disable_button_cooldown = util_imgui.menu_item(
+                util_gui.tr("menu.config.disable_button_cooldown"),
+                config_mod.disable_button_cooldown
+            )
+            changed, config_mod.display_cheat_errors = util_imgui.menu_item(
+                util_gui.tr("menu.config.display_cheat_errors"),
+                config_mod.display_cheat_errors
+            )
 
             imgui.end_menu()
         end
@@ -164,6 +157,7 @@ function this.draw()
                 if util_imgui.menu_item(menu_item, config_lang.file == menu_item) then
                     config_lang.file = menu_item
                     config.lang:change()
+                    config:save()
                 end
             end
 
@@ -183,6 +177,10 @@ function this.draw()
             draw_event_table()
 
             imgui.end_menu()
+        end
+
+        if changed then
+            config:save()
         end
 
         imgui.end_menu_bar()

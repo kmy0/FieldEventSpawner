@@ -51,6 +51,7 @@ end
 ---@param value any
 function this:set(key, value)
     util_table.set_by_key(self.current, key, value)
+    self:save()
 end
 
 function this:load()

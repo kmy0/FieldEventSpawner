@@ -155,6 +155,8 @@ re.on_frame(function()
         sched.update()
         config_menu.draw()
     end
+
+    config.run_save()
 end)
 
 re.on_config_save(config.save_no_timer_global)
