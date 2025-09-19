@@ -54,7 +54,7 @@ local function is_disabled(self)
             (self.owner.is_battlefield() and data_rt.is_in_quest())
             or (
                 self.owner.em_param:value() == "battlefield_repel"
-                and self.owner.values.area.map[1] ~= -1
+                and self.owner.values.area.map[1] == -1
             )
         )
 end
