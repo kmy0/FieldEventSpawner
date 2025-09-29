@@ -119,7 +119,7 @@ end
 function this:build()
     local environ_type = self.environ and self.environ[math.random(#self.environ)]
         or data_rt.get_environ(self.stage)
-    local other_monsters = self._field_director:findExecutedPopEms(true)
+    local other_monsters = self._field_director:findExecutedPopEms(true, false)
     local other_monsters_lua = util_game.system_array_to_lua(other_monsters)
     local route_guid, areas = self:_get_route_data(other_monsters, environ_type)
     if not areas or self.environ then

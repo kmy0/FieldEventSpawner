@@ -197,7 +197,7 @@
 -- is bigger than the arg then it tries to trim it down?? im confused af on this one
 -- last arg seems to be always 1
 ---@field getRoutePatternList fun(self: app.cExFieldDirector, enemy_id: app.EnemyDef.ID, enemy_role: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, pop_em_type: app.ExDef.POP_EM_TYPE_Fixed, stage_id: app.FieldDef.STAGE, environ_type: app.EnvironmentType.ENVIRONMENT, active_em: System.Array<app.cExFieldEvent_PopEnemy>, arg: System.Int32): System.LimitedArray<app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo>
----@field findExecutedPopEms fun(self: app.cExFieldDirector, quest_available_only: System.Boolean): System.Array<app.cExFieldEvent_PopEnemy>
+---@field findExecutedPopEms fun(self: app.cExFieldDirector, quest_available_only: System.Boolean, unknown: System.Boolean): System.Array<app.cExFieldEvent_PopEnemy>
 ---@field getInitAreaList fun(self: app.cExFieldDirector, route_info: app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo, stage: app.FieldDef.STAGE, environ_type: app.EnvironmentType.ENVIRONMENT): System.LimitedArray<System.Byte>
 ---@field createExEmRewardEvent fun(self: app.cExFieldDirector, out_reward_array: System.Array<app.cExFieldEvent_EmReward>, out_reward_id_array: System.Array<System.Int32>, size: System.Int32, item_work_array: System.Array<app.savedata.cItemWork>, bool_array: System.Array<System.Boolean>, schedule_timeline: app.cExFieldDirector.cScheduleTimeline, stage_id: app.FieldDef.STAGE)
 -- is_legendary specifically checks if its NORMAL

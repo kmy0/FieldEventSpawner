@@ -196,7 +196,7 @@ function this.update_spoffer()
     end
 
     local field_director, _ = this.get_field_director()
-    local pop_em_array = field_director:findExecutedPopEms(false)
+    local pop_em_array = field_director:findExecutedPopEms(false, false)
     local pop_em_enum = util_game.get_array_enum(pop_em_array)
 
     ---@type integer[]
