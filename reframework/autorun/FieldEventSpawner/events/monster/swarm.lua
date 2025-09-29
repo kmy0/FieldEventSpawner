@@ -7,10 +7,10 @@
 ---@field area integer
 ---@field has_boss boolean
 
+local config = require("FieldEventSpawner.config.init")
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
 local game_data = require("FieldEventSpawner.util.game.data")
-local game_lang = require("FieldEventSpawner.util.game.lang")
 local monster_factory = require("FieldEventSpawner.events.monster.monster")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -124,7 +124,7 @@ function this:build()
     leader_data.cache_base.name = string.format(
         "%s - %s (%s)",
         leader_data.cache_base.name,
-        game_lang.tr("em_swarm_suffix.name"),
+        config.lang:tr("em_swarm_suffix.name"),
         self.swarm_count
     )
 
