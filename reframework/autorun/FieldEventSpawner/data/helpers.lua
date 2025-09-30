@@ -1,13 +1,7 @@
 local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_animal = require("FieldEventSpawner.data.ace.event.animal")
-local data_gimmick = require("FieldEventSpawner.data.ace.event.gimmick")
-local data_gui = require("FieldEventSpawner.data.gui")
-local data_item = require("FieldEventSpawner.data.ace.item")
-local data_monster = require("FieldEventSpawner.data.ace.event.monster")
 local game_data = require("FieldEventSpawner.util.game.data")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
-local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local rl = game_data.reverse_lookup
