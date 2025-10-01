@@ -100,6 +100,7 @@
 ---@field getAreaMoveInfo fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID): app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfoByEm
 ---@field get_StayMinute fun(self: app.user_data.ExFieldParam_EnemyData): System.Byte
 ---@field get_ExEnemies fun(self: app.user_data.ExFieldParam_EnemyData): System.Array<app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam>
+---@field isExclusiveEm fun(self: app.user_data.ExFieldParam_EnemyData, em_id: app.EnemyDef.ID): System.Boolean
 
 ---@class app.user_data.ExFieldParam.cAssistNpcGimmick : via.clr.ManagedObject
 ---@field get_GimmickEvent fun(self: app.user_data.ExFieldParam.cAssistNpcGimmick): app.ExDef.GIMMICK_EVENT

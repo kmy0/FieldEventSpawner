@@ -198,6 +198,7 @@ function this.update_spoffer()
     local field_director, _ = this.get_field_director()
     local pop_em_array = field_director:findExecutedPopEms(false, false)
     local pop_em_enum = util_game.get_array_enum(pop_em_array)
+    local em_global_param = data_ace.ex_field_param:get_ExEnemyGlobalParam()
 
     ---@type integer[]
     local active_pop_ems = {}
@@ -206,10 +207,10 @@ function this.update_spoffer()
         ---@cast pop_em app.cExFieldEvent_PopEnemy
 
         if
-            not pop_em:get_EnableSpOfferTarget()
+            em_global_param:isExclusiveEm(pop_em:get_EmID())
+            or not pop_em:get_EnableSpOfferTarget()
             or not pop_em:get_EnableKeepQuestTarget()
             or pop_em:get_IsBattlefieldEm()
-            or pop_em:get_PopEmType() == rl(data_ace.enum.pop_em_fixed, "POP_MANY_2")
         then
             goto continue
         end
