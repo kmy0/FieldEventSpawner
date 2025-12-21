@@ -482,8 +482,10 @@ local function get_size_data()
 
     util_game.do_something(em_tbl_data, function(_, _, tbl_data)
         local em_size_tbl = tbl_data._SizeTable
-        local param = legendary[tbl_data:get_LegendaryId()]
-        local em_id = game_data.fixed_to_enum("app.EnemyDef.ID", tbl_data:get_EmIdFixed())
+        local legendary_id = tbl_data:get_LegendaryId()
+        local param = legendary[legendary_id]
+        local em_id_fixed = tbl_data:get_EmIdFixed()
+        local em_id = game_data.fixed_to_enum("app.EnemyDef.ID", em_id_fixed)
 
         if not ret[em_id] then
             local size_data = em_size:getSizeData(em_id)
@@ -504,31 +506,37 @@ local function get_size_data()
         util_game.do_something(em_size_tbl, function(_, _, size_tbl)
             ---@type {[integer]: boolean}
             local sizes = {}
-            for i = 1, 5 do
-                local rand_size_tbl_guid = size_tbl:call("getSizeTableId(System.Int32)", i)
-                local guid = rand_size_tbl_guid.Value
-                local rand_size_tbl = em_rand_size:getRandomSizeTblData(guid)
-                local prob_data_tbl = rand_size_tbl._ProbDataTbl
-
-                util_game.do_something(prob_data_tbl, function(_, _, prob_tbl)
-                    if prob_tbl:get_Prob() > 0 then
-                        sizes[prob_tbl:get_Scale()] = true
-                    end
-                end)
-            end
-
             local lower_bound =
                 game_data.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_L())
             local upper_bound =
                 game_data.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_U())
+
+            for i = 1, 5 do
+                for reward_rank = lower_bound, upper_bound do
+                    local rand_size_tbl = em_rand_size:getRandomSizeTblData_Boss(
+                        em_id_fixed,
+                        legendary_id,
+                        reward_rank,
+                        i
+                    )
+                    local prob_data_tbl = rand_size_tbl._ProbDataTbl
+
+                    util_game.do_something(prob_data_tbl, function(_, _, prob_tbl)
+                        if prob_tbl:get_Prob() > 0 then
+                            sizes[prob_tbl:get_Scale()] = true
+                        end
+                    end)
+                end
+            end
+
             local sizes_arr = util_table.keys(sizes)
             local size_max = math.max(table.unpack(sizes_arr))
             local size_min = math.min(table.unpack(sizes_arr))
 
-            for i = lower_bound, upper_bound do
+            for reward_rank = lower_bound, upper_bound do
                 util_table.set_nested_value(
                     ret[em_id],
-                    { "sizes", param, i },
+                    { "sizes", param, reward_rank },
                     { min = size_min, max = size_max }
                 )
             end

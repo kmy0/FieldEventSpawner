@@ -350,6 +350,7 @@
 ---@class app.user_data.EmParamRandomSize : via.UserData
 ---@field _EnemyRandomSizeTblArray System.Array<app.user_data.EmParamRandomSize.cEnemyTableData>
 ---@field getRandomSizeTblData fun(self: app.user_data.EmParamRandomSize, guid: System.Guid): app.user_data.EmParamRandomSize.cRandomSizeData
+---@field getRandomSizeTblData_Boss fun(self: app.user_data.EmParamRandomSize, em_id_fixed: app.EnemyDef.ID_Fixed, legendary_id: app.EnemyDef.LEGENDARY_ID, reward_rank: app.QuestDef.EM_REWARD_RANK, index: System.Int32): app.user_data.EmParamRandomSize.cRandomSizeData
 
 ---@class app.user_data.EmParamRandomSize.cRandomSizeData : via.clr.ManagedObject
 ---@field _ProbDataTbl System.Array<app.user_data.EmParamRandomSize.cProbData>
