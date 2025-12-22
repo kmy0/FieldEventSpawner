@@ -9,8 +9,7 @@
 ---@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByHR_Base : via.clr.ManagedObject
 ---@class app.cParamsByEnv<app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo.cAreaInfoByEnv>
----@class app.cExFieldEvent_Battlefield : app.cExFieldEventBase
----@class app.cExFieldEvent_AnimalEvent : app.cExFieldEventBase
+---@class app.cExFieldEvent_AnimalEvent : app.cExFieldEvent_EnvEventBase
 ---@class app.EnemyCharacter : app.CharacterBase
 ---@class app.cAnimalNoUpdatableSystem: via.clr.ManagedObject
 ---@class app.GimmickManagerBase : ace.GAElement
@@ -18,8 +17,9 @@
 ---@class app.cGameContextHolder : via.clr.ManagedObject
 ---@class app.cEmModuleBase : via.clr.ManagedObject
 ---@class app.cContextCreateArg : via.clr.ManagedObject
----@class app.cExFieldEvent_SpecialOffer : app.cExFieldEventBase
+---@class app.cExFieldEvent_SpecialOffer : app.cExFieldEvent_SpecialOfferBase
 ---@class app.cEmParamGuid_RandomSize_RandomSizeTbl : app.cEmParamGuidBase
+---@class app.cExFieldEvent_SpecialOfferBase : app.cExFieldEventBase
 
 ---@class app.GUIManager : ace.GUIManagerBase
 ---@field getSystemLanguageToApp fun(self: app.GUIManager) : via.Language
@@ -236,8 +236,9 @@
 ---@field exportData fun(self: app.cExFieldEventBase): app.cExFieldScheduleExportData.cEventData
 ---@field get_AreaNo fun(self: app.cExFieldEventBase): System.Byte
 ---@field endProc fun(self: app.cExFieldEventBase)
+---@field exportData fun(self: app.cExFieldEventBase): app.cExFieldScheduleExportData.cEventData
 
----@class app.cExFieldEvent_GimmickEvent : app.cExFieldEventBase
+---@class app.cExFieldEvent_GimmickEvent : app.cExFieldEvent_EnvEventBase
 ---@field get_IsAssistNpc fun(self: app.cExFieldEvent_GimmickEvent): System.Boolean
 
 ---@class app.cExFieldEvent_PopEnemy : app.cExFieldEventBase
@@ -254,6 +255,7 @@
 ---@field get_EnableKeepQuestTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field findEm fun(self: app.cExFieldEvent_PopEnemy): app.cEnemyContextHolder
 ---@field get_Rank fun(self: app.cExFieldEvent_PopEnemy): app.QuestDef.EM_REWARD_RANK
+---@field set_StayMinute_Real fun(self: app.cExFieldEvent_PopEnemy, t: System.Byte)
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE
@@ -271,6 +273,7 @@
 ---@field _FreeMiniValue4 System.Byte
 ---@field _FreeMiniValue5 System.Byte
 ---@field _FreeMiniValue6 System.Byte
+---@field get_EventType fun(self: app.cExFieldScheduleExportData.cEventData): app.EX_FIELD_EVENT_TYPE
 
 ---@class app.cExFieldDirector.cSpawnableEmParam : via.clr.ManagedObject
 ---@field get_EmID fun(self: app.cExFieldDirector.cSpawnableEmParam): app.EnemyDef.ID
@@ -399,3 +402,9 @@
 
 ---@class app.cContextCreateArg_Enemy : app.cContextCreateArg
 ---@field set_AreaNo fun(self: app.cContextCreateArg_Enemy, area: System.Int32)
+
+---@class app.cExFieldEvent_EnvEventBase : app.cExFieldEventBase
+---@field set_DurationMinute_Real fun(self: app.cExFieldEvent_EnvEventBase, t: System.Byte)
+
+---@class app.cExFieldEvent_Battlefield : app.cExFieldEventBase
+---@field get_TargetEnemyExUniqueIndex fun(self: app.cExFieldEvent_Battlefield): System.Int32

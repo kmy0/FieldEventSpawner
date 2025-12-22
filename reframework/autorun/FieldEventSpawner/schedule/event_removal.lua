@@ -7,12 +7,12 @@ local this = {}
 
 ---@param event app.cExFieldEvent_PopEnemy
 local function remove_pop_em(event)
-    event._FreeMiniValue5 = 0
+    event:set_StayMinute_Real(0)
 end
 
 ---@param event app.cExFieldEvent_Battlefield
 local function remove_battlefield(event)
-    local em_index = event._FreeValue2
+    local em_index = event:get_TargetEnemyExUniqueIndex()
     local _, schedule_timeline = data_rt.get_field_director()
     local em_event = schedule_timeline:findKeyFromUniqueIndex(em_index)
     event:endProc()
@@ -25,13 +25,13 @@ end
 
 ---@param event app.cExFieldEvent_AnimalEvent
 local function remove_animal(event)
-    event._FreeMiniValue1 = 0
+    event:set_DurationMinute_Real(0)
     event:endProc()
 end
 
 ---@param event app.cExFieldEvent_GimmickEvent
 local function remove_gimmick(event)
-    event._FreeMiniValue1 = 0
+    event:set_DurationMinute_Real(0)
     if event:get_IsAssistNpc() then
         event:endProc()
     end
@@ -44,7 +44,7 @@ end
 
 ---@param event app.cExFieldEvent_AnimalEvent
 local function remove_my_animal(event)
-    event._FreeMiniValue1 = 0
+    event:set_DurationMinute_Real(0)
 end
 
 ---@param event app.cExFieldEvent_GimmickEvent
@@ -58,11 +58,11 @@ local function remove_my_pop_em(event)
 end
 
 ---@param cache_base CachedEventBase
----@param event app.cExFieldEventBase
+---@param event app.cExFieldScheduleExportData.cEventData
 function this.is_my_event(cache_base, event)
     --FIXME: its not fail proof, but should be enough :)), it would be nice if exec time did not change when game overrides schedule
     local base_event_type = data_ace.enum.ex_event[cache_base.event_type]
-    local event_type = data_ace.enum.ex_event[event:get_ExFieldEventType()]
+    local event_type = data_ace.enum.ex_event[event:get_EventType()]
     local id_field_name = data_ace.map.ex_event_to_id_field[base_event_type]
     return base_event_type == event_type and cache_base.id == event:get_field(id_field_name)
 end
@@ -213,7 +213,7 @@ function this.remove_my_event(stage, item)
         event = schedule_timeline:findKeyFromUniqueIndex(unique_index)
     end
 
-    if event and cache_base and this.is_my_event(cache_base, event) then
+    if event and cache_base and this.is_my_event(cache_base, event:exportData()) then
         local event_type = data_ace.enum.ex_event[cache_base.event_type]
         if event_type == "ANIMAL_EVENT" then
             ---@cast event app.cExFieldEvent_AnimalEvent

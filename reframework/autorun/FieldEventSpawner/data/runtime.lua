@@ -326,11 +326,12 @@ function this.print_events(event_type, event_id)
     local events = schedule_timeline._KeyList
 
     util_game.do_something(events, function(system_array, index, value)
+        local event_data = value:exportData()
         if
-            (not event_type_id or event_type_id == value:get_ExFieldEventType())
-            and (not event_id_field or value:get_field(event_id_field) == event_id)
+            (not event_type_id or event_type_id == event_data:get_EventType())
+            and (not event_id_field or event_data:get_field(event_id_field) == event_id)
         then
-            util_ref.print_fields(value)
+            util_ref.print_fields(event_data)
         end
     end)
 end

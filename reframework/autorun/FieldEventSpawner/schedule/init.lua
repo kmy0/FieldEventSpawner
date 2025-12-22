@@ -81,13 +81,14 @@ function this.update()
 
     for unique_index, cached_event in pairs(this.event_cache.get_stage_table(stage)) do
         local event = schedule_timeline:findKeyFromUniqueIndex(unique_index)
+
         if not event then
             event_removal.remove_my_event(stage, cached_event)
         else
             if
                 not event:get_IsWorking()
                 or not event:get_IsActive()
-                or not event_removal.is_my_event(cached_event, event)
+                or not event_removal.is_my_event(cached_event, event:exportData())
             then
                 event_removal.remove_my_event(stage, cached_event)
             end
