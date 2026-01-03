@@ -84,10 +84,7 @@ function this.draw()
     item.reward_add:draw(gui_util.tr("mod.button_add_reward"))
     draw_reward_table()
 
-    local pos = imgui.get_window_pos()
-    local size = imgui.get_window_size()
-    gui_reward.pos_x, gui_reward.pos_y = pos.x, pos.y
-    gui_reward.size_x, gui_reward.size_y = size.x, size.y
+    util_imgui.set_win_state(gui_reward)
 
     imgui.unindent(3)
     imgui.end_window()
