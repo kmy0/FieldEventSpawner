@@ -56,8 +56,9 @@ end
 local function set_em_reward(spoffer_info, edited_reward_data, index)
     local reward_array = spoffer_info:get_field("<SpOfferRewardArray>k__BackingField")._Array --[[@as System.Array<app.cExFieldEvent_EmReward>]]
     local o_reward = reward_array:get_Item(index)
+
     if not o_reward then
-        local spoffer = spoffer_info:get_field("<SpOffer>k__BackingField") --[[@as app.cExFieldEvent_SpecialOffer]]
+        local spoffer = spoffer_info:get_field("<NormalSpOffer>k__BackingField") --[[@as app.cExFieldEvent_SpecialOffer]]
         o_reward = sdk.create_instance("app.cExFieldEvent_EmReward", true):add_ref() --[[@as app.cExFieldEvent_EmReward]]
         o_reward._UniqueIndex = spoffer._UniqueIndex - (index + 1)
         o_reward._ExecMinute = spoffer._ExecMinute

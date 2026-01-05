@@ -329,20 +329,10 @@ function this.force_pop_many_spawn_post(retval)
         local in_pop_em = sdk.to_managed_object(storage["in"]) --[[@as app.cExFieldEvent_PopEnemy]]
 
         if out_pop_em then
-            out_pop_em._FreeValue0 = in_pop_em._FreeValue0
-            out_pop_em._FreeValue1 = in_pop_em._FreeValue1
-            out_pop_em._FreeValue2 = in_pop_em._FreeValue2
-            out_pop_em._FreeValue3 = in_pop_em._FreeValue3
-            out_pop_em._FreeValue4 = in_pop_em._FreeValue4
-            out_pop_em._FreeValue5 = in_pop_em._FreeValue5
-            out_pop_em._FreeMiniValue0 = in_pop_em._FreeMiniValue0
-            out_pop_em._FreeMiniValue1 = in_pop_em._FreeMiniValue1
-            out_pop_em._FreeMiniValue2 = in_pop_em._FreeMiniValue2
-            out_pop_em._FreeMiniValue3 = in_pop_em._FreeMiniValue3
-            out_pop_em._FreeMiniValue4 = in_pop_em._FreeMiniValue4
-            out_pop_em._FreeMiniValue5 = in_pop_em._FreeMiniValue5
-            out_pop_em._FreeMiniValue6 = in_pop_em._FreeMiniValue6
-            out_pop_em._UniqueIndex = in_pop_em._UniqueIndex
+            out_pop_em:call(
+                "importData(app.cExFieldScheduleExportData.cEventData)",
+                in_pop_em:exportData()
+            )
         end
     end
 end
@@ -394,6 +384,12 @@ function this.stop_em_combat_post(retval)
                 end
 
                 local pop_em_ctx_holder = pop_em:call("findEm()") --[[@as app.cEnemyContextHolder]]
+
+                if not pop_em_ctx_holder then
+                    actions.force_area.ongoing[index] = nil
+                    goto continue
+                end
+
                 local pop_em_ctx = pop_em_ctx_holder:get_Em()
 
                 if pop_em_ctx.Area:get_IsTargetArrival() then

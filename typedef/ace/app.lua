@@ -238,6 +238,7 @@
 ---@field endProc fun(self: app.cExFieldEventBase)
 ---@field exportData fun(self: app.cExFieldEventBase): app.cExFieldScheduleExportData.cEventData
 ---@field get_FreeMiniValue2 fun(self: app.cExFieldEventBase): System.Byte
+---@field get_FreeMiniValue6 fun(self: app.cExFieldEventBase): System.Byte
 
 ---@class app.cExFieldEvent_GimmickEvent : app.cExFieldEvent_EnvEventBase
 ---@field get_IsAssistNpc fun(self: app.cExFieldEvent_GimmickEvent): System.Boolean

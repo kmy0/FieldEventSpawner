@@ -72,7 +72,7 @@ function this:build()
     ---@return boolean
     local function predicate(event)
         return event:get_ExFieldEventType() == event_type
-            and event._FreeMiniValue6 >> 0 == event_flag
+            and event:get_FreeMiniValue6() >> 0 == event_flag
     end
 
     local other_events = self:_get_other_events(predicate)
