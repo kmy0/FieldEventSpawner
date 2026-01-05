@@ -13,14 +13,15 @@ local this = {}
 function this.get_monster_name(pop_em)
     local id = pop_em:get_EmID()
     local guid
+    local _FreeMiniValue2 = pop_em:get_FreeMiniValue2()
 
-    if pop_em._FreeMiniValue2 >> 0 == rl(data_ace.enum.em_role, "BOSS") then
+    if _FreeMiniValue2 >> 0 == rl(data_ace.enum.em_role, "BOSS") then
         guid = m.getEnemyExtraName(id)
-    elseif pop_em._FreeMiniValue2 >> 0 == rl(data_ace.enum.em_role, "FRENZY") then
+    elseif _FreeMiniValue2 >> 0 == rl(data_ace.enum.em_role, "FRENZY") then
         guid = m.getEnemyFrenzyName(id)
-    elseif pop_em._FreeMiniValue2 >> 4 == rl(data_ace.enum.legendary, "NORMAL") then
+    elseif _FreeMiniValue2 >> 4 == rl(data_ace.enum.legendary, "NORMAL") then
         guid = m.getEnemyLegendaryName(id)
-    elseif pop_em._FreeMiniValue2 >> 4 == rl(data_ace.enum.legendary, "KING") then
+    elseif _FreeMiniValue2 >> 4 == rl(data_ace.enum.legendary, "KING") then
         guid = m.getEnemyLegendaryKingName(id)
     else
         guid = m.getEnemyNameGuid(id)
