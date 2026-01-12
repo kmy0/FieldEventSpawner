@@ -308,6 +308,8 @@ this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, 
         or this.swarm_count:value() > 0
         or iv.spoffer:empty()
 end)
+this.is_allow_exclusive_em =
+    item.config:new("mod.is_allow_exclusive_em", imgui.checkbox, nil, false)
 
 this.is_force_difficulty = item.config:new(
     "mod.is_force_difficulty",

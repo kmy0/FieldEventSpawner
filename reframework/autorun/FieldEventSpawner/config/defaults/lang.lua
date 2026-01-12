@@ -1,5 +1,8 @@
 ---@type LangFile
 return {
+    misc = {
+        text_none = "None",
+    },
     menu = {
         config = {
             name = "Mod",
@@ -95,5 +98,7 @@ return {
         combo_em_param_difficulty_rank = "Quest Rank",
         box_allow_invalid_quest = "Allow Invalid Quests",
         box_force_size = "Force Size",
+        box_allow_exclusive_em = "Allow Exclusive Monsters",
+        tooltip_allow_exclusive_em = "Allows 'exclusive' monsters to be selected as a secondary target in the Special Offer Monster droplist.\nExclusive monsters: ",
     },
 }

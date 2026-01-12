@@ -48,6 +48,7 @@
 ---@field id app.EnemyDef.ID
 ---@field map table<app.FieldDef.STAGE, MonsterMapData>
 ---@field crown MonsterCrown
+---@field exclusive boolean
 ---@field monster_map_data_ctor fun(stage: app.FieldDef.STAGE, is_battlefield: boolean?): MonsterMapData
 
 local data_ace = require("FieldEventSpawner.data.ace.ace")
@@ -74,13 +75,15 @@ local rl = game_data.reverse_lookup
 ---@param name_local string
 ---@param type app.EX_FIELD_EVENT_TYPE
 ---@param crown MonsterCrown
+---@param exclusive boolean
 ---@return MonsterData
-function MonsterData:new(id, name_english, name_local, type, crown)
+function MonsterData:new(id, name_english, name_local, type, crown, exclusive)
     local o = data_event.new(self, name_english, name_local, type)
     setmetatable(o, self)
     ---@cast o MonsterData
     o.id = id
     o.crown = crown
+    o.exclusive = exclusive
     return o
 end
 
@@ -580,7 +583,8 @@ function this.get_data(ex_field_param)
             game_lang.get_message_local(name_guid, 1),
             game_lang.get_message_local(name_guid, lang, true),
             type,
-            size_data[em_id].crown
+            size_data[em_id].crown,
+            ex_em_global_param:isExclusiveEm(em_id)
         )
 
         local map_data_param, battlefield_data_param, all_data_param

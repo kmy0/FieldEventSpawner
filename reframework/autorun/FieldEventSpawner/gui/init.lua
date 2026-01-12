@@ -1,4 +1,5 @@
 local config = require("FieldEventSpawner.config.init")
+local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_gui = require("FieldEventSpawner.data.gui")
 local data_rt = require("FieldEventSpawner.data.runtime")
 local hook = require("FieldEventSpawner.schedule.hook")
@@ -250,6 +251,15 @@ function this.draw()
         if not data_rt.is_spoffer_unlocked(data_rt.state.stage) then
             util_imgui.tooltip(config.lang:tr("mod.tooltip_not_available"), true)
         end
+        imgui.same_line()
+        item.is_allow_exclusive_em:draw(util_gui.tr("mod.box_allow_exclusive_em"))
+        util_imgui.tooltip(
+            config.lang:tr("mod.tooltip_allow_exclusive_em")
+                .. (
+                    data_ace.map.exclusive_monsters ~= "" and data_ace.map.exclusive_monsters
+                    or config.lang:tr("misc.text_none")
+                )
+        )
         item.is_force_difficulty:draw(util_gui.tr("mod.box_force_difficulty"))
         item.is_force_size:draw(util_gui.tr("mod.box_force_size"))
         item.is_force_rewards:draw(util_gui.tr("mod.box_force_rewards"))

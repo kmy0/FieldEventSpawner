@@ -80,6 +80,19 @@ local function get_spoffer_pairings(ex_field_param)
     return ret
 end
 
+---@return string
+local function get_exclusive_monster_names()
+    ---@type string[]
+    local res = {}
+    for _, m in pairs(this.event.by_type.monster) do
+        if m.exclusive then
+            table.insert(res, m.name_local)
+        end
+    end
+
+    return table.concat(util_table.sort(res), ", ")
+end
+
 ---@return boolean
 function this.init()
     if not s.get("app.VariousDataManager") or not s.get("app.EnemyManager") then
@@ -131,7 +144,8 @@ function this.init()
     )
     this.item = item_by_ctor(data_item.get_data())
     this.map.spoffer_pairings = get_spoffer_pairings(this.ex_field_param)
-
+    this.map.exclusive_monsters = get_exclusive_monster_names()
+    this.initialized = true
     return true
 end
 

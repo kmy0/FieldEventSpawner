@@ -244,6 +244,13 @@ function this.force_lot_spoffer_post(retval)
     end
 end
 
+function this.exclusive_em_check_post(retval)
+    local config_mod = config.current.mod
+    if data_ace.initialized and config_mod.is_allow_exclusive_em then
+        return sdk.to_ptr(false)
+    end
+end
+
 function this.force_spoffer_array_post(retval)
     if flags.spawn and actions.force_spoffer then
         local _, schedule_timeline = data_rt.get_field_director()

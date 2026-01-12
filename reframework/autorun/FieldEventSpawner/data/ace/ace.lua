@@ -4,6 +4,7 @@
 ---@field item ItemDataBy
 ---@field ex_field_param app.user_data.ExFieldParam
 ---@field map AceMap
+---@field initialized boolean
 ---@field init fun(): boolean
 
 ---@class (exact) AceEnum
@@ -40,6 +41,7 @@
 ---@field pop_em_to_param_field table<string, string>
 ---@field pop_em_to_em_param_key table<string, string>
 ---@field spoffer_pairings table<string, boolean>
+---@field exclusive_monsters string
 
 ---@class AceData
 local this = {
@@ -104,7 +106,9 @@ local this = {
             POP_MANY_2 = "pop_many2",
         },
         spoffer_pairings = {},
+        exclusive_monsters = "",
     },
+    initialized = false,
 }
 
 return this

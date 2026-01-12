@@ -42,6 +42,7 @@
 ---@field is_allow_invalid_quest boolean
 ---@field is_force_rewards boolean
 ---@field is_force_size boolean
+---@field is_allow_exclusive_em boolean
 
 local version = require("FieldEventSpawner.config.version")
 
@@ -85,5 +86,6 @@ return {
         is_force_difficulty = false,
         is_allow_invalid_quest = false,
         is_force_size = false,
+        is_allow_exclusive_em = false,
     },
 }

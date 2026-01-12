@@ -117,6 +117,11 @@ m.hook(
     nil,
     sched.hook.force_em_size_post
 )
+m.hook(
+    "app.user_data.ExFieldParam_EnemyData.isExclusiveEm(app.EnemyDef.ID)",
+    nil,
+    sched.hook.exclusive_em_check_post
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then
