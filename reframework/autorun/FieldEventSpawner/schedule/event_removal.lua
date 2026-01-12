@@ -1,6 +1,7 @@
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
 local event_cache = require("FieldEventSpawner.schedule.event_cache")
+local m = require("FieldEventSpawner.util.ref.methods")
 local util_game = require("FieldEventSpawner.util.game.init")
 
 local this = {}
@@ -73,11 +74,12 @@ end
 function this.remove_colliding_events(spawn_event, exported_schedule, schedule_timeline)
     ---@type app.cExFieldScheduleExportData.cEventData[]
     local res = {}
-    local ok_time = spawn_event.event_data._ExecMinute
-        + (
+    local e1_start = spawn_event.event_data._ExecMinute
+    local e1_end = e1_start
+        + m.realSec_to_GameMinute(
             spawn_event.event_data:get_field(
                 data_ace.map.ex_event_to_time_field[data_ace.enum.ex_event[spawn_event.cache_base.event_type]][1]
-            ) * 60
+            ) * 60.0
         )
 
     ---@param cache_base CachedEventBase
@@ -91,6 +93,8 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
 
         while enum:MoveNext() do
             local e = enum:get_Current()
+            local e2_start
+            local e2_end
             if e._EventType ~= cache_base.event_type then
                 goto continue
             end
@@ -118,10 +122,13 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
                 goto continue
             end
 
+            e2_start = e._ExecMinute
+            e2_end = e2_start + m.realSec_to_GameMinute(e:get_field(time_field_name) * 60.0)
+
             if
                 flags & data_rt.enum.event_collision_flag.TIME
                     == data_rt.enum.event_collision_flag.TIME
-                and e:get_field(time_field_name) > ok_time
+                and (e1_end < e2_start or e2_end < e1_start)
             then
                 goto continue
             end
