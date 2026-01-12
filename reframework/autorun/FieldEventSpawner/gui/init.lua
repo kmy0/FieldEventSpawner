@@ -145,6 +145,11 @@ function this.draw()
                 util_gui.tr("menu.config.display_cheat_errors"),
                 config_mod.display_cheat_errors
             )
+            changed, config_mod.pause_schedule = util_imgui.menu_item(
+                util_gui.tr("menu.config.pause_schedule"),
+                config_mod.pause_schedule
+            )
+            util_imgui.tooltip(config.lang:tr("menu.config.tooltip_pause_schedule"))
 
             imgui.end_menu()
         end
@@ -202,6 +207,11 @@ function this.draw()
 
     if config_mod.display_cheat_errors then
         draw_cheat()
+    end
+
+    if config_mod.pause_schedule then
+        imgui.text_colored(config.lang:tr("misc.text_pause_schedule"), data_gui.colors.bad)
+        imgui.separator()
     end
 
     item.switch_arrays()

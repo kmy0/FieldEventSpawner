@@ -422,4 +422,10 @@ function this.force_em_size_post(retval)
     end
 end
 
+function this.pause_schedule_pre(args)
+    if config.current.mod.pause_schedule and config.gui.current.gui.main.is_opened then
+        args[7] = sdk.float_to_ptr(0.0)
+    end
+end
+
 return this

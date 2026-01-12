@@ -2,12 +2,15 @@
 return {
     misc = {
         text_none = "None",
+        text_pause_schedule = "Schedule paused",
     },
     menu = {
         config = {
             name = "Mod",
             disable_button_cooldown = "Disable Button Cooldown",
             display_cheat_errors = "Display Cheat Errors",
+            pause_schedule = "Pause Schedule",
+            tooltip_pause_schedule = "Pauses schedule progression while the mod window is open",
         },
         language = {
             name = "Language",

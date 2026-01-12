@@ -122,6 +122,10 @@ m.hook(
     nil,
     sched.hook.exclusive_em_check_post
 )
+m.hook(
+    "app.cExFieldDirector.update(app.cExFieldDirector.RUN_ORDER, app.FieldDef.STAGE, System.Int32, System.Int32, System.Single)",
+    sched.hook.pause_schedule_pre
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then

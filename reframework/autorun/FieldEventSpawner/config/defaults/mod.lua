@@ -18,6 +18,7 @@
 ---
 ---@field disable_button_cooldown boolean
 ---@field display_cheat_errors boolean
+---@field pause_schedule boolean
 ---
 ---@field event_type integer
 ---@field event integer
@@ -62,6 +63,7 @@ return {
         },
         disable_button_cooldown = false,
         display_cheat_errors = true,
+        pause_schedule = false,
         --
         event = 1,
         event_type = 1,
