@@ -11,7 +11,6 @@
 ---@class (exact) CurrentData : SwitchData
 ---@field reward_filter string
 ---@field em_param_struct MonsterParam
----@field em_difficulty_struct table<string, MonsterDifficulty>
 ---@field lang string
 
 ---@class RuntimeGuiData

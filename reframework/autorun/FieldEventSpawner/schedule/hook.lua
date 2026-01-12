@@ -148,7 +148,7 @@ end
 function this.spawn_check_post(retval)
     if flags.spawn then
         flags.done = true
-        return sdk.to_ptr(true)
+        return true
     end
 end
 
@@ -240,14 +240,14 @@ end
 
 function this.force_lot_spoffer_post(retval)
     if flags.spawn and actions.force_spoffer then
-        return sdk.to_ptr(true)
+        return true
     end
 end
 
 function this.exclusive_em_check_post(retval)
     local config_mod = config.current.mod
     if data_ace.initialized and config_mod.is_allow_exclusive_em then
-        return sdk.to_ptr(false)
+        return false
     end
 end
 
@@ -268,7 +268,7 @@ end
 
 function this.spoffer_village_boost_post(retval)
     if flags.spawn and actions.force_spoffer and actions.force_village_boost then
-        return sdk.to_ptr(true)
+        return true
     end
 end
 
@@ -291,7 +291,7 @@ function this.allow_invalid_quests_post(retval)
     local config_mod = config.current.mod
 
     if config_mod.is_allow_invalid_quest then
-        return sdk.to_ptr(true)
+        return true
     end
 
     if config_mod.display_cheat_errors then
@@ -330,7 +330,7 @@ end
 -- for whatever reason he has only one EmPopParam, POP_MANY_2, in which he has 75% chance to spawn.....
 -- not sure if its by design or an oversight
 function this.force_pop_many_spawn_post(retval)
-    if this.state.flags.spawn then
+    if flags.spawn then
         local storage = thread.get_hook_storage() --[[@as table]]
         local out_pop_em = sdk.to_managed_object(util_ref.deref_ptr(storage["out"])) --[[@as app.cExFieldEvent_PopEnemy?]]
         local in_pop_em = sdk.to_managed_object(storage["in"]) --[[@as app.cExFieldEvent_PopEnemy]]
@@ -405,7 +405,7 @@ function this.stop_em_combat_post(retval)
                 end
 
                 if ctx1 == pop_em_ctx or ctx2 == pop_em_ctx then
-                    return sdk.to_ptr(false)
+                    return false
                 end
 
                 ::continue::
@@ -418,7 +418,7 @@ function this.force_em_size_post(retval)
     --FIXME: for whatever reason game does not call lotteryModelRandomSize for the last member of the swarm
     -- when leader is an alpha...
     if flags.spawn and actions.force_size then
-        return sdk.to_ptr(actions.force_size)
+        return actions.force_size
     end
 end
 
