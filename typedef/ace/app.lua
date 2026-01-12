@@ -9,7 +9,6 @@
 ---@class app.user_data.ExFieldParam_LayoutData.cDifficultyWeight : via.clr.ManagedObject
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByHR_Base : via.clr.ManagedObject
 ---@class app.cParamsByEnv<app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo.cAreaInfoByEnv>
----@class app.cExFieldEvent_AnimalEvent : app.cExFieldEvent_EnvEventBase
 ---@class app.EnemyCharacter : app.CharacterBase
 ---@class app.cAnimalNoUpdatableSystem: via.clr.ManagedObject
 ---@class app.GimmickManagerBase : ace.GAElement
@@ -239,12 +238,15 @@
 ---@field exportData fun(self: app.cExFieldEventBase): app.cExFieldScheduleExportData.cEventData
 ---@field get_FreeMiniValue2 fun(self: app.cExFieldEventBase): System.Byte
 ---@field get_FreeMiniValue6 fun(self: app.cExFieldEventBase): System.Byte
+---@field toEndFromExternal fun(self: app.cExFieldEventBase)
+---@field get_Executed fun(self: app.cExFieldEventBase): System.Boolean
 
 ---@class app.cExFieldEvent_GimmickEvent : app.cExFieldEvent_EnvEventBase
 ---@field get_IsAssistNpc fun(self: app.cExFieldEvent_GimmickEvent): System.Boolean
+---@field set_IsVisibleOnSummary fun(self: app.cExFieldEvent_GimmickEvent, val: System.Boolean)
 
 ---@class app.cExFieldEvent_PopEnemy : app.cExFieldEventBase
----@field requestExit fun(self: app.cExFieldEvent_PopEnemy)
+---@field forcedExit fun(self: app.cExFieldEvent_PopEnemy)
 ---@field get_IsRequestedExit fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_EmID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.ID
 ---@field get_GroupIDNo fun(self: app.cExFieldEvent_PopEnemy): System.Int32
@@ -410,3 +412,6 @@
 
 ---@class app.cExFieldEvent_Battlefield : app.cExFieldEventBase
 ---@field get_TargetEnemyExUniqueIndex fun(self: app.cExFieldEvent_Battlefield): System.Int32
+
+---@class app.cExFieldEvent_AnimalEvent : app.cExFieldEvent_EnvEventBase
+---@field set_IsVisibleOnSummary fun(self: app.cExFieldEvent_AnimalEvent, val: System.Boolean)

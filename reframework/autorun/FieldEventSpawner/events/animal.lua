@@ -14,7 +14,7 @@
     _FreeMiniValue3 = unused
     _FreeMiniValue4 = unused
     _FreeMiniValue5 = unused
-    _FreeMiniValue6 = unused
+    _FreeMiniValue6 = 1 if visible for summary
 ]]
 
 local data_ace = require("FieldEventSpawner.data.ace.init")
@@ -34,11 +34,12 @@ setmetatable(this, { __index = factory })
 ---@param animal_data AnimalData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param ignore_environ_type boolean
 ---@param area integer?
 ---@return AnimalEventFactory
-function this:new(animal_data, stage, time, ignore_environ_type, area)
-    local o = factory.new(self, animal_data, stage, time, area)
+function this:new(animal_data, stage, time, spawn_delay, ignore_environ_type, area)
+    local o = factory.new(self, animal_data, stage, time, spawn_delay, area)
     setmetatable(o, self)
     o._area_array = animal_data:get_area_array(
         stage,
@@ -74,6 +75,9 @@ function this:build()
     event_data._FreeMiniValue0 = area
     event_data._FreeMiniValue1 = self.time
     event_data._FreeMiniValue2 = environ_type
+    event_data._FreeMiniValue6 = 1
+    event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
+
     local collision_flag = data_rt.enum.event_collision_flag.ID
         | data_rt.enum.event_collision_flag.AREA
         | data_rt.enum.event_collision_flag.TIME

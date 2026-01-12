@@ -89,6 +89,7 @@ function this:new(
         legendary_id,
         stage,
         time,
+        0,
         false,
         is_yummy,
         area,

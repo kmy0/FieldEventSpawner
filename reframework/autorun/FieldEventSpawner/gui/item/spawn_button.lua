@@ -184,6 +184,7 @@ function this:spawn()
                 legendary_id,
                 data_rt.state.stage,
                 self.owner.time:value(),
+                self.owner.spawn_delay:value(),
                 self.owner.is_village_boost:value(),
                 self.owner.is_yummy:value(),
                 self.owner.swarm_count:value(),
@@ -216,6 +217,7 @@ function this:spawn()
                 legendary_id,
                 data_rt.state.stage,
                 self.owner.time:value(),
+                self.owner.spawn_delay:value(),
                 self.owner.is_village_boost:value(),
                 self.owner.is_yummy:value(),
                 self.owner.area:value(),
@@ -232,6 +234,7 @@ function this:spawn()
             event,
             data_rt.state.stage,
             self.owner.time:value(),
+            self.owner.spawn_delay:value(),
             self.owner.is_ignore_environ:value(),
             self.owner.area:value()
         )
@@ -241,6 +244,7 @@ function this:spawn()
             event,
             data_rt.state.stage,
             self.owner.time:value(),
+            self.owner.spawn_delay:value(),
             self.owner.is_ignore_environ:value(),
             self.owner.area:value()
         )

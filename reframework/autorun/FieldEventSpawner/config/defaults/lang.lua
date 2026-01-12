@@ -103,5 +103,7 @@ return {
         box_force_size = "Force Size",
         box_allow_exclusive_em = "Allow Exclusive Monsters",
         tooltip_allow_exclusive_em = "Allows 'exclusive' monsters to be selected as a secondary target in the Special Offer Monster droplist.\nExclusive monsters: ",
+        slider_spawn_delay = "Spawn Delay",
+        tooltip_spawn_delay = "Delays the event by the specified amount of time.\nNote: Force Area might not work correctly.",
     },
 }

@@ -8,6 +8,7 @@ local this = {}
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
 ---@param area integer?
@@ -24,6 +25,7 @@ function this.monster(
     legendary_id,
     stage,
     time,
+    spawn_delay,
     is_village_boost,
     is_yummy,
     area,
@@ -40,6 +42,7 @@ function this.monster(
         legendary_id,
         stage,
         time,
+        spawn_delay,
         is_village_boost,
         is_yummy,
         area,
@@ -102,6 +105,7 @@ end
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
 ---@param swarm_count integer
@@ -118,6 +122,7 @@ function this.swarm(
     legendary_id,
     stage,
     time,
+    spawn_delay,
     is_village_boost,
     is_yummy,
     swarm_count,
@@ -134,6 +139,7 @@ function this.swarm(
         legendary_id,
         stage,
         time,
+        spawn_delay,
         is_village_boost,
         is_yummy,
         swarm_count,
@@ -149,22 +155,24 @@ end
 ---@param gimmick_data GimmickData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param ignore_environ_type boolean
 ---@param area integer?
 ---@return SpawnResult
-function this.gimmick(gimmick_data, stage, time, ignore_environ_type, area)
-    local fac = event.gimmick:new(gimmick_data, stage, time, ignore_environ_type, area)
+function this.gimmick(gimmick_data, stage, time, spawn_delay, ignore_environ_type, area)
+    local fac = event.gimmick:new(gimmick_data, stage, time, spawn_delay, ignore_environ_type, area)
     return fac:spawn()
 end
 
 ---@param animal_data AnimalData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param ignore_environ_type boolean
 ---@param area integer?
 ---@return SpawnResult
-function this.animal(animal_data, stage, time, ignore_environ_type, area)
-    local fac = event.animal:new(animal_data, stage, time, ignore_environ_type, area)
+function this.animal(animal_data, stage, time, spawn_delay, ignore_environ_type, area)
+    local fac = event.animal:new(animal_data, stage, time, spawn_delay, ignore_environ_type, area)
     return fac:spawn()
 end
 

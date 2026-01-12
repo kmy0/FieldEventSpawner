@@ -30,6 +30,7 @@ setmetatable(this, { __index = monster_factory })
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
 ---@param swarm_count integer
@@ -46,6 +47,7 @@ function this:new(
     legendary_id,
     stage,
     time,
+    spawn_delay,
     is_village_boost,
     is_yummy,
     swarm_count,
@@ -63,6 +65,7 @@ function this:new(
         legendary_id,
         stage,
         time,
+        spawn_delay,
         is_village_boost,
         is_yummy,
         area,
@@ -193,7 +196,7 @@ function this:_build_member(swarm_data)
     event_data._FreeMiniValue5 = self.time
     event_data._FreeMiniValue6 = 255
     event_data._UniqueIndex = self._schedule_timeline:newEventUniqueIndex(self.stage)
-    event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute()
+    event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
     return data_rt.enum.spawn_result.OK,
         sched.spawn_event.subevent_ctor(reward_data.reward_array),

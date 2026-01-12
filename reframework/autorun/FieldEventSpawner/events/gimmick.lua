@@ -26,6 +26,8 @@
         elseif evt_t == ANCIENT_COIN then
             _FreeMiniValue6 |= 4
         end
+
+        _FreeMiniValue6 |= 0x10 if visible for summary
 ]]
 
 local data_ace = require("FieldEventSpawner.data.ace.ace")
@@ -46,11 +48,12 @@ setmetatable(this, { __index = factory })
 ---@param gimmick_data GimmickData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param ignore_environ_type boolean
 ---@param area integer?
 ---@return GimmickEventFactory
-function this:new(gimmick_data, stage, time, ignore_environ_type, area)
-    local o = factory.new(self, gimmick_data, stage, time, area)
+function this:new(gimmick_data, stage, time, spawn_delay, ignore_environ_type, area)
+    local o = factory.new(self, gimmick_data, stage, time, spawn_delay, area)
     setmetatable(o, self)
     o._area_array = gimmick_data:get_area_array(
         stage,
@@ -97,7 +100,8 @@ function this:build()
     event_data._FreeMiniValue0 = area
     event_data._FreeMiniValue1 = self.time
     event_data._FreeMiniValue2 = event_ex_name == "ASSIST_NPC" and 255 or environ_type
-    event_data._FreeMiniValue6 = event_flag
+    event_data._FreeMiniValue6 = event_flag | 0x10
+    event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
     local collision_flag = data_rt.enum.event_collision_flag.ID
         | (event_ex_name == "ASSIST_NPC" and 0 or data_rt.enum.event_collision_flag.AREA)

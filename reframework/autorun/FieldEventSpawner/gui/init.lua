@@ -246,6 +246,8 @@ function this.draw()
     end
 
     item.time:draw(util_gui.tr("mod.slider_time"))
+    item.spawn_delay:draw(util_gui.tr("mod.slider_spawn_delay"))
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_spawn_delay"))
     item.is_ignore_environ:draw(util_gui.tr("mod.box_ignore_environ"))
     util_imgui.tooltip(config.lang:tr("mod.tooltip_ignore_environ"))
     item.is_force_area:draw(util_gui.tr("mod.box_force_area"))

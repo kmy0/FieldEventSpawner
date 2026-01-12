@@ -2,6 +2,7 @@ local config = require("FieldEventSpawner.config.init")
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
 local item = require("FieldEventSpawner.util.imgui.item_def.init")
+local m = require("FieldEventSpawner.util.ref.methods")
 local sched = require("FieldEventSpawner.schedule.init")
 local spawn_button = require("FieldEventSpawner.gui.item.spawn_button")
 local util_misc = require("FieldEventSpawner.util.misc.init")
@@ -230,6 +231,18 @@ this.swarm_count = item.config:new(
             or (em_param == "legendary" and not iv.current.em_param_struct.boss)
     end
 )
+this.spawn_delay = item.config:new(
+    "mod.spawn_delay",
+    imgui.slider_int,
+    { 0, 60 },
+    0,
+    function(self, config_value)
+        return m.realSec_to_GameMinute(config_value * 60 * 1.0)
+    end,
+    function(self)
+        return this.is_battlefield() or this.is_spoffer:value()
+    end
+)
 
 this.em_size = item.config:new(
     "mod.em_size",
@@ -276,6 +289,7 @@ this.is_village_boost = item.config:new(
             or not data_rt.is_village_boost_unlocked(data_rt.state.stage)
             or this.is_battlefield()
             or (this.swarm_count:value() > 0 and this.em_param:value() ~= "boss")
+            or this.spawn_delay:value() > 0
     end
 )
 
@@ -330,6 +344,7 @@ this.is_force_size = item.config:new(
     function(self)
         return not this.em_difficulty:value()
             or this.em_size.imgui_draw_args[2] == this.em_size.imgui_draw_args[3]
+            or this.spawn_delay:value() > 0
     end
 )
 

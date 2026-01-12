@@ -10,8 +10,6 @@
 ---@field difficulty System.Guid[]?
 ---@field environ app.EnvironmentType.ENVIRONMENT[]?
 ---@field size integer?
----@field protected _field_director app.cExFieldDirector
----@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
 
 --[[ app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -67,6 +65,7 @@ setmetatable(this, { __index = factory })
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
 ---@param area integer?
@@ -83,6 +82,7 @@ function this:new(
     legendary_id,
     stage,
     time,
+    spawn_delay,
     is_village_boost,
     is_yummy,
     area,
@@ -92,7 +92,7 @@ function this:new(
     environ,
     size
 )
-    local o = factory.new(self, monster_data, stage, time, area)
+    local o = factory.new(self, monster_data, stage, time, spawn_delay, area)
     setmetatable(o, self)
     ---@cast o MonsterEventFactory
 
@@ -106,7 +106,6 @@ function this:new(
     o.difficulty = difficulty
     o.environ = environ
     o.size = size
-    o._field_director, o._schedule_timeline = data_rt.get_field_director()
     o._area_array = monster_data:get_area_array(
         stage,
         not environ and data_rt.get_environ(stage) or nil,
@@ -168,6 +167,7 @@ function this:build()
     event_data._FreeMiniValue4 = self:_get_group_id(other_monsters, environ_type, difficulty_guid)
     event_data._FreeMiniValue5 = self.time
     event_data._FreeMiniValue6 = 255
+    event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
     local ret = sched.spawn_event.monster_ctor(
         event_data,

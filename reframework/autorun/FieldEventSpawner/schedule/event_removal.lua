@@ -8,7 +8,12 @@ local this = {}
 
 ---@param event app.cExFieldEvent_PopEnemy
 local function remove_pop_em(event)
-    event:set_StayMinute_Real(0)
+    if event:get_Executed() then
+        event:set_StayMinute_Real(0)
+        event:forcedExit()
+    else
+        event:toEndFromExternal()
+    end
 end
 
 ---@param event app.cExFieldEvent_Battlefield
@@ -28,6 +33,7 @@ end
 local function remove_animal(event)
     event:set_DurationMinute_Real(0)
     event:endProc()
+    event:set_IsVisibleOnSummary(false)
 end
 
 ---@param event app.cExFieldEvent_GimmickEvent
@@ -36,6 +42,7 @@ local function remove_gimmick(event)
     if event:get_IsAssistNpc() then
         event:endProc()
     end
+    event:toEndFromExternal()
 end
 
 ---@param event app.cExFieldEvent_Battlefield

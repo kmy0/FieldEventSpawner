@@ -28,6 +28,7 @@ m.getItemData = m.wrap(m.get("app.ItemDef.Data(app.ItemDef.ID)")) --[[@as fun(it
 m.isValidItem = m.wrap(m.get("app.ItemDef.isValidItem(app.ItemDef.ID)")) --[[@as fun(item_id: app.ItemDef.ID): System.Boolean]]
 m.getIncorrectStatusBit =
     m.wrap(m.get("app.QuestCheckUtil.getIncorrectStatusBit(app.QuestCheckUtil.INCORRECT_STATUS)")) --[[@as fun(status: app.QuestCheckUtil.INCORRECT_STATUS): System.Int32]]
+m.realSec_to_GameMinute = m.wrap(m.get("app.ExFieldUtil.realSec_to_GameMinute(System.Single)")) --[[@as fun(sec: System.Single): System.Single]]
 
 m.hook(
     "app.QuestCheckUtil.checkExQuest(System.Int32, app.cKeepQuestData)",

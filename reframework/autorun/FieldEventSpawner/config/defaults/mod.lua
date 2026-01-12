@@ -33,6 +33,7 @@
 ---@field em_size integer
 ---@field time integer
 ---@field swarm_count integer
+---@field spawn_delay integer
 ---
 ---@field is_ignore_environ boolean
 ---@field is_yummy boolean
@@ -78,6 +79,7 @@ return {
         time = 30,
         swarm_count = 2,
         em_size = 100,
+        spawn_delay = 0,
         --
         is_ignore_environ = false,
         is_yummy = false,

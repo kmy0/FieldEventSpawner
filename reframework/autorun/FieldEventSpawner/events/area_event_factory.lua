@@ -2,8 +2,11 @@
 ---@field event_data AreaEventData
 ---@field stage app.FieldDef.STAGE
 ---@field time integer
+---@field spawn_delay integer
 ---@field area integer?
 ---@field protected _area_array integer[]?
+---@field protected _field_director app.cExFieldDirector
+---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
 ---@field build fun(): SpawnResult, SpawnEvent?
 
 local data_rt = require("FieldEventSpawner.data.runtime")
@@ -19,17 +22,21 @@ this.__index = this
 ---@param event_data AreaEventData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
+---@param spawn_delay integer
 ---@param area integer?
 ---@return AreaEventFactory
-function this:new(event_data, stage, time, area)
+function this:new(event_data, stage, time, spawn_delay, area)
     local o = {
         event_data = event_data,
         stage = stage,
         area = area,
         time = time,
+        spawn_delay = spawn_delay,
     }
     setmetatable(o, self)
     ---@cast o AnimalEventFactory
+
+    o._field_director, o._schedule_timeline = data_rt.get_field_director()
     return o
 end
 
