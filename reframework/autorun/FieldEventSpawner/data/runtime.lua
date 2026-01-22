@@ -7,6 +7,7 @@
 ---@field missionman app.MissionManager?
 ---@field state State
 ---@field initialized boolean
+---@field enum Enum
 
 ---@class (exact) SpOfferCandidate
 ---@field unique_index integer
@@ -27,6 +28,15 @@
 ---@field spoffer table<app.FieldDef.STAGE, boolean>
 ---@field monster table<app.FieldDef.STAGE, table<app.EnemyDef.ID, table<app.ExDef.POP_EM_TYPE_Fixed, boolean>>>
 ---@field npc table<app.ExDef.GIMMICK_EVENT, boolean>
+
+---@class (exact) Enum
+---@field schedule_state ScheduleState.*
+---@field swarm_state SwarmState.*
+---@field spawn_result SpawnResult.*
+---@field battlefield_state BattlefieldState.*
+---@field event_collision_flag EventCollisionFlag.*
+---@field cached_event_type CachedEventType.*
+---@field spawn_button_state SpawnState.*
 
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local game_data = require("FieldEventSpawner.util.game.data")
@@ -52,23 +62,24 @@ local this = {
             npc = {},
         },
     },
+    ---@diagnostic disable-next-line: missing-fields
     enum = {},
     initialized = false,
 }
 
 ---@enum ScheduleState
-this.enum.schedule_state = {
+this.enum.schedule_state = { ---@class ScheduleState.*
     NO_STAGE = 1,
     OK = 2,
 }
 ---@enum SwarmState
-this.enum.swarm_state = {
+this.enum.swarm_state = { ---@class SwarmState.*
     SWARM = 1,
     BOSS = 2,
     HAS_BOSS = 3,
 }
 ---@enum SpawnResult
-this.enum.spawn_result = {
+this.enum.spawn_result = { ---@class SpawnResult.*
     OK = 1,
     NO_AREA = 2,
     NO_DIFFICULTY = 3,
@@ -76,12 +87,12 @@ this.enum.spawn_result = {
     NO_REWARDS = 5,
 }
 ---@enum BattlefieldState
-this.enum.battlefield_state = {
+this.enum.battlefield_state = { ---@class BattlefieldState.*
     battlefield_repel = 1,
     battlefield_slay = 2,
 }
 ---@enum EventCollisionFlag
-this.enum.event_collision_flag = {
+this.enum.event_collision_flag = { ---@class EventCollisionFlag.*
     NONE = 0,
     AREA = 1 << 1,
     ID = 1 << 2,
@@ -89,12 +100,12 @@ this.enum.event_collision_flag = {
     EVENT_TYPE = 1 << 4,
 }
 ---@enum CachedEventType
-this.enum.cached_event_type = {
+this.enum.cached_event_type = { ---@class CachedEventType.*
     PARENT = 1,
     CHILD = 2,
 }
 ---@enum SpawnState
-this.enum.spawn_button_state = {
+this.enum.spawn_button_state = { ---@class SpawnState.*
     OK = 1,
     EVENT_NOT_AVAILABLE = 2,
     BAD_ENVIRONMENT = 3,
