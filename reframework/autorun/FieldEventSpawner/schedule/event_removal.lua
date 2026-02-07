@@ -1,5 +1,6 @@
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
+local e = require("FieldEventSpawner.util.game.enum")
 local event_cache = require("FieldEventSpawner.schedule.event_cache")
 local m = require("FieldEventSpawner.util.ref.methods")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -69,8 +70,9 @@ end
 ---@param event app.cExFieldScheduleExportData.cEventData
 function this.is_my_event(cache_base, event)
     --FIXME: its not fail proof, but should be enough :)), it would be nice if exec time did not change when game overrides schedule
-    local base_event_type = data_ace.enum.ex_event[cache_base.event_type]
-    local event_type = data_ace.enum.ex_event[event:get_EventType()]
+    local enum = e.get("app.EX_FIELD_EVENT_TYPE")
+    local base_event_type = enum[cache_base.event_type]
+    local event_type = enum[event:get_EventType()]
     local id_field_name = data_ace.map.ex_event_to_id_field[base_event_type]
     return base_event_type == event_type and cache_base.id == event:get_field(id_field_name)
 end
@@ -81,17 +83,18 @@ end
 function this.remove_colliding_events(spawn_event, exported_schedule, schedule_timeline)
     ---@type app.cExFieldScheduleExportData.cEventData[]
     local res = {}
+    local ex_field = e.get("app.EX_FIELD_EVENT_TYPE")
     local e1_start = spawn_event.event_data._ExecMinute
     local e1_end = e1_start
         + m.realSec_to_GameMinute(
             spawn_event.event_data:get_field(
-                data_ace.map.ex_event_to_time_field[data_ace.enum.ex_event[spawn_event.cache_base.event_type]][1]
+                data_ace.map.ex_event_to_time_field[ex_field[spawn_event.cache_base.event_type]][1]
             ) * 60.0
         )
 
     ---@param cache_base CachedEventBase
     local function iter(cache_base)
-        local event_type = data_ace.enum.ex_event[cache_base.event_type]
+        local event_type = ex_field[cache_base.event_type]
         local time_field_name = data_ace.map.ex_event_to_time_field[event_type][1]
         local area_field_name = data_ace.map.ex_event_to_area_field[event_type]
         local id_field_name = data_ace.map.ex_event_to_id_field[event_type]
@@ -149,18 +152,18 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
     if spawn_event.cache_base.children then
         local t = spawn_event.cache_base.children
         ---@cast t CachedEventChild[]
-        for _, e in pairs(t) do
-            if not e.base then
+        for _, ev in pairs(t) do
+            if not ev.base then
                 goto continue
             end
-            iter(e.base)
+            iter(ev.base)
             ::continue::
         end
     end
 
-    for _, e in pairs(res) do
-        local event_type = data_ace.enum.ex_event[e._EventType]
-        local event = schedule_timeline:findKeyFromUniqueIndex(e._UniqueIndex)
+    for _, ev in pairs(res) do
+        local event_type = ex_field[ev._EventType]
+        local event = schedule_timeline:findKeyFromUniqueIndex(ev._UniqueIndex)
 
         if event then
             if event_type == "ANIMAL_EVENT" then
@@ -177,7 +180,7 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
                 remove_battlefield(event)
             end
 
-            exported_schedule:Remove(e)
+            exported_schedule:Remove(ev)
         end
     end
 end
@@ -228,7 +231,7 @@ function this.remove_my_event(stage, item)
     end
 
     if event and cache_base and this.is_my_event(cache_base, event:exportData()) then
-        local event_type = data_ace.enum.ex_event[cache_base.event_type]
+        local event_type = e.get("app.EX_FIELD_EVENT_TYPE")[cache_base.event_type]
         if event_type == "ANIMAL_EVENT" then
             ---@cast event app.cExFieldEvent_AnimalEvent
             remove_my_animal(event)

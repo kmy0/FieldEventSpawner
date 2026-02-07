@@ -1,13 +1,7 @@
----@class RuntimeData
----@field envman app.EnvironmentManager?
----@field stageman app.MasterFieldManager?
----@field flowman app.GameFlowManager?
----@field gimman app.GimmickManager?
----@field animalman app.AnimalManager?
----@field missionman app.MissionManager?
+---@class ModData
 ---@field state State
 ---@field initialized boolean
----@field enum Enum
+---@field enum ModEnum
 
 ---@class (exact) SpOfferCandidate
 ---@field unique_index integer
@@ -29,7 +23,7 @@
 ---@field monster table<app.FieldDef.STAGE, table<app.EnemyDef.ID, table<app.ExDef.POP_EM_TYPE_Fixed, boolean>>>
 ---@field npc table<app.ExDef.GIMMICK_EVENT, boolean>
 
----@class (exact) Enum
+---@class (exact) ModEnum
 ---@field schedule_state ScheduleState.*
 ---@field swarm_state SwarmState.*
 ---@field spawn_result SpawnResult.*
@@ -39,18 +33,17 @@
 ---@field spawn_button_state SpawnState.*
 
 local data_ace = require("FieldEventSpawner.data.ace.init")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local helpers = require("FieldEventSpawner.data.helpers")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
-local rl = game_data.reverse_lookup
 ---@module "FieldEventSpawner.gui.item.init"
 local gui_items
 
----@class RuntimeData
+---@class ModData
 local this = {
     state = {
         schedule = 1,
@@ -228,7 +221,7 @@ function this.update_spoffer()
 
         local second_rank = pop_em:get_Rank()
         if
-            not util_table.any(ranks, function(key, value)
+            not util_table.any(ranks, function(key, _)
                 return helpers.is_spoffer_pair(key, second_rank)
             end)
         then
@@ -319,9 +312,9 @@ function this.print_events(event_type, event_id)
 
     if type(event_type) == "string" then
         event_type_name = event_type
-        event_type_id = rl(data_ace.enum.ex_event, event_type)
+        event_type_id = e.get("app.EX_FIELD_EVENT_TYPE")[event_type]
     elseif event_type then
-        event_type_name = data_ace.enum.ex_event[event_type]
+        event_type_name = e.get("app.EX_FIELD_EVENT_TYPE")[event_type]
         event_type_id = event_type
     end
 
@@ -336,7 +329,7 @@ function this.print_events(event_type, event_id)
     local _, schedule_timeline = this.get_field_director()
     local events = schedule_timeline._KeyList
 
-    util_game.do_something(events, function(system_array, index, value)
+    util_game.do_something(events, function(_, _, value)
         local event_data = value:exportData()
         if
             (not event_type_id or event_type_id == event_data:get_EventType())

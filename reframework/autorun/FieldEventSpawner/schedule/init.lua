@@ -1,5 +1,6 @@
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
+local e = require("FieldEventSpawner.util.game.enum")
 local event_removal = require("FieldEventSpawner.schedule.event_removal")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -40,9 +41,9 @@ function this.add(stage, event)
         event_removal.remove_colliding_events(event, schedule._EventList, schedule_timeline)
     end
 
-    if data_ace.enum.ex_event[cached_event.event_type] == "GIMMICK_EVENT" then
+    if e.get("app.EX_FIELD_EVENT_TYPE")[cached_event.event_type] == "GIMMICK_EVENT" then
         this.hook.repop_gimmick(cached_event)
-    elseif data_ace.enum.ex_event[cached_event.event_type] == "POP_EM" then
+    elseif e.get("app.EX_FIELD_EVENT_TYPE")[cached_event.event_type] == "POP_EM" then
         ---@cast event MonsterSpawnEvent
         event.args.unique_index = event.event_data._UniqueIndex
         this.hook.set_em_args(event.args)

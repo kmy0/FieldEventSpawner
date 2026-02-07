@@ -54,7 +54,7 @@
 local data_ace = require("FieldEventSpawner.data.ace.ace")
 local data_event = require("FieldEventSpawner.data.ace.event.event")
 local data_gui = require("FieldEventSpawner.data.gui")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
@@ -67,8 +67,6 @@ local MonsterData = {}
 ---@diagnostic disable-next-line: inject-field
 MonsterData.__index = MonsterData
 setmetatable(MonsterData, { __index = data_event })
-
-local rl = game_data.reverse_lookup
 
 ---@param id app.EnemyDef.ID
 ---@param name_english string
@@ -189,19 +187,19 @@ local function get_pop_param(em_id, stage, pop_em_type)
         return
     end
     local pop_param_by_hr = field_layout:getEmPopParamByHR(999, pop_em_type)
-    local field_name = data_ace.map.pop_em_to_param_field[data_ace.enum.pop_em_fixed[pop_em_type]]
+    local field_name =
+        data_ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
     local type_param_array = pop_param_by_hr:get_field(field_name)
     ---@cast type_param_array  System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base>
     return field_layout:getPopParamByEmID(em_id, type_param_array)
 end
 
 ---@param em_id app.EnemyDef.ID
----@param field_ids app.FieldDef.STAGE[]
 ---@return table<app.FieldDef.STAGE, MonsterMapData>
-local function get_battlefield_data(em_id, field_ids)
+local function get_battlefield_data(em_id)
     local ret = {}
-    local pop_em_type = rl(data_ace.enum.pop_em_fixed, "BATTLEFIELD")
-    for stage, _ in pairs(field_ids) do
+    local pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed").BATTLEFIELD
+    for _, stage in e.iter("app.FieldDef.STAGE") do
         local pop_param = get_pop_param(em_id, stage, pop_em_type)
         if not pop_param then
             goto continue
@@ -216,7 +214,7 @@ local function get_battlefield_data(em_id, field_ids)
                 local belonging = belonging_enum:get_Current()
                 ---@cast belonging app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam
                 local area = belonging:get_AreaNo()
-                for environ_type, _ in pairs(data_ace.enum.environ) do
+                for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                     util_table.insert_nested_value(
                         ret[stage],
                         { "area_by_env", environ_type },
@@ -227,7 +225,7 @@ local function get_battlefield_data(em_id, field_ids)
             end
         else
             local area = -1
-            for environ_type, _ in pairs(data_ace.enum.environ) do
+            for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                 util_table.insert_nested_value(ret[stage], { "area_by_env", environ_type }, area)
             end
             table.insert(ret[stage].area, area)
@@ -302,11 +300,11 @@ local function get_difficulty(difficulty_params, legendary_id)
         local rate = diff2:getDifficultyRate(guid)
         util_table.insert_nested_value(ret, {
             rate:get_RewardGrade(),
-            game_data.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", rate:get_RewardRank()),
+            e.to_enum("app.QuestDef.EM_REWARD_RANK", rate:get_RewardRank()),
         }, guid)
     end
 
-    for grade, ranks in pairs(ret) do
+    for _, ranks in pairs(ret) do
         for rank, guids in pairs(ranks) do
             ranks[rank] = util_table.unique(guids, function(o)
                 return util_game.format_guid(o)
@@ -340,9 +338,9 @@ end
 ---@param diff_array System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 local function add_params(md, key, em_param, pop_param_by_env, diff_array)
     local legendary = {
-        none = rl(data_ace.enum.legendary, "NONE"),
-        legendary = rl(data_ace.enum.legendary, "NORMAL"),
-        legendary_king = rl(data_ace.enum.legendary, "KING"),
+        none = e.get("app.EnemyDef.LEGENDARY_ID").NONE,
+        legendary = e.get("app.EnemyDef.LEGENDARY_ID").NORMAL,
+        legendary_king = e.get("app.EnemyDef.LEGENDARY_ID").KING,
     }
 
     local em_difficulty = {}
@@ -382,7 +380,7 @@ end
 local function get_param_data(em_id, map_data)
     for stage, md in pairs(map_data) do
         for param_key, pop_em in pairs(data_gui.map.em_param_to_pop_em) do
-            local pop_em_type = rl(data_ace.enum.pop_em_fixed, pop_em)
+            local pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em]
             local pop_param = get_pop_param(em_id, stage, pop_em_type)
 
             if not pop_param then
@@ -471,9 +469,9 @@ end
 ---@return table<app.EnemyDef.ID, {crown: MonsterCrown, sizes: MonsterSize}>
 local function get_size_data()
     local legendary = {
-        [rl(data_ace.enum.legendary, "NONE")] = "none",
-        [rl(data_ace.enum.legendary, "NORMAL")] = "legendary",
-        [rl(data_ace.enum.legendary, "KING")] = "legendary_king",
+        [e.get("app.EnemyDef.LEGENDARY_ID").NONE] = "none",
+        [e.get("app.EnemyDef.LEGENDARY_ID").NORMAL] = "legendary",
+        [e.get("app.EnemyDef.LEGENDARY_ID").KING] = "legendary_king",
     }
     ---@type table<app.EnemyDef.ID, {crown: MonsterCrown, sizes: MonsterSize}>
     local ret = {}
@@ -488,7 +486,7 @@ local function get_size_data()
         local legendary_id = tbl_data:get_LegendaryId()
         local param = legendary[legendary_id]
         local em_id_fixed = tbl_data:get_EmIdFixed()
-        local em_id = game_data.fixed_to_enum("app.EnemyDef.ID", em_id_fixed)
+        local em_id = e.to_enum("app.EnemyDef.ID", em_id_fixed)
 
         if not ret[em_id] then
             local size_data = em_size:getSizeData(em_id)
@@ -510,9 +508,9 @@ local function get_size_data()
             ---@type {[integer]: boolean}
             local sizes = {}
             local lower_bound =
-                game_data.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_L())
+                e.to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_L())
             local upper_bound =
-                game_data.fixed_to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_U())
+                e.to_enum("app.QuestDef.EM_REWARD_RANK", size_tbl:get_RewardRank_U())
 
             for i = 1, 5 do
                 for reward_rank = lower_bound, upper_bound do
@@ -552,25 +550,19 @@ end
 ---@param ex_field_param app.user_data.ExFieldParam
 ---@return MonsterData[]
 function this.get_data(ex_field_param)
-    local em_ids = {}
-    local field_ids = {}
     local lang = game_lang.get_language()
     local size_data = get_size_data()
-
-    game_data.get_enum("app.EnemyDef.ID", em_ids)
-    game_data.get_enum("app.FieldDef.STAGE", field_ids)
-
     local ex_em_global_param = ex_field_param:get_ExEnemyGlobalParam()
-    local type = rl(data_ace.enum.ex_event, "POP_EM")
+    local type = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
     ---@type table<app.EnemyDef.ID, MonsterData>
     local cache = {}
 
-    for em_id, _ in pairs(em_ids) do
+    for _, em_id in e.iter("app.EnemyDef.ID") do
         if not m.isEmValid(em_id) or not m.isBossID(em_id) or not size_data[em_id] then
             goto continue
         end
 
-        local battlefield_data = get_battlefield_data(em_id, field_ids)
+        local battlefield_data = get_battlefield_data(em_id)
         local map_data = {}
         local area_move_info_by_em = ex_em_global_param:getAreaMoveInfo(em_id)
         if area_move_info_by_em then

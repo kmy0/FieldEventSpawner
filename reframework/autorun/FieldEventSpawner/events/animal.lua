@@ -17,13 +17,11 @@
     _FreeMiniValue6 = 1 if visible for summary
 ]]
 
-local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
+local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
-local game_data = require("FieldEventSpawner.util.game.data")
-local sched = require("FieldEventSpawner.schedule.init")
 
-local rl = game_data.reverse_lookup
+local sched = require("FieldEventSpawner.schedule.init")
 
 ---@class AnimalEventFactory
 local this = {}
@@ -52,7 +50,7 @@ end
 ---@return SpawnResult, SpawnEvent?
 function this:build()
     local environ_type = data_rt.get_environ(self.stage)
-    local event_type = rl(data_ace.enum.ex_event, "ANIMAL_EVENT")
+    local event_type = e.get("app.EX_FIELD_EVENT_TYPE").ANIMAL_EVENT
 
     ---@param event app.cExFieldEventBase
     ---@return boolean
@@ -69,7 +67,7 @@ function this:build()
 
     local event_data = sched.util.create_event_data()
     event_data._EventType = event_type
-    event_data._FreeValue0 = game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue0 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue1 = self.event_data.id
     event_data._FreeValue2 = self.event_data:get_area_fixed(self.stage, area)
     event_data._FreeMiniValue0 = area

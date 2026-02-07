@@ -27,13 +27,10 @@
     _FreeMiniValue6 = Bit array, eg. if there is an item in _FreeValue3, you set bit 3 to 1 etc.
 ]]
 
-local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
-
-local rl = game_data.reverse_lookup
 
 ---@class RewardFactory
 local this = {}
@@ -89,7 +86,7 @@ end
 function this:_build(reward_array)
     local byte_array = 0
     local event_data = sched.util.create_event_data()
-    event_data._EventType = rl(data_ace.enum.ex_event, "EM_REWARD")
+    event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").EM_REWARD
 
     for i = 1, #reward_array do
         local reward = reward_array[i]

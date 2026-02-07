@@ -54,8 +54,7 @@ end
 
 ---@param stage app.FieldDef.STAGE
 function this.clear(stage)
-    local t = this.get_stage_table(stage)
-    t = {}
+    util_table.clear(this.get_stage_table(stage))
     this.save()
 end
 

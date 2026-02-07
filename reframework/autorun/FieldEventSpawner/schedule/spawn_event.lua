@@ -19,6 +19,7 @@
 
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
+local e = require("FieldEventSpawner.util.game.enum")
 
 local this = {}
 
@@ -39,7 +40,7 @@ function this.ctor(event_data, name, area, collision_flag, children, sub_events)
             area = area,
             event_type = event_data._EventType,
             id = event_data:get_field(
-                data_ace.map.ex_event_to_id_field[data_ace.enum.ex_event[event_data._EventType]]
+                data_ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
             ),
             collision_flag = collision_flag and collision_flag or 0,
             children = children,
@@ -123,7 +124,7 @@ function this.child_ctor(unique_index, event_data, area, collision_flag)
     if event_data then
         ret.base = {
             id = event_data:get_field(
-                data_ace.map.ex_event_to_id_field[data_ace.enum.ex_event[event_data._EventType]]
+                data_ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
             ),
             event_type = event_data._EventType,
             area = area and area or 0,

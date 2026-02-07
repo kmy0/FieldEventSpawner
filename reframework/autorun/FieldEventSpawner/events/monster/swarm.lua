@@ -8,15 +8,12 @@
 ---@field has_boss boolean
 
 local config = require("FieldEventSpawner.config.init")
-local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local monster_factory = require("FieldEventSpawner.events.monster.monster")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
-
-local rl = game_data.reverse_lookup
 
 ---@class SwarmEventFactory
 local this = {}
@@ -85,7 +82,7 @@ end
 function this:build()
     ---@type SwarmData
     ---@diagnostic disable-next-line: missing-fields
-    local swarm_data = { has_boss = self.monster_role == rl(data_ace.enum.em_role, "BOSS") }
+    local swarm_data = { has_boss = self.monster_role == e.get("app.EnemyDef.ROLE_ID").BOSS }
     if not swarm_data.has_boss then
         self.is_village_boost = false
     end
@@ -150,8 +147,8 @@ end
 ---@param swarm_data SwarmData
 ---@return SpawnResult, ScheduledEvent[]?, ScheduledEvent?
 function this:_build_member(swarm_data)
-    self.monster_role = rl(data_ace.enum.em_role, "NORMAL")
-    self.pop_em_type = rl(data_ace.enum.pop_em_fixed, "SWARM")
+    self.monster_role = e.get("app.EnemyDef.ROLE_ID").NORMAL
+    self.pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM
     self.is_village_boost = false
     self.is_yummy = false
 
@@ -179,17 +176,17 @@ function this:_build_member(swarm_data)
     end
 
     local event_data = sched.util.create_event_data()
-    event_data._EventType = rl(data_ace.enum.ex_event, "POP_EM")
-    event_data._FreeValue0 = game_data.enum_to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
+    event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
+    event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
     event_data._FreeValue1 = util_game.hash_guid(difficulty_guid)
-    event_data._FreeValue2 = game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue2 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue3 = swarm_data.route_hash
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
     --FIXME: never actaully found where those values are set
     event_data._FreeMiniValue0 = (swarm_data.has_boss and 0x10 or 0x1C) | (0x80 * self.legendary_id)
     event_data._FreeMiniValue1 = data_rt.get_environ(self.stage)
-        | (0x10 * rl(data_ace.enum.pop_em_fixed, "SWARM"))
+        | (0x10 * e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM)
     event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = swarm_data.area
     event_data._FreeMiniValue4 = swarm_data.groupid
@@ -207,7 +204,7 @@ end
 ---@param em_pop_param  app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
 ---@return System.Guid?
 function this:_get_difficulty(em_pop_param)
-    if self.monster_role == rl(data_ace.enum.em_role, "BOSS") then
+    if self.monster_role == e.get("app.EnemyDef.ROLE_ID").BOSS then
         return em_pop_param:lotDifficultyID_Boss(self.legendary_id, true)
     end
     return monster_factory._get_difficulty(self, em_pop_param)

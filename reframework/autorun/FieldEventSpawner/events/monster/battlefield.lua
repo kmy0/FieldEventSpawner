@@ -41,12 +41,10 @@
 
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local monster_factory = require("FieldEventSpawner.events.monster.monster")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
-
-local rl = game_data.reverse_lookup
 
 ---@class BattlefieldEventFactory
 local this = {}
@@ -85,7 +83,7 @@ function this:new(
         self,
         monster_data,
         monster_role,
-        rl(data_ace.enum.pop_em_fixed, "BATTLEFIELD"),
+        e.get("app.ExDef.POP_EM_TYPE_Fixed").BATTLEFIELD,
         legendary_id,
         stage,
         time,
@@ -106,7 +104,7 @@ function this:new(
     o._area_array = monster_data:get_area_array(
         stage,
         not environ and data_rt.get_environ(stage) or nil,
-        data_ace.map.pop_em_to_em_param_key[data_ace.enum.pop_em_fixed[o.pop_em_type]]
+        data_ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[o.pop_em_type]]
     )
     return o
 end
@@ -159,10 +157,10 @@ function this:build()
     end
 
     local event_data = sched.util.create_event_data()
-    event_data._EventType = rl(data_ace.enum.ex_event, "POP_EM")
-    event_data._FreeValue0 = game_data.enum_to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
+    event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
+    event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
     event_data._FreeValue1 = util_game.hash_guid(difficulty_guid)
-    event_data._FreeValue2 = game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue2 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
     event_data._FreeMiniValue0 = is_repel and 0
@@ -231,10 +229,9 @@ function this:_get_battlefield_data(em_pop_param, now, em_pop_index, difficulty_
 
     local event_data = sched.util.create_event_data()
     event_data._ExecMinute = now
-    event_data._EventType = rl(data_ace.enum.ex_event, "BATTLEFIELD")
-    event_data._FreeValue0 = game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
-    event_data._FreeValue1 =
-        game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", em_pop_param:get_QuestStage())
+    event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").BATTLEFIELD
+    event_data._FreeValue0 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue1 = e.to_fixed("app.FieldDef.STAGE_Fixed", em_pop_param:get_QuestStage())
     event_data._FreeValue2 = em_pop_index
     event_data._FreeValue3 = is_repel and 0 or now
     event_data._FreeValue4 = util_game.hash_guid(route_guid)
@@ -244,8 +241,10 @@ function this:_get_battlefield_data(em_pop_param, now, em_pop_index, difficulty_
     event_data._FreeMiniValue1 = self.time
     event_data._FreeMiniValue2 = self.time
     event_data._FreeMiniValue3 = 255
-    event_data._FreeMiniValue4 = is_repel and rl(data_ace.enum.battlefield_state, "POP_BELONGING")
-        or rl(data_ace.enum.battlefield_state, "ACCEPTABLE_QUEST")
+
+    event_data._FreeMiniValue4 = is_repel
+            and e.get("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE").POP_BELONGING
+        or e.get("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE").ACCEPTABLE_QUEST
     event_data._FreeMiniValue5 = self:_get_option_tag(option_value, difficulty_guid)
     event_data._FreeMiniValue6 = area
     event_data._UniqueIndex = self._schedule_timeline:newEventUniqueIndex(self.stage)
@@ -273,9 +272,9 @@ end
 ---@return app.ExDef.POP_EM_TYPE_Fixed
 function this:_get_em_pop_type_bf()
     if self.battlefield_state == data_rt.enum.battlefield_state.battlefield_slay then
-        return rl(data_ace.enum.pop_em_fixed, "BATTLEFIELD")
+        return e.get("app.ExDef.POP_EM_TYPE_Fixed").BATTLEFIELD
     end
-    return rl(data_ace.enum.pop_em_fixed, "BF_POP_BELONGING")
+    return e.get("app.ExDef.POP_EM_TYPE_Fixed").BF_POP_BELONGING
 end
 
 return this

@@ -41,8 +41,8 @@
 
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
+local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
-local game_data = require("FieldEventSpawner.util.game.data")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local reward_factory = require("FieldEventSpawner.events.reward")
@@ -50,8 +50,6 @@ local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
-
-local rl = game_data.reverse_lookup
 
 ---@class MonsterEventFactory
 local this = {}
@@ -109,7 +107,7 @@ function this:new(
     o._area_array = monster_data:get_area_array(
         stage,
         not environ and data_rt.get_environ(stage) or nil,
-        data_ace.map.pop_em_to_em_param_key[data_ace.enum.pop_em_fixed[pop_em_type]]
+        data_ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
     )
     return o
 end
@@ -151,10 +149,10 @@ function this:build()
     end
 
     local event_data = sched.util.create_event_data()
-    event_data._EventType = rl(data_ace.enum.ex_event, "POP_EM")
-    event_data._FreeValue0 = game_data.enum_to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
+    event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
+    event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
     event_data._FreeValue1 = util_game.hash_guid(difficulty_guid)
-    event_data._FreeValue2 = game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue2 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue3 = util_game.hash_guid(route_guid)
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
@@ -236,7 +234,7 @@ function this:_get_em_pop_param()
     local field_layout = data_ace.ex_field_param:getFieldLayout(self.stage)
     local pop_param_by_hr = field_layout:getEmPopParamByHR(999, self.pop_em_type)
     local field_name =
-        data_ace.map.pop_em_to_param_field[data_ace.enum.pop_em_fixed[self.pop_em_type]]
+        data_ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[self.pop_em_type]]
     local pop_param_array = pop_param_by_hr:get_field(field_name)
     ---@cast pop_param_array  System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base>
     return field_layout:getPopParamByEmID(self.event_data.id, pop_param_array)
@@ -354,7 +352,7 @@ function this:_lot_option_tag(environ_type, difficulty_guid)
         self.event_data.id,
         self.monster_role,
         self.legendary_id,
-        rl(data_ace.enum.quest_rank, "EX"),
+        e.get("app.QuestDef.RANK").EX,
         reward_rank
     )
     return enemy_global_param:lotOptionTagIdx(self.stage, environ_type)
@@ -371,7 +369,7 @@ function this:_get_option_tag(option_value, difficulty_guid)
         self.event_data.id,
         self.monster_role,
         self.legendary_id,
-        rl(data_ace.enum.quest_rank, "EX"),
+        e.get("app.QuestDef.RANK").EX,
         reward_rank
     )
     return enemy_global_param:getOptionTagIdx(option_value)
@@ -381,13 +379,13 @@ end
 ---@return string
 function this:_get_monster_name()
     local name_guid
-    if self.legendary_id == rl(data_ace.enum.legendary, "NORMAL") then
+    if self.legendary_id == e.get("app.EnemyDef.LEGENDARY_ID").NORMAL then
         name_guid = m.getEnemyLegendaryName(self.event_data.id)
-    elseif self.legendary_id == rl(data_ace.enum.legendary, "KING") then
+    elseif self.legendary_id == e.get("app.EnemyDef.LEGENDARY_ID").KING then
         name_guid = m.getEnemyLegendaryKingName(self.event_data.id)
-    elseif self.monster_role == rl(data_ace.enum.em_role, "BOSS") then
+    elseif self.monster_role == e.get("app.EnemyDef.ROLE_ID").BOSS then
         name_guid = m.getEnemyExtraName(self.event_data.id)
-    elseif self.pop_em_type == rl(data_ace.enum.pop_em_fixed, "FRENZY") then
+    elseif self.pop_em_type == e.get("app.ExDef.POP_EM_TYPE_Fixed").FRENZY then
         name_guid = m.getEnemyFrenzyName(self.event_data.id)
     else
         name_guid = m.getEnemyNameGuid(self.event_data.id)

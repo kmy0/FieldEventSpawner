@@ -30,14 +30,12 @@
         _FreeMiniValue6 |= 0x10 if visible for summary
 ]]
 
-local data_ace = require("FieldEventSpawner.data.ace.ace")
 local data_rt = require("FieldEventSpawner.data.runtime")
+local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
-local game_data = require("FieldEventSpawner.util.game.data")
+
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
-
-local rl = game_data.reverse_lookup
 
 ---@class GimmickEventFactory
 local this = {}
@@ -65,10 +63,11 @@ end
 
 ---@return SpawnResult, SpawnEvent[]?
 function this:build()
+    local enum = e.get("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE")
     local environ_type = data_rt.get_environ(self.stage)
-    local event_ex_name = data_ace.enum.ex_gimmick[self.event_data.ex_id]
-    local event_type = rl(data_ace.enum.ex_event, "GIMMICK_EVENT")
-    local event_flag = data_ace.map.ex_gimmick_to_flag[event_ex_name]
+    local event_ex_name = enum[self.event_data.ex_id]
+    local event_type = e.get("app.EX_FIELD_EVENT_TYPE").GIMMICK_EVENT
+    local event_flag = enum[event_ex_name]
     local guid_hash = 0
 
     ---@param event app.cExFieldEventBase
@@ -93,7 +92,7 @@ function this:build()
 
     local event_data = sched.util.create_event_data()
     event_data._EventType = event_type
-    event_data._FreeValue0 = game_data.enum_to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
+    event_data._FreeValue0 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue1 = self.event_data.id
     event_data._FreeValue2 = self.event_data:get_area_fixed(self.stage, area)
     event_data._FreeValue3 = guid_hash

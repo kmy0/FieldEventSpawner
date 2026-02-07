@@ -1,23 +1,10 @@
 ---@class (exact) AceData
----@field enum AceEnum
 ---@field event EventDataBy
 ---@field item ItemDataBy
 ---@field ex_field_param app.user_data.ExFieldParam
 ---@field map AceMap
 ---@field initialized boolean
 ---@field init fun(): boolean
-
----@class (exact) AceEnum
----@field ex_event table<app.EX_FIELD_EVENT_TYPE, string>
----@field pop_em_fixed table<app.ExDef.POP_EM_TYPE_Fixed, string>
----@field legendary table<app.EnemyDef.LEGENDARY_ID, string>
----@field em_role table<app.EnemyDef.ROLE_ID, string>
----@field environ table<app.EnvironmentType.ENVIRONMENT, string>
----@field quest_rank table<app.QuestDef.RANK, string>
----@field ex_gimmick table<app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE, string>
----@field gimmick_state table<ace.GimmickDef.BASE_STATE, string>
----@field battlefield_state table<app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE, string>
----@field incorrect_status table<app.QuestCheckUtil.INCORRECT_STATUS, string>
 
 ---@class (exact) EventDataByType
 ---@field monster MonsterData[]
@@ -45,18 +32,6 @@
 
 ---@class AceData
 local this = {
-    enum = {
-        ex_event = {},
-        pop_em_fixed = {},
-        legendary = {},
-        em_role = {},
-        environ = {},
-        quest_rank = {},
-        ex_gimmick = {},
-        gimmick_state = {},
-        battlefield_state = {},
-        incorrect_status = {},
-    },
     map = {
         ex_event_to_time_field = {
             POP_EM = { "_FreeMiniValue5" },

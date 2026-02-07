@@ -20,12 +20,9 @@
     unused item id slots are filled with 1 for whatever reason
 ]]
 
-local data_ace = require("FieldEventSpawner.data.ace.ace")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local m = require("FieldEventSpawner.util.ref.methods")
 local sched_util = require("FieldEventSpawner.schedule.util")
-
-local rl = game_data.reverse_lookup
 
 local this = {}
 
@@ -36,7 +33,7 @@ local function swap_rewards(original_reward, edited_reward_data)
     local unique_index = original_reward._UniqueIndex
     if not edited_reward_data then
         edited_reward_data = sched_util.create_event_data()
-        edited_reward_data._EventType = rl(data_ace.enum.ex_event, "EM_REWARD")
+        edited_reward_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").EM_REWARD
     end
 
     edited_reward_data._UniqueIndex = unique_index

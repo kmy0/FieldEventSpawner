@@ -1,6 +1,24 @@
 ---@diagnostic disable: no-unknown
 
 local this = {}
+local rl = {}
+
+---@generic K, V
+---@param table table<K, V>
+---@param value V
+---@param clear boolean?
+---@return K
+function this.reverse_lookup(table, value, clear)
+    if not rl[table] or clear then
+        rl[table] = {}
+
+        for k, v in pairs(table) do
+            rl[table][v] = k
+        end
+    end
+
+    return rl[table][value]
+end
 
 ---@generic T: table
 ---@param t T
@@ -740,6 +758,28 @@ function this.key_to_any(t, convert_fn, parent_key, level)
         end
     end
 
+    return ret
+end
+
+---@generic T
+---@param iterator fun(): T
+---@return T[]
+function this.consume(iterator)
+    local ret = {}
+    for i in iterator do
+        table.insert(ret, i)
+    end
+    return ret
+end
+
+---@generic K, V
+---@param iterator fun(): K, V
+---@return {[K]: V}
+function this.consume_map(iterator)
+    local ret = {}
+    for k, v in iterator do
+        ret[k] = v
+    end
     return ret
 end
 

@@ -23,8 +23,8 @@
 local config = require("FieldEventSpawner.config.init")
 local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_rt = require("FieldEventSpawner.data.runtime")
+local e = require("FieldEventSpawner.util.game.enum")
 local event_cache = require("FieldEventSpawner.schedule.event_cache")
-local game_data = require("FieldEventSpawner.util.game.data")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local special_offer = require("FieldEventSpawner.events.special_offer")
@@ -32,8 +32,6 @@ local timer = require("FieldEventSpawner.util.misc.timer")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
-
-local rl = game_data.reverse_lookup
 
 local this = {
     ---@type HookState
@@ -61,7 +59,7 @@ local actions = state.actions
 ---@param gimmick_fixed app.ExDef.GIMMICK_EVENT_Fixed
 ---@param area integer
 local function repop_gimmick(gimmick_fixed, area)
-    local gimmick_event = game_data.fixed_to_enum("app.ExDef.GIMMICK_EVENT", gimmick_fixed)
+    local gimmick_event = e.to_enum("app.ExDef.GIMMICK_EVENT", gimmick_fixed)
     local gimmick_id = m.getGimmickID(gimmick_event)
     local gimmick_base_array = s.get("app.GimmickManager"):findGimmick_ID(gimmick_id)
 
@@ -76,7 +74,7 @@ local function repop_gimmick(gimmick_fixed, area)
         local gimmick_context = gimmick_base:get_GimmickContext()
         local field_area = gimmick_context:get_FieldAreaInfo()
         if field_area:get_MapAreaNumSafety() == area then
-            gimmick_base:changeState(rl(data_ace.enum.gimmick_state, "ENABLE"))
+            gimmick_base:changeState(e.get("ace.GimmickDef.BASE_STATE").ENABLE)
         end
     end
 end
@@ -145,7 +143,7 @@ function this.get_cheat_message()
     end
 end
 
-function this.spawn_check_post(retval)
+function this.spawn_check_post(_)
     if flags.spawn then
         flags.done = true
         return true
@@ -181,7 +179,7 @@ function this.ex_director_save_sched_pre(args)
     end
 end
 
-function this.ex_director_update_post(retval)
+function this.ex_director_update_post(_)
     if flags.done then
         flags.spawn = false
         flags.done = false
@@ -193,17 +191,17 @@ function this.ex_director_update_post(retval)
     end
 end
 
-function this.gimmick_execute_post(retval)
+function this.gimmick_execute_post(_)
     if flags.spawn and actions.repop_gm then
         repop_gimmick(actions.repop_gm.id, actions.repop_gm.area)
     end
 end
 
-function this.on_game_save_post(retval)
+function this.on_game_save_post(_)
     event_cache.overwrite_saved()
 end
 
-function this.on_game_load_post(retval)
+function this.on_game_load_post(_)
     event_cache.overwrite_current()
 end
 
@@ -217,7 +215,7 @@ function this.create_spoffer_pre(args)
     end
 end
 
-function this.create_spoffer_post(retval)
+function this.create_spoffer_post(_)
     if flags.spawn and actions.force_spoffer and actions.force_spoffer.rewards then
         local spoffer_stage = thread.get_hook_storage()["spoffer_stage"]
         local spoffer_array = spoffer_stage:get_SpOfferList() --[[@as System.Array<app.cExSpOfferFactory.SpOfferInfo>]]
@@ -238,13 +236,13 @@ function this.force_check_spoffer_pre(args)
     end
 end
 
-function this.force_lot_spoffer_post(retval)
+function this.force_lot_spoffer_post(_)
     if flags.spawn and actions.force_spoffer then
         return true
     end
 end
 
-function this.exclusive_em_check_post(retval)
+function this.exclusive_em_check_post(_)
     local config_mod = config.current.mod
     if data_ace.initialized and config_mod.is_allow_exclusive_em then
         return false
@@ -266,7 +264,7 @@ function this.force_spoffer_array_post(retval)
     end
 end
 
-function this.spoffer_village_boost_post(retval)
+function this.spoffer_village_boost_post(_)
     if flags.spawn and actions.force_spoffer and actions.force_village_boost then
         return true
     end
@@ -299,14 +297,16 @@ function this.allow_invalid_quests_post(retval)
         local bit = util_ref.deref_ptr(thread.get_hook_storage()["bit"])
 
         if bit ~= 0 and not util_ref.to_bool(retval) then
-            local keys = util_table.sort(util_table.keys(data_ace.enum.incorrect_status))
+            local keys = util_table.sort(
+                util_table.keys(e.get("app.QuestCheckUtil.INCORRECT_STATUS").enum_to_field)
+            )
             ---@type string[]
             local errors = {}
             for i = 0, #keys do
                 local status = keys[i]
                 local status_bit = m.getIncorrectStatusBit(status)
                 if bit & status_bit == status_bit then
-                    table.insert(errors, data_ace.enum.incorrect_status[status])
+                    table.insert(errors, e.get("app.QuestCheckUtil.INCORRECT_STATUS")[status])
                 end
             end
 
@@ -329,7 +329,7 @@ end
 --FIXME: Forcing monster that we actually want to spawn, this is Lagiacrus only,
 -- for whatever reason he has only one EmPopParam, POP_MANY_2, in which he has 75% chance to spawn.....
 -- not sure if its by design or an oversight
-function this.force_pop_many_spawn_post(retval)
+function this.force_pop_many_spawn_post(_)
     if flags.spawn then
         local storage = thread.get_hook_storage() --[[@as table]]
         local out_pop_em = sdk.to_managed_object(util_ref.deref_ptr(storage["out"])) --[[@as app.cExFieldEvent_PopEnemy?]]
@@ -344,7 +344,7 @@ function this.force_pop_many_spawn_post(retval)
     end
 end
 
-function this.force_pop_many_reward_pre(args)
+function this.force_pop_many_reward_pre(_)
     if flags.spawn then
         return sdk.PreHookResult.SKIP_ORIGINAL
     end
@@ -367,7 +367,7 @@ function this.stop_em_combat_pre(args)
     end
 end
 
-function this.stop_em_combat_post(retval)
+function this.stop_em_combat_post(_)
     if not util_table.empty(actions.force_area.ongoing) then
         for index, t in pairs(actions.force_area.ongoing) do
             if t:finished() then
@@ -414,7 +414,7 @@ function this.stop_em_combat_post(retval)
     end
 end
 
-function this.force_em_size_post(retval)
+function this.force_em_size_post(_)
     --FIXME: for whatever reason game does not call lotteryModelRandomSize for the last member of the swarm
     -- when leader is an alpha...
     if flags.spawn and actions.force_size then

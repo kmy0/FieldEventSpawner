@@ -1,16 +1,14 @@
 ---@class (exact) AnimalData : AreaEventData
 ---@field id app.ExDef.ANIMAL_EVENT_Fixed
 
-local data_ace = require("FieldEventSpawner.data.ace.ace")
 local data_event = require("FieldEventSpawner.data.ace.event.event")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
-local rl = game_data.reverse_lookup
 
 ---@param ex_field_param app.user_data.ExFieldParam
 ---@return AnimalData[]
@@ -27,15 +25,15 @@ function this.get_data(ex_field_param)
     local function get_event_struct(animal_event)
         if not cache[animal_event] then
             local name_guid = m.getAnimalEventName(animal_event)
-            local type = rl(data_ace.enum.ex_event, "ANIMAL_EVENT")
-            local e = data_event:new(
+            local type = e.get("app.EX_FIELD_EVENT_TYPE").ANIMAL_EVENT
+            local ev = data_event:new(
                 game_lang.get_message_local(name_guid, 1),
                 game_lang.get_message_local(name_guid, lang, true),
                 type
             )
-            ---@cast e AnimalData
-            e.id = game_data.enum_to_fixed("app.ExDef.ANIMAL_EVENT_Fixed", animal_event)
-            cache[animal_event] = e
+            ---@cast ev AnimalData
+            ev.id = e.to_fixed("app.ExDef.ANIMAL_EVENT_Fixed", animal_event)
+            cache[animal_event] = ev
         end
         return cache[animal_event]
     end
@@ -64,7 +62,7 @@ function this.get_data(ex_field_param)
                     event_struct.map[stage] = data_event.map_data_ctor(stage)
                 end
 
-                for environ_type, _ in pairs(data_ace.enum.environ) do
+                for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                     if animal_param:getRandomWeight(stage, environ_type) then
                         util_table.insert_nested_value(
                             event_struct.map[stage],

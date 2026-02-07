@@ -6,16 +6,14 @@
 ---@class (exact) NpcData : GimmickData
 ---@field guid System.Guid
 
-local data_ace = require("FieldEventSpawner.data.ace.ace")
 local data_event = require("FieldEventSpawner.data.ace.event.event")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
-local rl = game_data.reverse_lookup
 
 ---@param cache table<integer, GimmickData>
 ---@return GimmickData[]
@@ -43,21 +41,21 @@ end
 local function get_event_struct(cache, gimmick_event, ex_id, lang, guid)
     if not cache[gimmick_event] then
         local name_guid = m.getGimmickEventName(gimmick_event)
-        local type = rl(data_ace.enum.ex_event, "GIMMICK_EVENT")
-        local e = data_event:new(
+        local type = e.get("app.EX_FIELD_EVENT_TYPE").GIMMICK_EVENT
+        local ev = data_event:new(
             game_lang.get_message_local(name_guid, 1),
             game_lang.get_message_local(name_guid, lang, true),
             type
         )
-        ---@cast e GimmickData
-        e.id = game_data.enum_to_fixed("app.ExDef.GIMMICK_EVENT_Fixed", gimmick_event)
-        e.ex_id = ex_id
-        e.id_not_fixed = gimmick_event
+        ---@cast ev GimmickData
+        ev.id = e.to_fixed("app.ExDef.GIMMICK_EVENT_Fixed", gimmick_event)
+        ev.ex_id = ex_id
+        ev.id_not_fixed = gimmick_event
         if guid then
-            ---@cast e NpcData
-            e.guid = guid
+            ---@cast ev NpcData
+            ev.guid = guid
         end
-        cache[gimmick_event] = e
+        cache[gimmick_event] = ev
     end
     return cache[gimmick_event]
 end
@@ -66,7 +64,7 @@ end
 ---@param lang via.Language
 ---@return GimmickData[]
 local function get_npc_data(ex_field_param, lang)
-    local ex_id = rl(data_ace.enum.ex_gimmick, "ASSIST_NPC")
+    local ex_id = e.get("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE").ASSIST_NPC
     local npc_param_array = ex_field_param:get_AssistNpcParams()
     local npc_param_enum = util_game.get_array_enum(npc_param_array)
     ---@type table<integer, GimmickData>
@@ -91,7 +89,7 @@ local function get_npc_data(ex_field_param, lang)
                 event_struct.map[stage] = data_event.map_data_ctor(stage)
             end
 
-            for environ_type, _ in pairs(data_ace.enum.environ) do
+            for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                 if npc_gimmick:checkEnableEnvBit(environ_type) then
                     util_table.insert_nested_value(
                         event_struct.map[stage],
@@ -111,53 +109,10 @@ local function get_npc_data(ex_field_param, lang)
     return cache_to_ret(cache)
 end
 
---FIXME: coludnt force it to respawn
--- ---@param ex_field_param app.user_data.ExFieldParam
--- ---@param lang via.Language
--- local function get_ancient_coin_data(ex_field_param, lang)
---     local ex_id = rl(ace.enum.ex_gimmick, "ANCIENT_COIN")
---     local id = 59 --63-67
---     local field_layout_array = ex_field_param._FieldLayouts
---     local field_layout_enum = util_game.get_array_enum(field_layout_array)
---     ---@type table<integer, GimmickData>
---     local cache = {}
---     local event_struct = get_event_struct(cache, id, ex_id, lang)
---     event_struct.name_english = "???"
---     event_struct.name_local = language.tr(string.format("misc.gimmick_event.%s.name", id))
-
---     while field_layout_enum:MoveNext() do
---         local field_layout = field_layout_enum:get_Current()
---         ---@cast field_layout app.user_data.ExFieldParam_LayoutData
---         local coin_param_array = field_layout._AncientCoinParams
---         local coin_param_enum = util_game.get_array_enum(coin_param_array)
---         local stage = field_layout:get_Stage()
-
---         if not event_struct.map[stage] then
---             event_struct.map[stage] = event.map_data_ctor(stage)
---         end
-
---         while coin_param_enum:MoveNext() do
---             local coin_param = coin_param_enum:get_Current()
---             ---@cast coin_param app.user_data.ExFieldParam_LayoutData.cAncientCoinParam
---             local area = coin_param:get_AreaNo()
-
---             for environ_type, _ in pairs(data.ace_environ_enum) do
---                 if coin_param:isContainEnvType(environ_type) then
---                     util_table.insert_nested_value(event_struct.map[stage], { "area_by_env", environ_type }, area)
---                 end
---             end
---             table.insert(event_struct.map[stage].area, area)
---             util_table.set_nested_value(event_struct.map[stage], { "area_to_area_fixed", area },
---                 coin_param:get_AreaID_Fixed())
---         end
---     end
---     return cache_to_ret(cache)
--- end
-
 ---@param ex_field_param app.user_data.ExFieldParam
 ---@param lang via.Language
 local function get_tokusan_data(ex_field_param, lang)
-    local ex_id = rl(data_ace.enum.ex_gimmick, "RARE_TOKUSAN")
+    local ex_id = e.get("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE").RARE_TOKUSAN
     local field_layout_array = ex_field_param._FieldLayouts
     local field_layout_enum = util_game.get_array_enum(field_layout_array)
     ---@type table<integer, GimmickData>
@@ -214,7 +169,7 @@ end
 ---@param lang via.Language
 ---@return GimmickData[]
 local function get_env_data(ex_field_param, lang)
-    local ex_id = rl(data_ace.enum.ex_gimmick, "NONE")
+    local ex_id = e.get("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE").NONE
     local field_layout_array = ex_field_param._FieldLayouts
     local field_layout_enum = util_game.get_array_enum(field_layout_array)
     ---@type table<integer, GimmickData>
@@ -244,7 +199,7 @@ local function get_env_data(ex_field_param, lang)
                     event_struct.map[stage] = data_event.map_data_ctor(stage)
                 end
 
-                for environ_type, _ in pairs(data_ace.enum.environ) do
+                for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                     if gimmick_param:getRandomWeight(stage, environ_type) then
                         util_table.insert_nested_value(
                             event_struct.map[stage],
@@ -274,7 +229,6 @@ function this.get_data(ex_field_param)
         get_npc_data(ex_field_param, lang),
         get_env_data(ex_field_param, lang),
         get_tokusan_data(ex_field_param, lang)
-        -- ,get_ancient_coin_data(ex_field_param, lang)
     )
 end
 

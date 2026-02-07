@@ -91,11 +91,11 @@ this.event_type = item.config:new(
     imgui.combo,
     { iv.event_type.array },
     "monster",
-    function(self, config_value)
+    function(_, config_value)
         return iv.event_type.map[config_value]
     end,
     nil,
-    function(self)
+    function(_)
         this.switch_arrays()
     end
 )
@@ -105,13 +105,13 @@ this.event = item.config:new(
     imgui.combo,
     { iv.event.array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         return iv.event.map[config_value]
     end,
-    function(self)
+    function(_)
         return iv.event:empty()
     end,
-    function(self)
+    function(_)
         this.switch_arrays()
     end,
     is_combo_changed
@@ -122,13 +122,13 @@ this.area = item.config:new(
     imgui.combo,
     { iv.area.array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         return iv.area.map[config_value]
     end,
-    function(self)
+    function(_)
         return not this.is_force_area:value() or iv.area:empty()
     end,
-    function(self)
+    function(_)
         this.switch_arrays()
     end,
     is_combo_changed
@@ -139,13 +139,13 @@ this.em_param = item.config:new(
     imgui.combo,
     { iv.em_param.array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         return iv.em_param.map[config_value]
     end,
-    function(self)
+    function(_)
         return iv.em_param:empty()
     end,
-    function(self)
+    function(_)
         this.switch_arrays()
     end,
     is_combo_changed
@@ -156,13 +156,13 @@ this.em_param_mod = item.config:new(
     imgui.combo,
     { iv.em_param_mod.array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         return iv.em_param_mod.map[config_value]
     end,
-    function(self)
+    function(_)
         return iv.em_param_mod:empty()
     end,
-    function(self)
+    function(_)
         this.switch_arrays()
     end,
     is_combo_changed
@@ -173,13 +173,13 @@ this.em_difficulty = item.config:new(
     imgui.combo,
     { iv.em_difficulty.array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         return iv.em_difficulty.map[config_value]
     end,
-    function(self)
+    function(_)
         return iv.em_difficulty:empty() or not this.is_force_difficulty:value()
     end,
-    function(self)
+    function(_)
         this.switch_arrays()
     end,
     is_combo_changed
@@ -190,13 +190,13 @@ this.em_difficulty_rank = item.config:new(
     imgui.combo,
     { iv.em_difficulty_rank.array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         return iv.em_difficulty_rank.map[config_value]
     end,
-    function(self)
+    function(_)
         return iv.em_difficulty_rank:empty() or not this.is_force_difficulty:value()
     end,
-    function(self)
+    function(_)
         this.switch_arrays()
     end,
     is_combo_changed
@@ -207,13 +207,13 @@ this.spoffer = item.config:new(
     imgui.combo,
     { iv.spoffer.array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         return iv.spoffer.map[config_value]
     end,
-    function(self)
+    function(_)
         return not this.is_spoffer:value()
     end,
-    function(self)
+    function(_)
         this.switch_arrays()
     end,
     is_combo_changed
@@ -225,7 +225,7 @@ this.swarm_count = item.config:new(
     { 0, 5 },
     0,
     nil,
-    function(self)
+    function(_)
         local em_param = this.em_param:value()
         return (em_param ~= "swarm" and em_param ~= "boss")
             or (em_param == "legendary" and not iv.current.em_param_struct.boss)
@@ -236,24 +236,17 @@ this.spawn_delay = item.config:new(
     imgui.slider_int,
     { 0, 60 },
     0,
-    function(self, config_value)
+    function(_, config_value)
         return m.realSec_to_GameMinute(config_value * 60 * 1.0)
     end,
-    function(self)
+    function(_)
         return this.is_battlefield() or this.is_spoffer:value()
     end
 )
 
-this.em_size = item.config:new(
-    "mod.em_size",
-    imgui.slider_int,
-    { 88, 125 },
-    nil,
-    nil,
-    function(self)
-        return not this.is_force_size:value()
-    end
-)
+this.em_size = item.config:new("mod.em_size", imgui.slider_int, { 88, 125 }, nil, nil, function(_)
+    return not this.is_force_size:value()
+end)
 
 this.time = item.config:new("mod.time", imgui.slider_int, { 1, 60 })
 this.is_ignore_environ = item.config:new("mod.is_ignore_environ", imgui.checkbox, nil, false)
@@ -263,7 +256,7 @@ this.is_force_area = item.config:new(
     nil,
     false,
     nil,
-    function(self)
+    function(_)
         return iv.area:empty()
             or (
                 this.event_type:value() == "monster"
@@ -272,7 +265,7 @@ this.is_force_area = item.config:new(
     end
 )
 
-this.is_yummy = item.config:new("mod.is_yummy", imgui.checkbox, nil, false, nil, function(self)
+this.is_yummy = item.config:new("mod.is_yummy", imgui.checkbox, nil, false, nil, function(_)
     return (this.swarm_count:value() > 0 and this.em_param:value() == "normal")
         or data_rt.is_in_quest()
         or this.is_force_rewards:value()
@@ -284,7 +277,7 @@ this.is_village_boost = item.config:new(
     nil,
     false,
     nil,
-    function(self)
+    function(_)
         return data_rt.is_in_quest()
             or not data_rt.is_village_boost_unlocked(data_rt.state.stage)
             or this.is_battlefield()
@@ -299,7 +292,7 @@ this.is_allow_invalid_quest = item.config:new(
     nil,
     false,
     nil,
-    function(self)
+    function(_)
         return data_rt.is_in_quest()
     end
 )
@@ -310,12 +303,12 @@ this.is_force_rewards = item.config:new(
     nil,
     false,
     nil,
-    function(self)
+    function(_)
         return data_rt.is_in_quest()
     end
 )
 
-this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, nil, function(self)
+this.is_spoffer = item.config:new("mod.is_spoffer", imgui.checkbox, nil, false, nil, function(_)
     return data_rt.is_in_quest()
         or not data_rt.is_spoffer_unlocked(data_rt.state.stage)
         or this.is_battlefield()
@@ -331,7 +324,7 @@ this.is_force_difficulty = item.config:new(
     nil,
     false,
     nil,
-    function(self)
+    function(_)
         return iv.em_difficulty:empty()
     end
 )
@@ -341,7 +334,7 @@ this.is_force_size = item.config:new(
     nil,
     false,
     nil,
-    function(self)
+    function(_)
         return not this.em_difficulty:value()
             or this.em_size.imgui_draw_args[2] == this.em_size.imgui_draw_args[3]
             or this.spawn_delay:value() > 0
@@ -351,7 +344,7 @@ this.is_force_size = item.config:new(
 this.spawn = spawn_button(this)
 
 this.clear_schedule = item.callback:new(
-    function(self)
+    function(_)
         if not config.current.mod.disable_button_cooldown then
             this.spawn.timer:restart(config.spawn_cooldown.clear_schedule)
         end
@@ -359,14 +352,14 @@ this.clear_schedule = item.callback:new(
     end,
     imgui.button,
     nil,
-    function(self)
+    function(_)
         ---@diagnostic disable-next-line: return-type-mismatch
         return data_rt.is_in_quest()
     end
 )
 
 this.rebuild_schedule = item.callback:new(
-    function(self)
+    function(_)
         if not config.current.mod.disable_button_cooldown then
             this.spawn.timer:restart(config.spawn_cooldown.clear_schedule)
         end
@@ -374,7 +367,7 @@ this.rebuild_schedule = item.callback:new(
     end,
     imgui.button,
     nil,
-    function(self)
+    function(_)
         ---@diagnostic disable-next-line: return-type-mismatch
         return data_rt.is_in_quest()
     end
@@ -399,7 +392,7 @@ this.reward = item.config:new(
     imgui.combo,
     { iv.reward.filtered_array },
     nil,
-    function(self, config_value)
+    function(_, config_value)
         local key = iv.reward.filtered_map[config_value]
         local item_data = data_ace.item.by_key[key]
         if not key or not item_data then
@@ -412,33 +405,33 @@ this.reward = item.config:new(
             count = this.reward_count:value(),
         }
     end,
-    function(self)
+    function(_)
         return util_table.empty(iv.reward.filtered_array)
     end,
-    function(self)
+    function(_)
         iv.switch_reward_array(this.reward_filter:value())
     end,
     is_combo_changed
 )
 
 this.reward_add = item.callback:new(
-    function(self)
+    function(_)
         table.insert(config.current.mod.reward_config.array, this.reward:value())
     end,
     imgui.button,
     nil,
-    function(self)
+    function(_)
         return #config.current.mod.reward_config.array >= 10 or not this.reward:value()
     end
 )
 
 this.edit_rewards = item.callback:new(
-    function(self)
+    function(_)
         config.gui.current.gui.reward_builder.is_opened = true
     end,
     imgui.button,
     nil,
-    function(self)
+    function(_)
         return not this.is_force_rewards:value()
     end
 )

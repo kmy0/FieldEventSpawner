@@ -3,7 +3,7 @@
 ---@field id_not_fixed app.ItemDef.ID
 ---@field key string
 
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 
@@ -13,11 +13,9 @@ local this = {}
 function this.get_data()
     ---@type ItemData[]
     local ret = {}
-    local item_ids = {}
     local lang = game_lang.get_language()
 
-    game_data.get_enum("app.ItemDef.ID", item_ids)
-    for item_id, _ in pairs(item_ids) do
+    for _, item_id in e.iter("app.ItemDef.ID") do
         local item_data = m.getItemData(item_id)
 
         if not item_data or not m.isValidItem(item_id) then

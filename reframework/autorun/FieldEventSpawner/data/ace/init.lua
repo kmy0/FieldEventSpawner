@@ -3,14 +3,14 @@ local data_gimmick = require("FieldEventSpawner.data.ace.event.gimmick")
 local data_gui = require("FieldEventSpawner.data.gui")
 local data_item = require("FieldEventSpawner.data.ace.item")
 local data_monster = require("FieldEventSpawner.data.ace.event.monster")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
-local this = require("FieldEventSpawner.data.ace.ace")
+local rl = util_table.reverse_lookup
 
-local rl = game_data.reverse_lookup
+local this = require("FieldEventSpawner.data.ace.ace")
 
 ---@param ... AreaEventData[]
 ---@return table<app.FieldDef.STAGE, table<string, table<string, AreaEventData>>>
@@ -34,8 +34,10 @@ local function events_by_stage_ctor(...)
     for _, event_t in pairs(events) do
         for _, event in pairs(event_t) do
             for stage, map in pairs(event.map) do
-                local event_type =
-                    rl(data_gui.map.event_type_to_ex_event, this.enum.ex_event[event.type])
+                local event_type = rl(
+                    data_gui.map.event_type_to_ex_event,
+                    e.get("app.EX_FIELD_EVENT_TYPE")[event.type]
+                )
                 local t = get_table(map.stage, event_type)
                 t[string.format("%s_%s_%s_event_name", stage, event_type, event.id)] = event
             end
@@ -99,28 +101,20 @@ function this.init()
         return false
     end
 
-    game_data.get_enum("app.EX_FIELD_EVENT_TYPE", this.enum.ex_event)
-    game_data.get_enum("app.ExDef.POP_EM_TYPE_Fixed", this.enum.pop_em_fixed)
-    game_data.get_enum("app.EnemyDef.LEGENDARY_ID", this.enum.legendary)
-    game_data.get_enum("app.EnemyDef.ROLE_ID", this.enum.em_role)
-    game_data.get_enum("app.EnvironmentType.ENVIRONMENT", this.enum.environ)
-    game_data.get_enum("app.QuestDef.RANK", this.enum.quest_rank)
-    game_data.get_enum("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE", this.enum.ex_gimmick)
-    game_data.get_enum("ace.GimmickDef.BASE_STATE", this.enum.gimmick_state)
-    game_data.get_enum(
-        "app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE",
-        this.enum.battlefield_state
-    )
-    game_data.get_enum("app.QuestCheckUtil.INCORRECT_STATUS", this.enum.incorrect_status)
+    e.new("app.EX_FIELD_EVENT_TYPE")
+    e.new("app.ExDef.POP_EM_TYPE_Fixed")
+    e.new("app.EnemyDef.LEGENDARY_ID")
+    e.new("app.EnemyDef.ROLE_ID")
+    e.new("app.EnvironmentType.ENVIRONMENT")
+    e.new("app.QuestDef.RANK")
+    e.new("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE")
+    e.new("ace.GimmickDef.BASE_STATE")
+    e.new("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE")
+    e.new("app.QuestCheckUtil.INCORRECT_STATUS")
 
-    if
-        util_table.any(
-            this.enum --[[@as table<string, table<integer, string>>]],
-            function(key, value)
-                return util_table.empty(value)
-            end
-        )
-    then
+    if util_table.any(e.enums, function(_, value)
+        return not value.ok
+    end) then
         return false
     end
 

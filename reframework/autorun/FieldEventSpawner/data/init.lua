@@ -5,9 +5,15 @@ local this = {
 }
 
 -- ===== DEPRECATED =================================================================
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
+local util_table = require("FieldEventSpawner.util.misc.table")
+
 this.util = {}
-this.util.reverse_lookup = game_data.reverse_lookup
+this.util.reverse_lookup = util_table.reverse_lookup
+---@diagnostic disable-next-line: inject-field
+this.ace.enum = {
+    legendary = e.new("app.EnemyDef.LEGENDARY_ID").enum_to_field,
+}
 
 package.preload["FieldEventSpawner.util"] = function()
     local m = require("FieldEventSpawner.util.ref.methods")

@@ -6,10 +6,9 @@
 ---@field timer Timer
 
 local config = require("FieldEventSpawner.config.init")
-local data_ace = require("FieldEventSpawner.data.ace.init")
 local data_gui = require("FieldEventSpawner.data.gui")
 local data_rt = require("FieldEventSpawner.data.runtime")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local gui_util = require("FieldEventSpawner.gui.util")
 local helpers = require("FieldEventSpawner.data.helpers")
 local item = require("FieldEventSpawner.util.imgui.item_def.init")
@@ -19,7 +18,7 @@ local util_imgui = require("FieldEventSpawner.util.imgui.init")
 local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
-local rl = game_data.reverse_lookup
+local rl = util_table.reverse_lookup
 
 ---@class SpawnButton
 local this = {
@@ -103,17 +102,14 @@ function this:update_spawn_state()
             and data_rt.is_monster_banned(
                 data_rt.state.stage,
                 event.id,
-                rl(
-                    data_ace.enum.pop_em_fixed,
-                    data_gui.map.em_param_to_pop_em[self.owner.em_param:value()]
-                )
+                e.get("app.ExDef.POP_EM_TYPE_Fixed")[data_gui.map.em_param_to_pop_em[self.owner.em_param:value()]]
             )
         then
             self.state = data_rt.enum.spawn_button_state.EVENT_NOT_AVAILABLE
         elseif
             ---@cast event GimmickData
             self.owner.event_type:value() == "gimmick"
-            and event.ex_id == rl(data_ace.enum.ex_gimmick, "ASSIST_NPC")
+            and event.ex_id == e.get("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE").ASSIST_NPC
             and not data_rt.is_npc_unlocked(event.id_not_fixed)
         then
             self.state = data_rt.enum.spawn_button_state.EVENT_NOT_AVAILABLE
@@ -147,9 +143,9 @@ function this:spawn()
         ---@cast event MonsterData
         local em_param = self.owner.em_param:value()
         local role = data_gui.map.em_param_to_role[em_param]
-        local role_id = rl(data_ace.enum.em_role, role)
+        local role_id = e.get("app.EnemyDef.ROLE_ID")[role]
         local legendary = data_gui.map.em_param_mod_to_legendary[self.owner.em_param_mod:value()]
-        local legendary_id = rl(data_ace.enum.legendary, legendary)
+        local legendary_id = e.get("app.EnemyDef.LEGENDARY_ID")[legendary]
         local pop_em_type = data_gui.map.em_param_to_pop_em[em_param]
         local rewards = self.owner.is_force_rewards:value() and config_mod.reward_config.array
             or nil
@@ -180,7 +176,7 @@ function this:spawn()
             return spawner.swarm(
                 event,
                 role_id,
-                rl(data_ace.enum.pop_em_fixed, pop_em_type),
+                e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type],
                 legendary_id,
                 data_rt.state.stage,
                 self.owner.time:value(),
@@ -213,7 +209,7 @@ function this:spawn()
             return spawner.monster(
                 event,
                 role_id,
-                rl(data_ace.enum.pop_em_fixed, pop_em_type),
+                e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type],
                 legendary_id,
                 data_rt.state.stage,
                 self.owner.time:value(),

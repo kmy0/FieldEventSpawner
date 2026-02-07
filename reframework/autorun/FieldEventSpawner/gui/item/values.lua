@@ -73,7 +73,7 @@ end
 ---@param new_values SwitchData
 ---@param fields string[]
 local function is_state_changed(new_values, fields)
-    return util_table.any(fields, function(key, value)
+    return util_table.any(fields, function(_, value)
         return this.current[value] ~= new_values[value]
     end)
 end
@@ -150,6 +150,7 @@ end
 ---@param key string
 ---@param map_key any
 ---@param map_value string
+---@diagnostic disable-next-line: unused-local
 local function sort_struct_translated_fn(key, map_key, map_value)
     return {
         key = map_value,
@@ -172,7 +173,7 @@ local function translate_em_param_combo()
         data_gui.combo[key],
         sort_struct_translated_fn,
         nil,
-        function(map_key, map_value)
+        function(_, map_value)
             return this.current.em_param_struct[map_value]
         end
     )
@@ -189,7 +190,7 @@ local function translate_em_param_mod_combo()
         data_gui.combo[key],
         sort_struct_translated_fn,
         nil,
-        function(map_key, map_value)
+        function(_, map_value)
             local t = this.current.em_param_struct[this.em_param.map[config.current.mod.em_param]]
             if t then
                 return t[map_value]
@@ -506,7 +507,7 @@ function this.switch_reward_array(query)
 
     local current_value = this.reward.filtered_array[config.current.mod.reward_config.reward]
     if this.reward:empty() then
-        update_combo_values("reward", data_ace.item.by_key, function(key, map_key, map_value)
+        update_combo_values("reward", data_ace.item.by_key, function(_, map_key, map_value)
             return { key = map_key, text = map_value.name_local }
         end)
     end

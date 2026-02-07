@@ -103,7 +103,7 @@ function this.hook(method, pre_cb, post_cb, ignore_jmp_object)
         sdk.hook(
             ---@diagnostic disable-next-line: param-type-mismatch
             type(method) == "string" and this.get(method) or method,
-            pre_cb or function(args) end,
+            pre_cb or function(_) end,
             post_cb and util_ref.hook_ret(post_cb) or nil,
             ignore_jmp_object
         )

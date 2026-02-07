@@ -1,10 +1,8 @@
 local data_ace = require("FieldEventSpawner.data.ace.init")
-local game_data = require("FieldEventSpawner.util.game.data")
+local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local util_table = require("FieldEventSpawner.util.misc.table")
-
-local rl = game_data.reverse_lookup
 
 local this = {}
 
@@ -15,13 +13,13 @@ function this.get_monster_name(pop_em)
     local guid
     local _FreeMiniValue2 = pop_em:get_FreeMiniValue2()
 
-    if _FreeMiniValue2 >> 0 == rl(data_ace.enum.em_role, "BOSS") then
+    if _FreeMiniValue2 >> 0 == e.get("app.EnemyDef.ROLE_ID").BOSS then
         guid = m.getEnemyExtraName(id)
-    elseif _FreeMiniValue2 >> 0 == rl(data_ace.enum.em_role, "FRENZY") then
+    elseif _FreeMiniValue2 >> 0 == e.get("app.EnemyDef.ROLE_ID").FRENZY then
         guid = m.getEnemyFrenzyName(id)
-    elseif _FreeMiniValue2 >> 4 == rl(data_ace.enum.legendary, "NORMAL") then
+    elseif _FreeMiniValue2 >> 4 == e.get("app.EnemyDef.LEGENDARY_ID").NORMAL then
         guid = m.getEnemyLegendaryName(id)
-    elseif _FreeMiniValue2 >> 4 == rl(data_ace.enum.legendary, "KING") then
+    elseif _FreeMiniValue2 >> 4 == e.get("app.EnemyDef.LEGENDARY_ID").KING then
         guid = m.getEnemyLegendaryKingName(id)
     else
         guid = m.getEnemyNameGuid(id)
