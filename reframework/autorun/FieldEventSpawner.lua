@@ -169,4 +169,8 @@ re.on_frame(function()
     config.run_save()
 end)
 
-re.on_config_save(config.save_no_timer_global)
+re.on_config_save(function()
+    if data.runtime.initialized then
+        config.save_no_timer_global()
+    end
+end)
