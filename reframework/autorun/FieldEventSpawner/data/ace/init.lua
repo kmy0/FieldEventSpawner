@@ -101,20 +101,20 @@ function this.init()
         return false
     end
 
-    e.new("app.EX_FIELD_EVENT_TYPE")
-    e.new("app.ExDef.POP_EM_TYPE_Fixed")
-    e.new("app.EnemyDef.LEGENDARY_ID")
-    e.new("app.EnemyDef.ROLE_ID")
-    e.new("app.EnvironmentType.ENVIRONMENT")
-    e.new("app.QuestDef.RANK")
-    e.new("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE")
-    e.new("ace.GimmickDef.BASE_STATE")
-    e.new("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE")
-    e.new("app.QuestCheckUtil.INCORRECT_STATUS")
-
-    if util_table.any(e.enums, function(_, value)
-        return not value.ok
-    end) then
+    if
+        not e.wrap_init(function()
+            e.new("app.EX_FIELD_EVENT_TYPE")
+            e.new("app.ExDef.POP_EM_TYPE_Fixed")
+            e.new("app.EnemyDef.LEGENDARY_ID")
+            e.new("app.EnemyDef.ROLE_ID")
+            e.new("app.EnvironmentType.ENVIRONMENT")
+            e.new("app.QuestDef.RANK")
+            e.new("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE")
+            e.new("ace.GimmickDef.BASE_STATE")
+            e.new("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE")
+            e.new("app.QuestCheckUtil.INCORRECT_STATUS")
+        end)
+    then
         return false
     end
 

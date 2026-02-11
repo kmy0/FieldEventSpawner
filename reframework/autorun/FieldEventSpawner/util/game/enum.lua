@@ -4,6 +4,7 @@
 local util_game = require("FieldEventSpawner.util.game.util")
 local util_table = require("FieldEventSpawner.util.misc.table")
 local logger = require("FieldEventSpawner.util.misc.logger").g
+local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 
 ---@class EnumUtil
@@ -42,33 +43,45 @@ function Enum:new(enum_type, predicate, duplicate_ok)
     ---@type Enum
     local o = {
         enum_to_field = {},
-        field_to_enum = util_game.get_fields(enum_type, predicate),
-        ok = true,
+        field_to_enum = {},
+        ok = false,
     }
-    o.ok = not util_table.empty(o.field_to_enum)
+    setmetatable(o, self)
 
     local type_def = util_ref.types.get(enum_type)
-    local keys = util_table.sort(util_table.keys(o.field_to_enum), function(a, b)
-        return type_def:get_field(a):get_offset_from_base()
-            < type_def:get_field(b):get_offset_from_base()
-    end)
+    if not type_def then
+        return o
+    end
 
-    for i = 1, #keys do
-        local key = keys[i]
-        local value = o.field_to_enum[key]
+    o.field_to_enum = util_game.get_fields(type_def, predicate)
+    o.ok = not util_table.empty(o.field_to_enum)
 
-        if not duplicate_ok and o.enum_to_field[value] then
-            logger:warn(
-                string.format(
-                    "Enum %s: Duplicate values - %s, %s",
-                    enum_type,
-                    key,
-                    o.enum_to_field[value]
+    if o.ok then
+        local keys = util_table.sort(util_table.keys(o.field_to_enum), function(a, b)
+            if o.field_to_enum[a] == o.field_to_enum[b] then
+                return a < b
+            end
+
+            return o.field_to_enum[a] < o.field_to_enum[b]
+        end)
+
+        for i = 1, #keys do
+            local key = keys[i]
+            local value = o.field_to_enum[key]
+
+            if not duplicate_ok and o.enum_to_field[value] then
+                logger:warn(
+                    string.format(
+                        "Enum %s: Duplicate values - %s, %s",
+                        enum_type,
+                        key,
+                        o.enum_to_field[value]
+                    )
                 )
-            )
-        end
+            end
 
-        o.enum_to_field[value] = key
+            o.enum_to_field[value] = key
+        end
     end
 
     setmetatable(o, self)
@@ -177,6 +190,22 @@ function this.new(enum_type, predicate, duplicate_ok)
     local ret = Enum:new(enum_type, predicate, duplicate_ok)
     ---@diagnostic disable-next-line: assign-type-mismatch
     this.enums[enum_type] = ret
+    return ret
+end
+
+---@param fn fun()
+---@return boolean
+function this.wrap_init(fn)
+    local ret = true
+    util_misc.try(fn, function(err)
+        log.debug(err)
+        ret = false
+    end)
+
+    ret = not util_table.any(this.enums, function(_, value)
+        return not value.ok
+    end)
+
     return ret
 end
 
