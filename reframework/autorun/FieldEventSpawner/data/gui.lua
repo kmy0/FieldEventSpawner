@@ -1,8 +1,9 @@
 ---@class (exact) GuiData
----@field combo GuiCombo
+---@field combo GuiComboData
 
----@class (exact) GuiCombo
+---@class (exact) GuiComboData
 ---@field event_type string[]
+---@field rewards string[]
 ---@field em_param string[]
 ---@field em_param_mod string[]
 
@@ -14,6 +15,7 @@ local this = {
             "gimmick",
             "animal",
         },
+        rewards = { "disabled", "user_defined" },
         em_param = {
             "legendary",
             "frenzy",

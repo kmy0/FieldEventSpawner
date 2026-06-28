@@ -22,6 +22,7 @@
 ---
 ---@field event_type integer
 ---@field event integer
+---@field rewards integer
 ---@field area integer
 ---@field spoffer integer
 ---@field em_param integer
@@ -38,12 +39,7 @@
 ---@field is_ignore_environ boolean
 ---@field is_yummy boolean
 ---@field is_village_boost boolean
----@field is_force_area boolean
----@field is_spoffer boolean
----@field is_force_difficulty boolean
 ---@field is_allow_invalid_quest boolean
----@field is_force_rewards boolean
----@field is_force_size boolean
 ---@field is_allow_exclusive_em boolean
 
 local version = require("FieldEventSpawner.config.version")
@@ -68,6 +64,7 @@ return {
         --
         event = 1,
         event_type = 1,
+        rewards = 1,
         area = 1,
         em_param = 1,
         em_param_mod = 1,
@@ -84,12 +81,7 @@ return {
         is_ignore_environ = false,
         is_yummy = false,
         is_village_boost = false,
-        is_force_area = false,
-        is_spoffer = false,
-        is_force_rewards = false,
-        is_force_difficulty = false,
         is_allow_invalid_quest = false,
-        is_force_size = false,
         is_allow_exclusive_em = false,
     },
 }

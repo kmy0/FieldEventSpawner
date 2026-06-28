@@ -17,9 +17,9 @@
     _FreeMiniValue6 = 1 if visible for summary
 ]]
 
-local data_rt = require("FieldEventSpawner.data.runtime")
 local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
+local mod = require("FieldEventSpawner.data.mod")
 
 local sched = require("FieldEventSpawner.schedule.init")
 
@@ -39,17 +39,15 @@ setmetatable(this, { __index = factory })
 function this:new(animal_data, stage, time, spawn_delay, ignore_environ_type, area)
     local o = factory.new(self, animal_data, stage, time, spawn_delay, area)
     setmetatable(o, self)
-    o._area_array = animal_data:get_area_array(
-        stage,
-        not ignore_environ_type and data_rt.get_environ(stage) or nil
-    )
+    o._area_array =
+        animal_data:get_area_array(stage, not ignore_environ_type and mod.get_environ(stage) or nil)
     ---@cast o AnimalEventFactory
     return o
 end
 
 ---@return SpawnResult, SpawnEvent?
 function this:build()
-    local environ_type = data_rt.get_environ(self.stage)
+    local environ_type = mod.get_environ(self.stage)
     local event_type = e.get("app.EX_FIELD_EVENT_TYPE").ANIMAL_EVENT
 
     ---@param event app.cExFieldEventBase
@@ -62,7 +60,7 @@ function this:build()
     local area = self.area and self.area or self:_get_area(other_events, self._area_array)
 
     if not area then
-        return data_rt.enum.spawn_result.NO_AREA
+        return mod.enum.spawn_result.NO_AREA
     end
 
     local event_data = sched.util.create_event_data()
@@ -76,10 +74,10 @@ function this:build()
     event_data._FreeMiniValue6 = 1
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
-    local collision_flag = data_rt.enum.event_collision_flag.ID
-        | data_rt.enum.event_collision_flag.AREA
-        | data_rt.enum.event_collision_flag.TIME
-    return data_rt.enum.spawn_result.OK,
+    local collision_flag = mod.enum.event_collision_flag.ID
+        | mod.enum.event_collision_flag.AREA
+        | mod.enum.event_collision_flag.TIME
+    return mod.enum.spawn_result.OK,
         sched.spawn_event.ctor(event_data, self.event_data.name_local, area, collision_flag)
 end
 

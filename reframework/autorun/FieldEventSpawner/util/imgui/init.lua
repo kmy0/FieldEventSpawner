@@ -3,9 +3,7 @@ local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 local uuid = require("FieldEventSpawner.util.misc.uuid")
 
-local this = {
-    item_def = require("FieldEventSpawner.util.imgui.item_def.init"),
-}
+local this = {}
 ---@type table<string, number>
 local child_window_sizes = {}
 
@@ -24,19 +22,23 @@ end
 ---@param text string
 ---@param seperate boolean?
 ---@param seperate_text string? by_default (?)
-function this.tooltip(text, seperate, seperate_text)
+function this.tooltip(text, seperate, seperate_text, color)
+    color = color or 0xff918f8f
+
     if seperate then
         seperate_text = seperate_text or "(?)"
         imgui.same_line()
-        imgui.text(seperate_text)
+        imgui.text_colored(seperate_text, color)
     end
     if imgui.is_item_hovered() then
         imgui.set_tooltip(text)
     end
 end
 
-function this.tooltip_exclamation(text)
-    this.tooltip(text, true, "(!)")
+---@param text string
+---@param color integer?
+function this.tooltip_exclamation(text, color)
+    this.tooltip(text, true, "(!)", color)
 end
 
 ---@param label string
@@ -200,8 +202,9 @@ end
 ---@param label string
 ---@param selected_obj boolean?
 ---@param enabled_obj boolean?
+---@param close_on_click boolean?
 ---@return boolean, boolean
-function this.menu_item(label, selected_obj, enabled_obj)
+function this.menu_item(label, selected_obj, enabled_obj, close_on_click)
     local pos_screen = imgui.get_cursor_screen_pos()
     local pos = imgui.get_cursor_pos()
     local win_size = imgui.get_window_size()
@@ -241,6 +244,10 @@ function this.menu_item(label, selected_obj, enabled_obj)
 
     if changed and type(ret) == "boolean" then
         ret = not ret
+    end
+
+    if changed and close_on_click then
+        imgui.close_current_popup()
     end
 
     imgui.end_disabled()

@@ -20,12 +20,12 @@
 ---@field once {pop_index: integer, area: integer}?
 ---@field ongoing table<integer, Timer>
 
+local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
-local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_rt = require("FieldEventSpawner.data.runtime")
 local e = require("FieldEventSpawner.util.game.enum")
 local event_cache = require("FieldEventSpawner.schedule.event_cache")
 local m = require("FieldEventSpawner.util.ref.methods")
+local mod = require("FieldEventSpawner.data.mod")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local special_offer = require("FieldEventSpawner.events.special_offer")
 local timer = require("FieldEventSpawner.util.misc.timer")
@@ -154,13 +154,13 @@ function this.ex_director_update_pre(args)
     if flags.rebuild then
         local field_director = sdk.to_managed_object(args[2])
         ---@cast field_director app.cExFieldDirector
-        field_director:rebuildExEventByStage(data_rt.state.stage, false)
+        field_director:rebuildExEventByStage(mod.state.stage, false)
         flags.rebuild = false
-        event_cache.clear(data_rt.state.stage)
+        event_cache.clear(mod.state.stage)
     elseif flags.clear then
         local field_director = sdk.to_managed_object(args[2])
         ---@cast field_director app.cExFieldDirector
-        field_director:clearExEventByStage(data_rt.state.stage)
+        field_director:clearExEventByStage(mod.state.stage)
         -- sometimes when there is a lot of stuff on the map (like 80+ monsters), some monsters are not destroted properly
         -- events are gone but you are leftover with zombie monsters that will never leave
         destroy_all_em()
@@ -244,14 +244,14 @@ end
 
 function this.exclusive_em_check_post(_)
     local config_mod = config.current.mod
-    if data_ace.initialized and config_mod.is_allow_exclusive_em then
+    if ace.initialized and config_mod.is_allow_exclusive_em then
         return false
     end
 end
 
 function this.force_spoffer_array_post(retval)
     if flags.spawn and actions.force_spoffer then
-        local _, schedule_timeline = data_rt.get_field_director()
+        local _, schedule_timeline = mod.get_field_director()
         local pop_em_array = sdk.to_managed_object(retval)
         ---@cast pop_em_array System.Array<app.cExFieldEvent_PopEnemy>
         pop_em_array:Clear()
@@ -379,7 +379,7 @@ function this.stop_em_combat_post(_)
         local ctx_holder1 = sdk.to_managed_object(storage["ctx_holder1"]) --[[@as app.cEnemyContextHolder?]]
         local ctx_holder2 = sdk.to_managed_object(storage["ctx_holder2"]) --[[@as app.cEnemyContextHolder?]]
         if not util_table.empty(actions.force_area.ongoing) and ctx_holder1 and ctx_holder2 then
-            local _, schedule_timeline = data_rt.get_field_director()
+            local _, schedule_timeline = mod.get_field_director()
             local ctx1 = ctx_holder1:get_Em()
             local ctx2 = ctx_holder2:get_Em()
 

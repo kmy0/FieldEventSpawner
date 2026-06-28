@@ -1,98 +1,62 @@
+local ace = require("FieldEventSpawner.data.ace.init")
+local combo_values = require("FieldEventSpawner.gui.combo_values")
 local config = require("FieldEventSpawner.config.init")
-local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_gui = require("FieldEventSpawner.data.gui")
-local data_rt = require("FieldEventSpawner.data.runtime")
+local gui = require("FieldEventSpawner.data.gui")
+local helpers = require("FieldEventSpawner.gui.helpers")
 local hook = require("FieldEventSpawner.schedule.hook")
-local item = require("FieldEventSpawner.gui.item.init")
+local menu_bar = require("FieldEventSpawner.gui.menu_bar")
+local mod = require("FieldEventSpawner.data.mod")
 local reward_builder = require("FieldEventSpawner.gui.reward_builder")
 local sched = require("FieldEventSpawner.schedule.init")
+local set = require("FieldEventSpawner.util.imgui.config_set"):new(config)
+local spawn_button = require("FieldEventSpawner.gui.spawn_button")
+local state = require("FieldEventSpawner.gui.state")
 local util_gui = require("FieldEventSpawner.gui.util")
 local util_imgui = require("FieldEventSpawner.util.imgui.init")
-local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {
     window = {
         flags = 1024,
-        condition = 1 << 1,
-    },
-    table = {
-        name = "events_info",
-        flags = 1 << 7 | 1 << 13 | 1 << 25,
+        condition = 2,
     },
 }
 
-local function draw_event_table()
-    local events = sched.event_cache.get_stage_table(data_rt.state.stage)
-    if
-        imgui.begin_table(
-            this.table.name,
-            3,
-            this.table.flags --[[@as ImGuiTableFlags]],
-            Vector2f.new(300, 4 * 46)
-        )
-    then
-        local sorted = util_table.values(events)
-        ---@cast sorted CachedEvent[]
-        table.sort(sorted, function(a, b)
-            if a.exec_time == b.exec_time then
-                return a.unique_index > b.unique_index
-            end
-            return a.exec_time > b.exec_time
-        end)
-        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_event"), 1 << 3)
-        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_area"))
-        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_remove_button"))
-
-        imgui.table_headers_row()
-
-        for row = 1, #sorted do
-            local event = sorted[row]
-            imgui.table_next_row()
-            imgui.table_set_column_index(0)
-            imgui.text(event.name)
-            imgui.table_set_column_index(1)
-            ---@diagnostic disable-next-line: param-type-mismatch
-            imgui.text(event.area)
-            imgui.table_set_column_index(2)
-            if imgui.button(util_gui.tr("mod.button_remove_event", tostring(row))) then
-                local config_mod = config.current.mod
-
-                if not config_mod.disable_button_cooldown then
-                    item.spawn.timer:update_args(config.spawn_cooldown.remove)
-                    item.spawn.timer:restart()
-                end
-
-                sched.remove(data_rt.state.stage, event.unique_index)
-            end
-        end
-        imgui.end_table()
-    end
+---@param combo Combo
+---@param name string
+---@param config_key string
+---@return boolean
+local function combo_with_disabled(combo, name, config_key)
+    imgui.begin_disabled(combo:is_disabled())
+    local ret = set:combo(name, config_key, combo.values)
+    imgui.end_disabled()
+    return ret
 end
 
 local function draw_cheat()
     local message = hook.get_cheat_message()
     if message then
-        imgui.text_colored(message, data_gui.colors.bad)
+        imgui.text_colored(message, gui.colors.bad)
         imgui.separator()
     end
 end
 
 ---@return string
 local function get_monster_crown_text()
-    if item.values.event:empty() or item.event_type:value() ~= "monster" then
-        return ""
+    local event = helpers.get_current_event()
+    if not event then
+        return config.lang:tr("mod.tooltip_em_size")
     end
 
-    local event = item.values.get_event(item.event:value())
     ---@cast event MonsterData
     return string.format(
-        "%s <= %s, %s >= %s, %s >= %s",
+        "%s <= %s, %s >= %s, %s >= %s\n%s",
         config.lang:tr("mod.crown.small"),
         event.crown.small,
         config.lang:tr("mod.crown.large"),
         event.crown.large,
         config.lang:tr("mod.crown.king"),
-        event.crown.king
+        event.crown.king,
+        config.lang:tr("mod.tooltip_em_size")
     )
 end
 
@@ -100,13 +64,10 @@ function this.draw()
     local gui_main = config.gui.current.gui.main
     local gui_reward = config.gui.current.gui.reward_builder
     local config_mod = config.current.mod
-    local config_lang = config_mod.lang
 
     if config.lang.font then
         imgui.push_font(config.lang.font)
     end
-
-    item.values.switch_lang(config_lang.file)
 
     imgui.set_next_window_pos(Vector2f.new(gui_main.pos_x, gui_main.pos_y), this.window.condition)
     imgui.set_next_window_size(
@@ -115,7 +76,7 @@ function this.draw()
     )
 
     gui_main.is_opened = imgui.begin_window(
-        string.format("%s %s", config.name, config.version),
+        string.format("%s %s", config.name, config.commit),
         gui_main.is_opened,
         this.window.flags
     )
@@ -128,70 +89,21 @@ function this.draw()
         end
 
         config.save_global()
-        data_rt.clear_feature_unlock()
         imgui.end_window()
         return
     end
 
     if imgui.begin_menu_bar() then
-        local changed = false
-
-        if imgui.begin_menu(util_gui.tr("menu.config.name"), true) then
-            changed, config_mod.disable_button_cooldown = util_imgui.menu_item(
-                util_gui.tr("menu.config.disable_button_cooldown"),
-                config_mod.disable_button_cooldown
-            )
-            changed, config_mod.display_cheat_errors = util_imgui.menu_item(
-                util_gui.tr("menu.config.display_cheat_errors"),
-                config_mod.display_cheat_errors
-            )
-            changed, config_mod.pause_schedule = util_imgui.menu_item(
-                util_gui.tr("menu.config.pause_schedule"),
-                config_mod.pause_schedule
-            )
-            util_imgui.tooltip(config.lang:tr("menu.config.tooltip_pause_schedule"))
-
-            imgui.end_menu()
-        end
-
-        if imgui.begin_menu(util_gui.tr("menu.language.name"), true) then
-            for i = 1, #config.lang.sorted do
-                local menu_item = config.lang.sorted[i]
-                if util_imgui.menu_item(menu_item, config_lang.file == menu_item) then
-                    config_lang.file = menu_item
-                    config.lang:change()
-                    config:save()
-                end
-            end
-
-            imgui.separator()
-
-            if
-                util_imgui.menu_item(util_gui.tr("menu.language.fallback"), config_lang.fallback)
-            then
-                config_lang.fallback = not config_lang.fallback
-            end
-            util_imgui.tooltip(config.lang:tr("menu.language.tooltip_fallback"))
-
-            imgui.end_menu()
-        end
-
-        if imgui.begin_menu(util_gui.tr("menu.my_events.name"), true) then
-            draw_event_table()
-
-            imgui.end_menu()
-        end
-
-        if changed then
-            config:save()
-        end
-
+        menu_bar.draw()
         imgui.end_menu_bar()
     end
 
-    if data_rt.state.schedule ~= data_rt.enum.schedule_state["OK"] then
+    imgui.spacing()
+    imgui.indent(3)
+
+    if mod.state.schedule ~= mod.enum.schedule_state["OK"] then
         imgui.indent(3)
-        imgui.text_colored(config.lang:tr("mod.text_wait"), data_gui.colors.bad)
+        imgui.text_colored(config.lang:tr("mod.text_wait"), gui.colors.bad)
         imgui.unindent(3)
 
         if config.lang.font then
@@ -202,82 +114,208 @@ function this.draw()
         return
     end
 
-    imgui.spacing()
-    imgui.indent(3)
+    combo_values.update()
 
     if config_mod.display_cheat_errors then
         draw_cheat()
     end
 
     if config_mod.pause_schedule then
-        imgui.text_colored(config.lang:tr("misc.text_pause_schedule"), data_gui.colors.bad)
+        imgui.text_colored(config.lang:tr("misc.text_pause_schedule"), gui.colors.bad)
         imgui.separator()
     end
 
-    item.switch_arrays()
-
     util_imgui.draw_child_window("main_buttons", function()
-        item.spawn:draw()
+        spawn_button.draw()
         imgui.same_line()
-        item.clear_schedule:draw(util_gui.tr("mod.button_clear_schedule"))
+
+        imgui.begin_disabled(mod.is_in_quest())
+        if imgui.button(util_gui.tr("mod.button_clear_schedule")) then
+            if not config.current.mod.disable_button_cooldown then
+                spawn_button.timer:restart(config.spawn_cooldown.clear_schedule)
+            end
+
+            sched.clear()
+        end
+
         util_imgui.tooltip(config.lang:tr("mod.tootlip_clear_schedule"))
         imgui.same_line()
-        item.rebuild_schedule:draw(util_gui.tr("mod.button_rebuild_schedule"))
+
+        if imgui.button(util_gui.tr("mod.button_rebuild_schedule")) then
+            if not config.current.mod.disable_button_cooldown then
+                spawn_button.timer:restart(config.spawn_cooldown.rebuild_schedule)
+            end
+
+            sched.rebuild()
+        end
+
+        imgui.end_disabled()
+
         util_imgui.tooltip(config.lang:tr("mod.tooltip_rebuild_schedule"))
         imgui.separator()
     end, 28, 2)
 
     imgui.begin_child_window("everything_else", { 0, 0 }, false)
 
-    item.event_type:draw(util_gui.tr("mod.combo_event_type"))
-    item.event:draw(util_gui.tr("mod.combo_event"))
-    item.area:draw(util_gui.tr("mod.combo_area"))
+    combo_with_disabled(
+        state.combo.event_type,
+        util_gui.tr("mod.combo_event_type"),
+        "mod.event_type"
+    )
+    combo_with_disabled(state.combo.event, util_gui.tr("mod.combo_event"), "mod.event")
 
-    if item.event_type:value() == "monster" then
-        item.em_param:draw(util_gui.tr("mod.combo_em_param"))
-        item.em_param_mod:draw(util_gui.tr("mod.combo_em_param_mod"))
-        item.em_difficulty:draw(util_gui.tr("mod.combo_em_param_difficulty"))
-        item.em_difficulty_rank:draw(util_gui.tr("mod.combo_em_param_difficulty_rank"))
-        item.em_size:draw(util_gui.tr("mod.slider_em_size"))
-        util_imgui.tooltip(get_monster_crown_text(), true)
-        item.swarm_count:draw(util_gui.tr("mod.slider_swarm_count"))
-        util_imgui.tooltip(config.lang:tr("mod.tooltip_swarm_count"))
-        item.spoffer:draw(util_gui.tr("mod.combo_spoffer"))
+    if state.combo.area:is_disabled() then
+        config:set("mod.area", 1)
+    end
+    combo_with_disabled(state.combo.area, util_gui.tr("mod.combo_area"), "mod.area")
+
+    set:slider_int(util_gui.tr("mod.slider_time"), "mod.time", 0, 60)
+
+    if helpers.is_spawn_delay_disabled() then
+        config:set("mod.spawn_delay", 0)
     end
 
-    item.time:draw(util_gui.tr("mod.slider_time"))
-    item.spawn_delay:draw(util_gui.tr("mod.slider_spawn_delay"))
-    util_imgui.tooltip(config.lang:tr("mod.tooltip_spawn_delay"))
-    item.is_ignore_environ:draw(util_gui.tr("mod.box_ignore_environ"))
-    util_imgui.tooltip(config.lang:tr("mod.tooltip_ignore_environ"))
-    item.is_force_area:draw(util_gui.tr("mod.box_force_area"))
+    imgui.begin_disabled(helpers.is_spawn_delay_disabled())
+    set:slider_int(
+        util_gui.tr("mod.slider_spawn_delay"),
+        "mod.spawn_delay",
+        0,
+        60,
+        config:get("mod.spawn_delay") == 0 and config.lang:tr("misc.text_disabled")
+            or config:get("mod.spawn_delay")
+    )
+    imgui.end_disabled()
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_spawn_delay"), true)
 
-    if item.event_type:value() == "monster" then
-        imgui.separator()
-        item.is_yummy:draw(util_gui.tr("mod.box_yummy"))
-        item.is_village_boost:draw(util_gui.tr("mod.box_village_boost"))
-        if not data_rt.is_village_boost_unlocked(data_rt.state.stage) then
-            util_imgui.tooltip(config.lang:tr("mod.tooltip_not_available"), true)
+    if state.combo.event_type:get() == "monster" then
+        util_imgui.separator_text(config.lang:tr("mod.tooltip_category_difficulty"))
+
+        combo_with_disabled(state.combo.em_param, util_gui.tr("mod.combo_em_param"), "mod.em_param")
+        combo_with_disabled(
+            state.combo.em_param_mod,
+            util_gui.tr("mod.combo_em_param_mod"),
+            "mod.em_param_mod"
+        )
+        combo_with_disabled(
+            state.combo.em_difficulty,
+            util_gui.tr("mod.combo_em_param_difficulty"),
+            "mod.em_difficulty"
+        )
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_em_param_difficulty"), true)
+        combo_with_disabled(
+            state.combo.em_difficulty_rank,
+            util_gui.tr("mod.combo_em_param_difficulty_rank"),
+            "mod.em_difficulty_rank"
+        )
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_quest_rank"), true)
+
+        util_imgui.separator_text(config.lang:tr("mod.tooltip_category_misc"))
+
+        local disabled = helpers.is_em_size_disabled()
+        if disabled then
+            config:set("mod.em_size", -1)
         end
-        item.is_spoffer:draw(util_gui.tr("mod.box_spoffer"))
-        if not data_rt.is_spoffer_unlocked(data_rt.state.stage) then
-            util_imgui.tooltip(config.lang:tr("mod.tooltip_not_available"), true)
+
+        imgui.begin_disabled(disabled)
+        set:slider_int(
+            util_gui.tr("mod.slider_em_size"),
+            "mod.em_size",
+            -1,
+            state.em_size_max - state.em_size_min,
+            config:get("mod.em_size") == -1 and config.lang:tr("misc.text_disabled")
+                or config:get("mod.em_size") + state.em_size_min
+        )
+        imgui.end_disabled()
+        util_imgui.tooltip(get_monster_crown_text(), true)
+
+        disabled = helpers.is_swarm_count_disabled()
+        if disabled then
+            config:set("mod.swarm_count", 0)
         end
-        imgui.same_line()
-        item.is_allow_exclusive_em:draw(util_gui.tr("mod.box_allow_exclusive_em"))
+
+        imgui.begin_disabled(disabled)
+        set:slider_int(
+            util_gui.tr("mod.slider_swarm_count"),
+            "mod.swarm_count",
+            0,
+            5,
+            config:get("mod.swarm_count") == 0 and config.lang:tr("misc.text_disabled")
+                or config:get("mod.swarm_count")
+        )
+        imgui.end_disabled()
+        util_imgui.tooltip(
+            config.lang:tr("mod.tooltip_swarm_count")
+                .. (ace.map.swarm_monsters[mod.state.stage] or config.lang:tr("misc.text_none")),
+            true
+        )
+
+        util_imgui.separator_text(config.lang:tr("mod.tooltip_category_spoffer"))
+
+        if state.combo.spoffer:is_disabled() then
+            config:set("mod.spoffer", 1)
+        end
+
+        combo_with_disabled(state.combo.spoffer, util_gui.tr("mod.combo_spoffer"), "mod.spoffer")
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_spoffer"), true)
+        local spoffer_unlocked = mod.is_spoffer_unlocked(mod.state.stage)
+        if not spoffer_unlocked then
+            util_imgui.tooltip_exclamation(
+                config.lang:tr("mod.tooltip_not_available"),
+                gui.colors.bad
+            )
+        end
+
+        set:checkbox(util_gui.tr("mod.box_allow_exclusive_em"), "mod.is_allow_exclusive_em")
         util_imgui.tooltip(
             config.lang:tr("mod.tooltip_allow_exclusive_em")
                 .. (
-                    data_ace.map.exclusive_monsters ~= "" and data_ace.map.exclusive_monsters
+                    ace.map.exclusive_monsters ~= "" and ace.map.exclusive_monsters
                     or config.lang:tr("misc.text_none")
-                )
+                ),
+            true
         )
-        item.is_force_difficulty:draw(util_gui.tr("mod.box_force_difficulty"))
-        item.is_force_size:draw(util_gui.tr("mod.box_force_size"))
-        item.is_force_rewards:draw(util_gui.tr("mod.box_force_rewards"))
-        imgui.same_line()
-        item.edit_rewards:draw(util_gui.tr("mod.button_open_rewards_builder"))
-        item.is_allow_invalid_quest:draw(util_gui.tr("mod.box_allow_invalid_quest"))
+
+        imgui.begin_disabled(helpers.is_spoffer_swarm_disabled())
+        set:checkbox(util_gui.tr("mod.box_spoffer_swarm"), "mod.is_spoffer_swarm")
+        imgui.end_disabled()
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_spoffer_swarm"), true)
+
+        if not spoffer_unlocked then
+            util_imgui.tooltip_exclamation(
+                config.lang:tr("mod.tooltip_not_available"),
+                gui.colors.bad
+            )
+        end
+
+        util_imgui.separator_text(config.lang:tr("mod.tooltip_category_rewards"))
+
+        combo_with_disabled(
+            state.combo.quest_rewards,
+            util_gui.tr("mod.combo_rewards"),
+            "mod.rewards"
+        )
+
+        imgui.begin_disabled(state.combo.quest_rewards:get() ~= "user_defined")
+        if imgui.button(util_gui.tr("mod.button_open_rewards_builder")) then
+            gui_reward.is_opened = true
+        end
+        imgui.end_disabled()
+
+        imgui.begin_disabled(helpers.is_yummy_disabled())
+        set:checkbox(util_gui.tr("mod.box_yummy"), "mod.is_yummy")
+        imgui.end_disabled()
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_yummy"), true)
+
+        imgui.begin_disabled(helpers.is_village_boost_disabled())
+        set:checkbox(util_gui.tr("mod.box_village_boost"), "mod.is_village_boost")
+        imgui.end_disabled()
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_village_boost"), true)
+        if not mod.is_village_boost_unlocked(mod.state.stage) then
+            util_imgui.tooltip_exclamation(
+                config.lang:tr("mod.tooltip_not_available"),
+                gui.colors.bad
+            )
+        end
     end
 
     if gui_reward.is_opened then
@@ -292,6 +330,12 @@ function this.draw()
     imgui.unindent(3)
     imgui.end_child_window()
     imgui.end_window()
+end
+
+---@return boolean
+function this.init()
+    state.init()
+    return true
 end
 
 return this

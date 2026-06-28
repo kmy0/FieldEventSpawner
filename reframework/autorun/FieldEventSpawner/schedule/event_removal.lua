@@ -1,8 +1,8 @@
-local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_rt = require("FieldEventSpawner.data.runtime")
+local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local event_cache = require("FieldEventSpawner.schedule.event_cache")
 local m = require("FieldEventSpawner.util.ref.methods")
+local mod = require("FieldEventSpawner.data.mod")
 local util_game = require("FieldEventSpawner.util.game.init")
 
 local this = {}
@@ -20,7 +20,7 @@ end
 ---@param event app.cExFieldEvent_Battlefield
 local function remove_battlefield(event)
     local em_index = event:get_TargetEnemyExUniqueIndex()
-    local _, schedule_timeline = data_rt.get_field_director()
+    local _, schedule_timeline = mod.get_field_director()
     local em_event = schedule_timeline:findKeyFromUniqueIndex(em_index)
     event:endProc()
     if em_event then
@@ -73,7 +73,7 @@ function this.is_my_event(cache_base, event)
     local enum = e.get("app.EX_FIELD_EVENT_TYPE")
     local base_event_type = enum[cache_base.event_type]
     local event_type = enum[event:get_EventType()]
-    local id_field_name = data_ace.map.ex_event_to_id_field[base_event_type]
+    local id_field_name = ace.map.ex_event_to_id_field[base_event_type]
     return base_event_type == event_type and cache_base.id == event:get_field(id_field_name)
 end
 
@@ -88,16 +88,16 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
     local e1_end = e1_start
         + m.realSec_to_GameMinute(
             spawn_event.event_data:get_field(
-                data_ace.map.ex_event_to_time_field[ex_field[spawn_event.cache_base.event_type]][1]
+                ace.map.ex_event_to_time_field[ex_field[spawn_event.cache_base.event_type]][1]
             ) * 60.0
         )
 
     ---@param cache_base CachedEventBase
     local function iter(cache_base)
         local event_type = ex_field[cache_base.event_type]
-        local time_field_name = data_ace.map.ex_event_to_time_field[event_type][1]
-        local area_field_name = data_ace.map.ex_event_to_area_field[event_type]
-        local id_field_name = data_ace.map.ex_event_to_id_field[event_type]
+        local time_field_name = ace.map.ex_event_to_time_field[event_type][1]
+        local area_field_name = ace.map.ex_event_to_area_field[event_type]
+        local id_field_name = ace.map.ex_event_to_id_field[event_type]
         local flags = cache_base.collision_flag
         local enum = util_game.get_array_enum(exported_schedule)
 
@@ -110,23 +110,21 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
             end
 
             if
-                flags & data_rt.enum.event_collision_flag.EVENT_TYPE
-                == data_rt.enum.event_collision_flag.EVENT_TYPE
+                flags & mod.enum.event_collision_flag.EVENT_TYPE
+                == mod.enum.event_collision_flag.EVENT_TYPE
             then
                 goto remove
             end
 
             if
-                flags & data_rt.enum.event_collision_flag.ID
-                    == data_rt.enum.event_collision_flag.ID
+                flags & mod.enum.event_collision_flag.ID == mod.enum.event_collision_flag.ID
                 and e:get_field(id_field_name) ~= cache_base.id
             then
                 goto continue
             end
 
             if
-                flags & data_rt.enum.event_collision_flag.AREA
-                    == data_rt.enum.event_collision_flag.AREA
+                flags & mod.enum.event_collision_flag.AREA == mod.enum.event_collision_flag.AREA
                 and e:get_field(area_field_name) ~= cache_base.area
             then
                 goto continue
@@ -136,8 +134,7 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
             e2_end = e2_start + m.realSec_to_GameMinute(e:get_field(time_field_name) * 60.0)
 
             if
-                flags & data_rt.enum.event_collision_flag.TIME
-                    == data_rt.enum.event_collision_flag.TIME
+                flags & mod.enum.event_collision_flag.TIME == mod.enum.event_collision_flag.TIME
                 and (e1_end < e2_start or e2_end < e1_start)
             then
                 goto continue
@@ -199,7 +196,7 @@ function this.remove_my_event(stage, item)
     elseif type(item) == "table" then
         ---@cast item CachedEvent | CachedEventChild
         unique_index = item.unique_index
-        if item.type == data_rt.enum.cached_event_type.PARENT then
+        if item.type == mod.enum.cached_event_type.PARENT then
             ---@cast item CachedEvent
             cache_base = item
         else
@@ -217,7 +214,7 @@ function this.remove_my_event(stage, item)
 
     if
         cache_base
-        and cache_base.type == data_rt.enum.cached_event_type.PARENT
+        and cache_base.type == mod.enum.cached_event_type.PARENT
         and cache_base.children
     then
         for _, child in pairs(cache_base.children) do
@@ -226,7 +223,7 @@ function this.remove_my_event(stage, item)
     end
 
     if not event then
-        local _, schedule_timeline = data_rt.get_field_director()
+        local _, schedule_timeline = mod.get_field_director()
         event = schedule_timeline:findKeyFromUniqueIndex(unique_index)
     end
 

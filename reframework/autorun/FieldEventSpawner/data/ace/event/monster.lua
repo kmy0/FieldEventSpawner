@@ -51,11 +51,11 @@
 ---@field exclusive boolean
 ---@field monster_map_data_ctor fun(stage: app.FieldDef.STAGE, is_battlefield: boolean?): MonsterMapData
 
-local data_ace = require("FieldEventSpawner.data.ace.ace")
+local ace = require("FieldEventSpawner.data.ace.ace")
 local data_event = require("FieldEventSpawner.data.ace.event.event")
-local data_gui = require("FieldEventSpawner.data.gui")
 local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
+local gui = require("FieldEventSpawner.data.gui")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -182,13 +182,13 @@ end
 ---@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
 ---@return app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base?
 local function get_pop_param(em_id, stage, pop_em_type)
-    local field_layout = data_ace.ex_field_param:getFieldLayout(stage)
+    local field_layout = ace.ex_field_param:getFieldLayout(stage)
     if not field_layout then
         return
     end
     local pop_param_by_hr = field_layout:getEmPopParamByHR(999, pop_em_type)
     local field_name =
-        data_ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
+        ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
     local type_param_array = pop_param_by_hr:get_field(field_name)
     ---@cast type_param_array  System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base>
     return field_layout:getPopParamByEmID(em_id, type_param_array)
@@ -224,7 +224,7 @@ local function get_battlefield_data(em_id)
                 table.insert(ret[stage].area, area)
             end
         else
-            local area = -1
+            local area = ace.map.dummy_area
             for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                 util_table.insert_nested_value(ret[stage], { "area_by_env", environ_type }, area)
             end
@@ -379,7 +379,7 @@ end
 ---@param map_data table<app.FieldDef.STAGE, MonsterMapData>
 local function get_param_data(em_id, map_data)
     for stage, md in pairs(map_data) do
-        for param_key, pop_em in pairs(data_gui.map.em_param_to_pop_em) do
+        for param_key, pop_em in pairs(gui.map.em_param_to_pop_em) do
             local pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em]
             local pop_param = get_pop_param(em_id, stage, pop_em_type)
 

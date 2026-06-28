@@ -8,7 +8,14 @@ local logger = util.misc.logger.g
 ---@class MethodUtil
 local m = util.ref.methods
 
-local init = util.misc.init_chain:new("MAIN", config.init, data.init, sched.init, data.runtime.init)
+local init = util.misc.init_chain:new(
+    "MAIN",
+    config.init,
+    data.init,
+    sched.init,
+    data.mod.init,
+    config_menu.init
+)
 
 m.getEnemyNameGuid = m.wrap(m.get("app.EnemyDef.EnemyName(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Guid]]
 m.getRewardRankFromDifficulty =
@@ -170,7 +177,7 @@ re.on_frame(function()
 end)
 
 re.on_config_save(function()
-    if data.runtime.initialized then
+    if data.mod.initialized then
         config.save_no_timer_global()
     end
 end)

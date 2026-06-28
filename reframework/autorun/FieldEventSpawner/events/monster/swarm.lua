@@ -8,8 +8,8 @@
 ---@field has_boss boolean
 
 local config = require("FieldEventSpawner.config.init")
-local data_rt = require("FieldEventSpawner.data.runtime")
 local e = require("FieldEventSpawner.util.game.enum")
+local mod = require("FieldEventSpawner.data.mod")
 local monster_factory = require("FieldEventSpawner.events.monster.monster")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -88,7 +88,7 @@ function this:build()
     end
 
     local res, leader_data = self:_build_leader(swarm_data)
-    if res ~= data_rt.enum.spawn_result.OK then
+    if res ~= mod.enum.spawn_result.OK then
         return res
     end
     ---@cast leader_data MonsterSpawnEvent
@@ -103,7 +103,7 @@ function this:build()
     local member_data, member_rewards
     for _ = 1, self.swarm_count do
         res, member_rewards, member_data = self:_build_member(swarm_data)
-        if res ~= data_rt.enum.spawn_result.OK then
+        if res ~= mod.enum.spawn_result.OK then
             return res
         end
         ---@cast member_data ScheduledEvent
@@ -124,18 +124,18 @@ function this:build()
     leader_data.cache_base.name = string.format(
         "%s - %s (%s)",
         leader_data.cache_base.name,
-        config.lang:tr("em_swarm_suffix.name"),
+        config.lang:tr("mod.text_em_swarm_suffix"),
         self.swarm_count
     )
 
-    return data_rt.enum.spawn_result.OK, leader_data
+    return mod.enum.spawn_result.OK, leader_data
 end
 
 ---@param out SwarmData
 ---@return SpawnResult, MonsterSpawnEvent?
 function this:_build_leader(out)
     local res, event = monster_factory.build(self)
-    if res == data_rt.enum.spawn_result.OK then
+    if res == mod.enum.spawn_result.OK then
         ---@cast event MonsterSpawnEvent
         out.area = event.event_data._FreeMiniValue3
         out.groupid = event.event_data._FreeMiniValue4
@@ -154,7 +154,7 @@ function this:_build_member(swarm_data)
 
     local em_pop_param = self:_get_em_pop_param()
     if not em_pop_param then
-        return data_rt.enum.spawn_result.NO_EM_PARAM
+        return mod.enum.spawn_result.NO_EM_PARAM
     end
 
     local difficulty_guid, reward_data
@@ -168,11 +168,11 @@ function this:_build_member(swarm_data)
     end
 
     if not difficulty_guid then
-        return data_rt.enum.spawn_result.NO_DIFFICULTY
+        return mod.enum.spawn_result.NO_DIFFICULTY
     end
 
     if not reward_data then
-        return data_rt.enum.spawn_result.NO_REWARDS
+        return mod.enum.spawn_result.NO_REWARDS
     end
 
     local event_data = sched.util.create_event_data()
@@ -185,7 +185,7 @@ function this:_build_member(swarm_data)
     event_data._FreeValue5 = reward_data.reward_id2
     --FIXME: never actaully found where those values are set
     event_data._FreeMiniValue0 = (swarm_data.has_boss and 0x10 or 0x1C) | (0x80 * self.legendary_id)
-    event_data._FreeMiniValue1 = data_rt.get_environ(self.stage)
+    event_data._FreeMiniValue1 = mod.get_environ(self.stage)
         | (0x10 * e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM)
     event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = swarm_data.area
@@ -195,7 +195,7 @@ function this:_build_member(swarm_data)
     event_data._UniqueIndex = self._schedule_timeline:newEventUniqueIndex(self.stage)
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
-    return data_rt.enum.spawn_result.OK,
+    return mod.enum.spawn_result.OK,
         sched.spawn_event.subevent_ctor(reward_data.reward_array),
         sched.spawn_event.subevent_ctor(event_data)[1]
 end

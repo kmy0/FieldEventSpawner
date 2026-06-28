@@ -1,4 +1,4 @@
-local data_ace = require("FieldEventSpawner.data.ace.init")
+local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
@@ -32,8 +32,37 @@ end
 ---@return boolean
 function this.is_spoffer_pair(first, second)
     local key = util_table.sort({ first, second })
-    local ret = data_ace.map.spoffer_pairings[string.format("%s,%s", table.unpack(key))]
+    local ret = ace.map.spoffer_pairings[string.format("%s,%s", table.unpack(key))]
     return ret or ret == nil
+end
+
+---@param query string
+---@return table<string, string>
+function this.filter_item_rewards(query)
+    local ret = {}
+
+    if query == "" then
+        return ace.map.item_key_to_name_local
+    end
+
+    local number = tonumber(query)
+    local predicate = function(key)
+        if number then
+            return ace.item.by_key[key].id_not_fixed == number
+        end
+
+        local query_lower = query:lower()
+        local name_lower = ace.item.by_key[key].name_local:lower()
+        return name_lower:find(query_lower) ~= nil
+    end
+
+    for k, v in pairs(ace.map.item_key_to_name_local) do
+        if predicate(k) then
+            ret[k] = v
+        end
+    end
+
+    return ret
 end
 
 return this
