@@ -39,12 +39,12 @@
     _FreeMiniValue6 = app.cKeepQuestData._Index, 255 if quest is not saved
 ]]
 
-local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_rt = require("FieldEventSpawner.data.runtime")
+local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
+local mod = require("FieldEventSpawner.data.mod")
 local reward_factory = require("FieldEventSpawner.events.reward")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -106,8 +106,8 @@ function this:new(
     o.size = size
     o._area_array = monster_data:get_area_array(
         stage,
-        not environ and data_rt.get_environ(stage) or nil,
-        data_ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
+        not environ and mod.get_environ(stage) or nil,
+        ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
     )
     return o
 end
@@ -115,7 +115,7 @@ end
 ---@return SpawnResult, MonsterSpawnEvent?
 function this:build()
     local environ_type = self.environ and self.environ[math.random(#self.environ)]
-        or data_rt.get_environ(self.stage)
+        or mod.get_environ(self.stage)
     local other_monsters = self._field_director:findExecutedPopEms(true, false)
     local other_monsters_lua = util_game.system_array_to_lua(other_monsters)
     local route_guid, areas = self:_get_route_data(other_monsters, environ_type)
@@ -126,18 +126,18 @@ function this:build()
     local area = self.area and self.area or self:_get_area(other_monsters_lua, areas)
 
     if not area then
-        return data_rt.enum.spawn_result.NO_AREA
+        return mod.enum.spawn_result.NO_AREA
     end
 
     local em_pop_param = self:_get_em_pop_param()
     if not em_pop_param then
-        return data_rt.enum.spawn_result.NO_EM_PARAM
+        return mod.enum.spawn_result.NO_EM_PARAM
     end
 
     local difficulty_guid = self.difficulty and self.difficulty[math.random(#self.difficulty)]
         or self:_get_difficulty(em_pop_param)
     if not difficulty_guid then
-        return data_rt.enum.spawn_result.NO_DIFFICULTY
+        return mod.enum.spawn_result.NO_DIFFICULTY
     end
 
     local spoffer_rewards = (self.rewards and self.spoffer) and self:_get_edited_reward_data()
@@ -145,7 +145,7 @@ function this:build()
     local reward_data = self:_get_reward_data(difficulty_guid)
 
     if not reward_data or (self.rewards and self.spoffer and not spoffer_rewards) then
-        return data_rt.enum.spawn_result.NO_REWARDS
+        return mod.enum.spawn_result.NO_REWARDS
     end
 
     local event_data = sched.util.create_event_data()
@@ -181,7 +181,7 @@ function this:build()
         spoffer_rewards,
         self.size
     )
-    return data_rt.enum.spawn_result.OK, ret
+    return mod.enum.spawn_result.OK, ret
 end
 
 ---@protected
@@ -231,10 +231,10 @@ end
 ---@protected
 ---@return app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
 function this:_get_em_pop_param()
-    local field_layout = data_ace.ex_field_param:getFieldLayout(self.stage)
+    local field_layout = ace.ex_field_param:getFieldLayout(self.stage)
     local pop_param_by_hr = field_layout:getEmPopParamByHR(999, self.pop_em_type)
     local field_name =
-        data_ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[self.pop_em_type]]
+        ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[self.pop_em_type]]
     local pop_param_array = pop_param_by_hr:get_field(field_name)
     ---@cast pop_param_array  System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base>
     return field_layout:getPopParamByEmID(self.event_data.id, pop_param_array)
@@ -346,7 +346,7 @@ end
 ---@param difficulty_guid System.Guid
 ---@return integer
 function this:_lot_option_tag(environ_type, difficulty_guid)
-    local enemy_param = data_ace.ex_field_param:get_ExEnemyGlobalParam()
+    local enemy_param = ace.ex_field_param:get_ExEnemyGlobalParam()
     local reward_rank = m.getRewardRankFromDifficulty(difficulty_guid)
     local enemy_global_param = enemy_param:getExEmGlobalParam(
         self.event_data.id,
@@ -355,6 +355,7 @@ function this:_lot_option_tag(environ_type, difficulty_guid)
         e.get("app.QuestDef.RANK").EX,
         reward_rank
     )
+
     return enemy_global_param:lotOptionTagIdx(self.stage, environ_type)
 end
 
@@ -363,7 +364,7 @@ end
 ---@param difficulty_guid System.Guid
 ---@return integer
 function this:_get_option_tag(option_value, difficulty_guid)
-    local enemy_param = data_ace.ex_field_param:get_ExEnemyGlobalParam()
+    local enemy_param = ace.ex_field_param:get_ExEnemyGlobalParam()
     local reward_rank = m.getRewardRankFromDifficulty(difficulty_guid)
     local enemy_global_param = enemy_param:getExEmGlobalParam(
         self.event_data.id,

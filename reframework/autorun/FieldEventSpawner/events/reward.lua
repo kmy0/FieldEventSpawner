@@ -27,8 +27,8 @@
     _FreeMiniValue6 = Bit array, eg. if there is an item in _FreeValue3, you set bit 3 to 1 etc.
 ]]
 
-local data_rt = require("FieldEventSpawner.data.runtime")
 local e = require("FieldEventSpawner.util.game.enum")
+local mod = require("FieldEventSpawner.data.mod")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
@@ -46,7 +46,7 @@ function this:new(reward_array, stage)
         stage = stage,
     }
     setmetatable(o, self)
-    _, o._schedule_timeline = data_rt.get_field_director()
+    _, o._schedule_timeline = mod.get_field_director()
     ---@cast o RewardFactory
     return o
 end

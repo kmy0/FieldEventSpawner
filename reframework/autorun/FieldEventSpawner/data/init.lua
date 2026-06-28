@@ -1,7 +1,7 @@
 local this = {
     gui = require("FieldEventSpawner.data.gui"),
     ace = require("FieldEventSpawner.data.ace.init"),
-    runtime = require("FieldEventSpawner.data.runtime"),
+    mod = require("FieldEventSpawner.data.mod"),
 }
 
 -- ===== DEPRECATED =================================================================

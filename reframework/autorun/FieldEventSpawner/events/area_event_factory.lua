@@ -9,7 +9,7 @@
 ---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
 ---@field build fun(): SpawnResult, SpawnEvent?
 
-local data_rt = require("FieldEventSpawner.data.runtime")
+local mod = require("FieldEventSpawner.data.mod")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -36,14 +36,14 @@ function this:new(event_data, stage, time, spawn_delay, area)
     setmetatable(o, self)
     ---@cast o AnimalEventFactory
 
-    o._field_director, o._schedule_timeline = data_rt.get_field_director()
+    o._field_director, o._schedule_timeline = mod.get_field_director()
     return o
 end
 
 ---@return SpawnResult
 function this:spawn()
     if not self._area_array then
-        return data_rt.enum.spawn_result.NO_AREA
+        return mod.enum.spawn_result.NO_AREA
     end
 
     local res, event = self:build()
@@ -88,7 +88,7 @@ end
 ---@param predicate fun(event:app.cExFieldEventBase): boolean
 ---@return app.cExFieldEventBase[]
 function this:_get_other_events(predicate)
-    local _, schedule_timeline = data_rt.get_field_director()
+    local _, schedule_timeline = mod.get_field_director()
     local event_array = schedule_timeline:get_KeyList()
     local event_enum = util_game.get_array_enum(event_array)
     ---@type app.cExFieldEventBase[]

@@ -3,10 +3,14 @@
 ---@field name string
 ---@field count integer
 
+local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
-local gui_util = require("FieldEventSpawner.gui.util")
-local item = require("FieldEventSpawner.gui.item.init")
+local helpers = require("FieldEventSpawner.data.helpers")
+local set = require("FieldEventSpawner.util.imgui.config_set"):new(config)
+local state = require("FieldEventSpawner.gui.state")
+local util_gui = require("FieldEventSpawner.gui.util")
 local util_imgui = require("FieldEventSpawner.util.imgui.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {
     window = {
@@ -30,34 +34,50 @@ local function draw_reward_table()
             Vector2f.new(0, 10 * 28)
         )
     then
-        imgui.table_setup_column(gui_util.tr("mod.table_reward_headers.header_reward"), 1 << 3)
-        imgui.table_setup_column(gui_util.tr("mod.table_reward_headers.header_count"))
-        imgui.table_setup_column(gui_util.tr("mod.table_reward_headers.header_remove_button"))
+        imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_reward"), 1 << 3)
+        imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_count"))
+        imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_remove_button"))
 
         imgui.table_headers_row()
         local rewards = confg_reward.array
         local filtered = {}
         for row = 1, #rewards do
             local reward = rewards[row]
+            local changed = false
             imgui.table_next_row()
             imgui.table_set_column_index(0)
             imgui.text(reward.name)
             imgui.table_set_column_index(1)
             ---@diagnostic disable-next-line: param-type-mismatch
-            imgui.text(reward.count)
+
+            changed, reward.count = imgui.drag_int("##" .. row, reward.count, 1, 1, 255)
+            if reward.count > 255 then
+                reward.count = 255
+            elseif reward.count < 1 then
+                reward.count = 1
+            end
+
+            if changed then
+                config:save()
+            end
+
             imgui.table_set_column_index(2)
-            if not imgui.button(gui_util.tr("mod.button_remove_reward", tostring(row))) then
+            if not imgui.button(util_gui.tr("mod.button_remove_reward", tostring(row))) then
                 table.insert(filtered, reward)
             end
         end
 
         confg_reward.array = filtered
+        if not util_table.empty(filtered) then
+            config:save()
+        end
         imgui.end_table()
     end
 end
 
 function this.draw()
     local gui_reward = config.gui.current.gui.reward_builder
+    local config_mod = config.current.mod
 
     imgui.set_next_window_pos(
         Vector2f.new(gui_reward.pos_x, gui_reward.pos_y),
@@ -69,7 +89,7 @@ function this.draw()
     )
 
     gui_reward.is_opened = imgui.begin_window(
-        gui_util.tr("mod.window_reward_builder"),
+        util_gui.tr("mod.window_reward_builder"),
         gui_reward.is_opened,
         this.window.flags
     )
@@ -77,11 +97,40 @@ function this.draw()
     imgui.spacing()
     imgui.indent(3)
 
-    item.reward_filter:draw(gui_util.tr("mod.input_reward_filter"))
+    if set:input_text(util_gui.tr("mod.input_reward_filter"), "mod.reward_config.filter") then
+        config_mod.reward_config.reward = state.combo.item_rewards:swap(
+            helpers.filter_item_rewards(config_mod.reward_config.filter),
+            config_mod.reward_config.reward
+        ) --[[@as number]]
+    end
+
     util_imgui.tooltip(config.lang:tr("mod.tooltip_reward_filter"))
-    item.reward:draw(gui_util.tr("mod.combo_reward"))
-    item.reward_count:draw(gui_util.tr("mod.slider_reward_count"))
-    item.reward_add:draw(gui_util.tr("mod.button_add_reward"))
+    set:combo(
+        util_gui.tr("mod.combo_reward"),
+        "mod.reward_config.reward",
+        state.combo.item_rewards.values
+    )
+    set:slider_int(util_gui.tr("mod.slider_reward_count"), "mod.reward_config.count", 1, 255)
+
+    imgui.begin_disabled(
+        #config_mod.reward_config.array >= 10 or not state.combo.item_rewards:get()
+    )
+    if imgui.button(util_gui.tr("mod.button_add_reward")) then
+        local key = state.combo.item_rewards:get()
+        local item_data = ace.item.by_key[key]
+
+        if key and item_data then
+            table.insert(config_mod.reward_config.array, {
+                id = item_data.id,
+                name = item_data.name_local,
+                count = config_mod.reward_config.count,
+            })
+        end
+
+        config:save()
+    end
+    imgui.end_disabled()
+
     draw_reward_table()
 
     util_imgui.set_win_state(gui_reward)

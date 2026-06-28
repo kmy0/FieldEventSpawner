@@ -32,16 +32,13 @@
 ---@field cached_event_type CachedEventType.*
 ---@field spawn_button_state SpawnState.*
 
-local data_ace = require("FieldEventSpawner.data.ace.init")
+local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local helpers = require("FieldEventSpawner.data.helpers")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
-
----@module "FieldEventSpawner.gui.item.init"
-local gui_items
 
 ---@class ModData
 local this = {
@@ -193,16 +190,10 @@ function this.update_spoffer()
         return
     end
 
-    local ranks = gui_items.get_difficulties()
-    if not ranks then
-        util_table.clear(this.state.spoffer)
-        return
-    end
-
     local field_director, _ = this.get_field_director()
     local pop_em_array = field_director:findExecutedPopEms(false, false)
     local pop_em_enum = util_game.get_array_enum(pop_em_array)
-    local em_global_param = data_ace.ex_field_param:get_ExEnemyGlobalParam()
+    local em_global_param = ace.ex_field_param:get_ExEnemyGlobalParam()
 
     ---@type integer[]
     local active_pop_ems = {}
@@ -219,15 +210,6 @@ function this.update_spoffer()
             goto continue
         end
 
-        local second_rank = pop_em:get_Rank()
-        if
-            not util_table.any(ranks, function(key, _)
-                return helpers.is_spoffer_pair(key, second_rank)
-            end)
-        then
-            goto continue
-        end
-
         local unique_index = pop_em._UniqueIndex
         table.insert(active_pop_ems, unique_index)
         if not this.state.spoffer[unique_index] then
@@ -235,7 +217,7 @@ function this.update_spoffer()
                 unique_index = unique_index,
                 name = helpers.get_monster_name(pop_em),
                 exec_min = pop_em._ExecMinute,
-                rank = second_rank,
+                rank = pop_em:get_Rank(),
             }
         end
 
@@ -253,7 +235,7 @@ end
 ---@return boolean
 function this.is_spoffer_unlocked(stage)
     if this.state.feature_unlock.spoffer[stage] == nil then
-        this.state.feature_unlock.spoffer[stage] = data_ace.ex_field_param:isOpenedSpOffer(stage)
+        this.state.feature_unlock.spoffer[stage] = ace.ex_field_param:isOpenedSpOffer(stage)
     end
     return this.state.feature_unlock.spoffer[stage]
 end
@@ -263,7 +245,7 @@ end
 function this.is_village_boost_unlocked(stage)
     if this.state.feature_unlock.village_boost[stage] == nil then
         this.state.feature_unlock.village_boost[stage] =
-            data_ace.ex_field_param:isOpenedVillageBoost(stage)
+            ace.ex_field_param:isOpenedVillageBoost(stage)
     end
     return this.state.feature_unlock.village_boost[stage]
 end
@@ -278,7 +260,7 @@ function this.is_monster_banned(stage, em_id, pop_em_type)
         { stage, em_id, pop_em_type }
     )
     if ret == nil then
-        local layout_data = data_ace.ex_field_param:getFieldLayout(this.state.stage)
+        local layout_data = ace.ex_field_param:getFieldLayout(this.state.stage)
         ret = layout_data:isBanned(em_id, 999, pop_em_type)
         util_table.set_nested_value(
             this.state.feature_unlock.monster,
@@ -293,9 +275,9 @@ end
 ---@return boolean
 function this.is_npc_unlocked(gimmick_event)
     if this.state.feature_unlock.npc[gimmick_event] == nil then
-        this.state.feature_unlock.npc[gimmick_event] = data_ace.ex_field_param:isOpenedAssisNpc(
+        this.state.feature_unlock.npc[gimmick_event] = ace.ex_field_param:isOpenedAssisNpc(
             gimmick_event
-        ) and not data_ace.ex_field_param:isDisableAssistNpc(gimmick_event)
+        ) and not ace.ex_field_param:isDisableAssistNpc(gimmick_event)
     end
     return this.state.feature_unlock.npc[gimmick_event]
 end
@@ -349,7 +331,6 @@ end
 
 ---@return boolean
 function this.init()
-    gui_items = require("FieldEventSpawner.gui.item.init")
     this.initialized = true
     return true
 end

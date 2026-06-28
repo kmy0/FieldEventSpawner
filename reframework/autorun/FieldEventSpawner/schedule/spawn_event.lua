@@ -17,9 +17,9 @@
 ---@class (exact)MonsterSpawnEvent : SpawnEvent
 ---@field args MonsterSpawnEventArgs
 
-local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_rt = require("FieldEventSpawner.data.runtime")
+local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
+local mod = require("FieldEventSpawner.data.mod")
 
 local this = {}
 
@@ -35,12 +35,12 @@ function this.ctor(event_data, name, area, collision_flag, children, sub_events)
     return {
         event_data = event_data,
         cache_base = {
-            type = data_rt.enum.cached_event_type.PARENT,
+            type = mod.enum.cached_event_type.PARENT,
             name = name,
             area = area,
             event_type = event_data._EventType,
             id = event_data:get_field(
-                data_ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
+                ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
             ),
             collision_flag = collision_flag and collision_flag or 0,
             children = children,
@@ -118,13 +118,13 @@ end
 function this.child_ctor(unique_index, event_data, area, collision_flag)
     ---@type CachedEventChild
     local ret = {
-        type = data_rt.enum.cached_event_type.CHILD,
+        type = mod.enum.cached_event_type.CHILD,
         unique_index = unique_index,
     }
     if event_data then
         ret.base = {
             id = event_data:get_field(
-                data_ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
+                ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
             ),
             event_type = event_data._EventType,
             area = area and area or 0,

@@ -39,9 +39,9 @@
     _FreeMiniValue6 = if pop_belonging then _AreaNo else _AreaNo_AfterPopBelongingStage
 ]]
 
-local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_rt = require("FieldEventSpawner.data.runtime")
+local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
+local mod = require("FieldEventSpawner.data.mod")
 local monster_factory = require("FieldEventSpawner.events.monster.monster")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -103,8 +103,8 @@ function this:new(
     o.pop_em_type = o:_get_em_pop_type_bf()
     o._area_array = monster_data:get_area_array(
         stage,
-        not environ and data_rt.get_environ(stage) or nil,
-        data_ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[o.pop_em_type]]
+        not environ and mod.get_environ(stage) or nil,
+        ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[o.pop_em_type]]
     )
     return o
 end
@@ -114,19 +114,19 @@ end
 function this:build()
     local area = self.area and self.area or self:_get_area({}, self._area_array)
     if not area then
-        return data_rt.enum.spawn_result.NO_AREA
+        return mod.enum.spawn_result.NO_AREA
     end
 
     local em_pop_param = self:_get_em_pop_param()
     if not em_pop_param then
-        return data_rt.enum.spawn_result.NO_EM_PARAM
+        return mod.enum.spawn_result.NO_EM_PARAM
     end
     ---@cast em_pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
 
     local difficulty_guid, option_value
-    local is_repel = self.battlefield_state == data_rt.enum.battlefield_state.battlefield_repel
+    local is_repel = self.battlefield_state == mod.enum.battlefield_state.battlefield_repel
     local environ_type = self.environ and self.environ[math.random(#self.environ)]
-        or data_rt.get_environ(self.stage)
+        or mod.get_environ(self.stage)
     local stage_param = self:_get_repel_param(em_pop_param, area)
 
     if stage_param then
@@ -147,13 +147,13 @@ function this:build()
     end
 
     if not difficulty_guid then
-        return data_rt.enum.spawn_result.NO_DIFFICULTY
+        return mod.enum.spawn_result.NO_DIFFICULTY
     end
 
     local reward_data = self:_get_reward_data(difficulty_guid)
 
     if not reward_data then
-        return data_rt.enum.spawn_result.NO_REWARDS
+        return mod.enum.spawn_result.NO_REWARDS
     end
 
     local event_data = sched.util.create_event_data()
@@ -178,7 +178,7 @@ function this:build()
 
     local sub_events = sched.spawn_event.subevent_ctor(reward_data.reward_array)
     table.insert(sub_events, sched.spawn_event.subevent_ctor(event_data)[1])
-    return data_rt.enum.spawn_result.OK,
+    return mod.enum.spawn_result.OK,
         sched.spawn_event.monster_ctor(
             self:_get_battlefield_data(
                 em_pop_param,
@@ -192,13 +192,13 @@ function this:build()
             self.area,
             nil,
             nil,
-            data_rt.enum.event_collision_flag.EVENT_TYPE,
+            mod.enum.event_collision_flag.EVENT_TYPE,
             {
                 sched.spawn_event.child_ctor(
                     event_data._UniqueIndex,
                     event_data,
                     area,
-                    data_rt.enum.event_collision_flag.ID
+                    mod.enum.event_collision_flag.ID
                 ),
             },
             sub_events,
@@ -215,7 +215,7 @@ end
 ---@return app.cExFieldScheduleExportData.cEventData
 function this:_get_battlefield_data(em_pop_param, now, em_pop_index, difficulty_guid)
     local route_guid, area, option_value
-    local is_repel = self.battlefield_state == data_rt.enum.battlefield_state.battlefield_repel
+    local is_repel = self.battlefield_state == mod.enum.battlefield_state.battlefield_repel
 
     if is_repel then
         route_guid = em_pop_param:get_RouteID_AfterPopBelongingStage()
@@ -271,7 +271,7 @@ end
 ---@protected
 ---@return app.ExDef.POP_EM_TYPE_Fixed
 function this:_get_em_pop_type_bf()
-    if self.battlefield_state == data_rt.enum.battlefield_state.battlefield_slay then
+    if self.battlefield_state == mod.enum.battlefield_state.battlefield_slay then
         return e.get("app.ExDef.POP_EM_TYPE_Fixed").BATTLEFIELD
     end
     return e.get("app.ExDef.POP_EM_TYPE_Fixed").BF_POP_BELONGING

@@ -30,9 +30,9 @@
         _FreeMiniValue6 |= 0x10 if visible for summary
 ]]
 
-local data_rt = require("FieldEventSpawner.data.runtime")
 local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
+local mod = require("FieldEventSpawner.data.mod")
 
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -55,7 +55,7 @@ function this:new(gimmick_data, stage, time, spawn_delay, ignore_environ_type, a
     setmetatable(o, self)
     o._area_array = gimmick_data:get_area_array(
         stage,
-        not ignore_environ_type and data_rt.get_environ(stage) or nil
+        not ignore_environ_type and mod.get_environ(stage) or nil
     )
     ---@cast o GimmickEventFactory
     return o
@@ -64,7 +64,7 @@ end
 ---@return SpawnResult, SpawnEvent[]?
 function this:build()
     local enum = e.get("app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE")
-    local environ_type = data_rt.get_environ(self.stage)
+    local environ_type = mod.get_environ(self.stage)
     local event_ex_name = enum[self.event_data.ex_id]
     local event_type = e.get("app.EX_FIELD_EVENT_TYPE").GIMMICK_EVENT
     local event_flag = enum[event_ex_name]
@@ -81,7 +81,7 @@ function this:build()
     local area = self.area and self.area or self:_get_area(other_events, self._area_array)
 
     if not area then
-        return data_rt.enum.spawn_result.NO_AREA
+        return mod.enum.spawn_result.NO_AREA
     end
 
     if event_ex_name == "ASSIST_NPC" then
@@ -102,10 +102,10 @@ function this:build()
     event_data._FreeMiniValue6 = event_flag | 0x10
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
-    local collision_flag = data_rt.enum.event_collision_flag.ID
-        | (event_ex_name == "ASSIST_NPC" and 0 or data_rt.enum.event_collision_flag.AREA)
-        | data_rt.enum.event_collision_flag.TIME
-    return data_rt.enum.spawn_result.OK,
+    local collision_flag = mod.enum.event_collision_flag.ID
+        | (event_ex_name == "ASSIST_NPC" and 0 or mod.enum.event_collision_flag.AREA)
+        | mod.enum.event_collision_flag.TIME
+    return mod.enum.spawn_result.OK,
         sched.spawn_event.ctor(event_data, self.event_data.name_local, area, collision_flag)
 end
 

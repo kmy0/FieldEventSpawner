@@ -1,7 +1,7 @@
-local data_ace = require("FieldEventSpawner.data.ace.init")
-local data_rt = require("FieldEventSpawner.data.runtime")
+local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local event_removal = require("FieldEventSpawner.schedule.event_removal")
+local mod = require("FieldEventSpawner.data.mod")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
@@ -17,7 +17,7 @@ local this = {
 function this.add(stage, event)
     this.hook.set_spawn_flag(true)
 
-    local field_director, schedule_timeline = data_rt.get_field_director()
+    local field_director, schedule_timeline = mod.get_field_director()
     local now = schedule_timeline:get_AdvancedGameMinute()
     local schedule = s.get("app.EnvironmentManager"):exportExFieldSchedule_Field(stage)
 
@@ -37,7 +37,7 @@ function this.add(stage, event)
     cached_event.unique_index = event.event_data._UniqueIndex
     this.event_cache.add(stage, cached_event)
 
-    if cached_event.collision_flag ~= data_rt.enum.event_collision_flag.NONE then
+    if cached_event.collision_flag ~= mod.enum.event_collision_flag.NONE then
         event_removal.remove_colliding_events(event, schedule._EventList, schedule_timeline)
     end
 
@@ -63,18 +63,18 @@ function this.add(stage, event)
 end
 
 function this.update()
-    local stage = data_rt.update_stage()
+    local stage = mod.update_stage()
 
-    if not data_rt.is_ok() or not data_ace.event.by_stage[stage] then
-        data_rt.state.schedule = data_rt.enum.schedule_state["NO_STAGE"]
+    if not mod.is_ok() or not ace.event.by_stage[stage] then
+        mod.state.schedule = mod.enum.schedule_state["NO_STAGE"]
         return
     end
 
-    local _, schedule_timeline = data_rt.get_field_director()
-    local is_background, changed = data_rt.update_background()
+    local _, schedule_timeline = mod.get_field_director()
+    local is_background, changed = mod.update_background()
     this.event_cache.is_background = is_background
-    data_rt.update_environ()
-    data_rt.update_spoffer()
+    mod.update_environ()
+    mod.update_spoffer()
 
     if changed then
         this.event_cache.clear_background()
@@ -95,7 +95,7 @@ function this.update()
             end
         end
     end
-    data_rt.state.schedule = data_rt.enum.schedule_state["OK"]
+    mod.state.schedule = mod.enum.schedule_state["OK"]
 end
 
 ---@param stage app.FieldDef.STAGE

@@ -683,6 +683,17 @@ function this.array_to_map(t)
     return ret
 end
 
+---@generic T
+---@param t table<integer, T>
+---@return table<T, T>
+function this.array_to_map2(t)
+    local ret = {}
+    for _, v in pairs(t) do
+        ret[v] = v
+    end
+    return ret
+end
+
 ---@param t table
 ---@return string
 function this.to_string(t)
@@ -780,6 +791,38 @@ function this.consume_map(iterator)
     for k, v in iterator do
         ret[k] = v
     end
+    return ret
+end
+
+---@generic V
+---@param t table<any, V>
+---@return V
+function this.pick_random_value(t)
+    local values = this.values(t)
+    return values[math.random(#values)]
+end
+
+---@generic K
+---@param t table<K, any>
+---@return K
+function this.pick_random_key(t)
+    local keys = this.keys(t)
+    return keys[math.random(#keys)]
+end
+
+---@generic K
+---@param ... table<K, number>
+---@return table<K, number>
+function this.sum_values(...)
+    local ts = { ... }
+    local ret = {}
+
+    for _, t in pairs(ts) do
+        for k, v in pairs(t) do
+            ret[k] = ret[k] and ret[k] + v or v
+        end
+    end
+
     return ret
 end
 

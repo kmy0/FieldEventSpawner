@@ -29,6 +29,11 @@
 ---@field pop_em_to_em_param_key table<string, string>
 ---@field spoffer_pairings table<string, boolean>
 ---@field exclusive_monsters string
+---@field swarm_monsters table<app.FieldDef.STAGE, string>
+---@field em_size_min integer
+---@field em_size_max integer
+---@field item_key_to_name_local table<string, string>
+---@field dummy_area integer
 
 ---@class AceData
 local this = {
@@ -82,6 +87,11 @@ local this = {
         },
         spoffer_pairings = {},
         exclusive_monsters = "",
+        em_size_min = 88,
+        em_size_max = 125,
+        swarm_monsters = {},
+        item_key_to_name_local = {},
+        dummy_area = -100,
     },
     initialized = false,
 }

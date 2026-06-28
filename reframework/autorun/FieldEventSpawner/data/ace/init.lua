@@ -1,9 +1,9 @@
 local data_animal = require("FieldEventSpawner.data.ace.event.animal")
 local data_gimmick = require("FieldEventSpawner.data.ace.event.gimmick")
-local data_gui = require("FieldEventSpawner.data.gui")
 local data_item = require("FieldEventSpawner.data.ace.item")
 local data_monster = require("FieldEventSpawner.data.ace.event.monster")
 local e = require("FieldEventSpawner.util.game.enum")
+local gui = require("FieldEventSpawner.data.gui")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -34,10 +34,8 @@ local function events_by_stage_ctor(...)
     for _, event_t in pairs(events) do
         for _, event in pairs(event_t) do
             for stage, map in pairs(event.map) do
-                local event_type = rl(
-                    data_gui.map.event_type_to_ex_event,
-                    e.get("app.EX_FIELD_EVENT_TYPE")[event.type]
-                )
+                local event_type =
+                    rl(gui.map.event_type_to_ex_event, e.get("app.EX_FIELD_EVENT_TYPE")[event.type])
                 local t = get_table(map.stage, event_type)
                 t[string.format("%s_%s_%s_event_name", stage, event_type, event.id)] = event
             end
@@ -95,6 +93,27 @@ local function get_exclusive_monster_names()
     return table.concat(util_table.sort(res), ", ")
 end
 
+---@return table<app.FieldDef.STAGE, string>
+local function get_swarm_monster_names()
+    ---@type table<app.FieldDef.STAGE, string[]>
+    local res = {}
+    for _, em in pairs(this.event.by_type.monster) do
+        for stage, map_data in pairs(em.map) do
+            local param = map_data.param
+            if param.swarm or param.boss then
+                util_table.insert_nested_value(res, { stage }, em.name_local)
+            end
+        end
+    end
+
+    ---@type table<app.FieldDef.STAGE, string>
+    local ret = {}
+    for stage, name in pairs(res) do
+        ret[stage] = table.concat(util_table.sort(name), ", ")
+    end
+    return ret
+end
+
 ---@return boolean
 function this.init()
     if not s.get("app.VariousDataManager") or not s.get("app.EnemyManager") then
@@ -139,6 +158,10 @@ function this.init()
     this.item = item_by_ctor(data_item.get_data())
     this.map.spoffer_pairings = get_spoffer_pairings(this.ex_field_param)
     this.map.exclusive_monsters = get_exclusive_monster_names()
+    this.map.swarm_monsters = get_swarm_monster_names()
+    this.map.item_key_to_name_local = util_table.map_table(this.item.by_key, nil, function(o)
+        return o.name_local
+    end)
     this.initialized = true
     return true
 end
