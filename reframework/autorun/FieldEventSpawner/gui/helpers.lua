@@ -61,7 +61,28 @@ function this.is_village_boost_disabled()
         or not mod.is_village_boost_unlocked(mod.state.stage)
         or this.is_battlefield()
         or config.current.mod.swarm_count > 0 and state.combo.em_param:get() ~= "boss"
-    -- or this.spawn_delay:get() > 0 --TODO: probably not needed?
+end
+
+---@return boolean
+function this.is_spoffer_swarm_disabled()
+    local em_param = state.combo.em_param:get()
+    local em_param_mod = state.combo.em_param_mod:get()
+
+    return mod.is_in_quest()
+        or not mod.is_spoffer_unlocked(mod.state.stage)
+        or (em_param ~= "swarm" and em_param ~= "boss")
+        or em_param_mod ~= "none"
+        or config.current.mod.swarm_count < 2
+        or config.current.mod.spawn_delay > 0
+end
+
+---@return boolean
+function this.get_is_spoffer_swarm()
+    if this.is_spoffer_swarm_disabled() then
+        return false
+    end
+
+    return config.current.mod.is_spoffer_swarm
 end
 
 ---@return boolean
@@ -287,7 +308,8 @@ function this.spawn()
                 rewards,
                 difficulty,
                 environ,
-                this.get_em_size()
+                this.get_em_size(),
+                this.get_is_spoffer_swarm()
             )
         elseif em_param == "battlefield_repel" or em_param == "battlefield_slay" then
             return spawner.battlefield(

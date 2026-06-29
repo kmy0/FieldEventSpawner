@@ -15,6 +15,7 @@
 ---@field force_spoffer {pop_index_first: integer, pop_index_second: integer, rewards: EditedRewardData?}?
 ---@field force_area HookForceArea
 ---@field force_village_boost boolean
+---@field force_spoffer_swarm {rewards: EditedRewardData?}?
 
 ---@class (excat) HookForceArea
 ---@field once {pop_index: integer, area: integer}?
@@ -134,6 +135,12 @@ function this.set_em_args(em_args)
     if em_args.size then
         actions.force_size = em_args.size
     end
+
+    if em_args.spoffer_swarm then
+        actions.force_spoffer_swarm = {
+            rewards = em_args.spoffer_rewards,
+        }
+    end
 end
 
 ---@return string?
@@ -188,6 +195,7 @@ function this.ex_director_update_post(_)
         actions.force_size = nil
         actions.force_village_boost = false
         actions.repop_gm = nil
+        actions.force_spoffer_swarm = nil
     end
 end
 
@@ -219,10 +227,32 @@ function this.create_spoffer_post(_)
     if flags.spawn and actions.force_spoffer and actions.force_spoffer.rewards then
         local spoffer_stage = thread.get_hook_storage()["spoffer_stage"]
         local spoffer_array = spoffer_stage:get_SpOfferList() --[[@as System.Array<app.cExSpOfferFactory.SpOfferInfo>]]
+
         if spoffer_array:get_Count() == 1 then
             local spoffer_info = spoffer_array:get_Item(0)
             ---@cast spoffer_info app.cExSpOfferFactory.SpOfferInfo
             special_offer.swap_rewards(spoffer_info, actions.force_spoffer.rewards)
+        end
+    end
+end
+
+function this.create_spoffer_swarm_pre(args)
+    if flags.spawn and actions.force_spoffer_swarm then
+        local spoffer_stage = sdk.to_managed_object(args[3])
+        ---@cast spoffer_stage app.cExSpOfferFactory.cSpOfferByStage
+        thread.get_hook_storage()["spoffer_stage"] = spoffer_stage
+    end
+end
+
+function this.create_spoffer_swarm_post(_)
+    if flags.spawn and actions.force_spoffer_swarm and actions.force_spoffer_swarm.rewards then
+        local spoffer_stage = thread.get_hook_storage()["spoffer_stage"]
+        local spoffer_array = spoffer_stage:get_SpOfferList() --[[@as System.Array<app.cExSpOfferFactory.SpOfferInfo>]]
+
+        if spoffer_array:get_Count() == 1 then
+            local spoffer_info = spoffer_array:get_Item(0)
+            ---@cast spoffer_info app.cExSpOfferFactory.SpOfferInfo
+            special_offer.swap_rewards(spoffer_info, actions.force_spoffer_swarm.rewards)
         end
     end
 end
@@ -238,6 +268,12 @@ end
 
 function this.force_lot_spoffer_post(_)
     if flags.spawn and actions.force_spoffer then
+        return true
+    end
+end
+
+function this.force_lot_spoffer_swarm_post(_)
+    if flags.spawn and actions.force_spoffer_swarm then
         return true
     end
 end
