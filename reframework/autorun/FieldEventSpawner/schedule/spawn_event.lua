@@ -6,6 +6,7 @@
 ---@field spoffer integer?
 ---@field spoffer_rewards EditedRewardData?
 ---@field size integer?
+---@field spoffer_swarm boolean?
 
 ---@class (exact) ScheduledEvent
 ---@field event_data app.cExFieldScheduleExportData.cEventData

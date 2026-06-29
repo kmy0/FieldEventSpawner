@@ -36,6 +36,7 @@ setmetatable(this, { __index = monster_factory })
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
+---@param spoffer_swarm boolean?
 ---@return SwarmEventFactory
 function this:new(
     monster_data,
@@ -52,7 +53,8 @@ function this:new(
     rewards,
     difficulty,
     environ,
-    size
+    size,
+    spoffer_swarm
 )
     local o = monster_factory.new(
         self,
@@ -66,7 +68,7 @@ function this:new(
         is_village_boost,
         is_yummy,
         area,
-        nil,
+        spoffer_swarm and 0 or nil,
         rewards,
         difficulty,
         environ,
@@ -140,6 +142,11 @@ function this:_build_leader(out)
         out.area = event.event_data._FreeMiniValue3
         out.groupid = event.event_data._FreeMiniValue4
         out.route_hash = event.event_data._FreeValue3
+
+        if event.args.spoffer then
+            event.args.spoffer_swarm = true
+            event.args.spoffer = nil
+        end
     end
     return res, event
 end

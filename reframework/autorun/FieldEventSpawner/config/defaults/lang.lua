@@ -114,6 +114,8 @@ return {
         tooltip_category_misc = "Misc",
         tooltip_category_spoffer = "Multi Monster Quest",
         tooltip_quest_rank = "Requires Difficulty to not be set to Random",
+        box_spoffer_swarm = "Swarm Multi Monster Quest",
+        tooltip_spoffer_swarm = "Requires Difficulty set to Swarm or Alpha, Difficulty Mod set to None, and Swarm Count set to atleast 2",
         tooltip_yummy = "Requires Quest Rewards to be set to Random",
         tooltip_village_boost = "Not available for Swarm and Battlefield",
         tooltip_spoffer = "Does not work while Spawn Delay is enabled",

@@ -114,6 +114,7 @@ end
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
+---@param spoffer_swarm boolean?
 ---@return SpawnResult
 function this.swarm(
     monster_data,
@@ -130,7 +131,8 @@ function this.swarm(
     rewards,
     difficulty,
     environ,
-    size
+    size,
+    spoffer_swarm
 )
     local fac = event.swarm:new(
         monster_data,
@@ -147,7 +149,8 @@ function this.swarm(
         rewards,
         difficulty,
         environ,
-        size
+        size,
+        spoffer_swarm
     )
     return fac:spawn()
 end

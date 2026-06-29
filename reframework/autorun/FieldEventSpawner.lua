@@ -134,6 +134,16 @@ m.hook(
     "app.cExFieldDirector.update(app.cExFieldDirector.RUN_ORDER, app.FieldDef.STAGE, System.Int32, System.Int32, System.Single)",
     sched.hook.pause_schedule_pre
 )
+m.hook(
+    "app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm.lotCreateSpOffer(System.Byte, System.Single)",
+    nil,
+    sched.hook.force_lot_spoffer_swarm_post
+)
+m.hook(
+    "app.cExSpOfferFactory.saveSpOffer(app.cExSpOfferFactory.cSpOfferByStage, System.Boolean, app.savedata.cFieldExParam)",
+    sched.hook.create_spoffer_swarm_pre,
+    sched.hook.create_spoffer_swarm_post
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then
