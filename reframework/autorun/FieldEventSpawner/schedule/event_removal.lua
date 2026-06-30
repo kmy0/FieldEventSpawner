@@ -4,6 +4,7 @@ local event_cache = require("FieldEventSpawner.schedule.event_cache")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
 local util_game = require("FieldEventSpawner.util.game.init")
+local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
 
@@ -80,6 +81,7 @@ end
 ---@param spawn_event SpawnEvent
 ---@param exported_schedule System.Array<app.cExFieldScheduleExportData.cEventData>
 ---@param schedule_timeline app.cExFieldDirector.cScheduleTimeline
+---@return boolean
 function this.remove_colliding_events(spawn_event, exported_schedule, schedule_timeline)
     ---@type app.cExFieldScheduleExportData.cEventData[]
     local res = {}
@@ -180,6 +182,8 @@ function this.remove_colliding_events(spawn_event, exported_schedule, schedule_t
             exported_schedule:Remove(ev)
         end
     end
+
+    return not util_table.empty(res)
 end
 
 ---@param stage app.FieldDef.STAGE

@@ -37,12 +37,19 @@ function this.add(stage, event)
     cached_event.unique_index = event.event_data._UniqueIndex
     this.event_cache.add(stage, cached_event)
 
+    local removed = false
     if cached_event.collision_flag ~= mod.enum.event_collision_flag.NONE then
-        event_removal.remove_colliding_events(event, schedule._EventList, schedule_timeline)
+        removed =
+            event_removal.remove_colliding_events(event, schedule._EventList, schedule_timeline)
     end
 
     if e.get("app.EX_FIELD_EVENT_TYPE")[cached_event.event_type] == "GIMMICK_EVENT" then
         this.hook.repop_gimmick(cached_event)
+
+        --gimmick needs few frames to disappear first
+        if removed then
+            event.event_data._ExecMinute = event.event_data._ExecMinute + 1
+        end
     elseif e.get("app.EX_FIELD_EVENT_TYPE")[cached_event.event_type] == "POP_EM" then
         ---@cast event MonsterSpawnEvent
         event.args.unique_index = event.event_data._UniqueIndex
