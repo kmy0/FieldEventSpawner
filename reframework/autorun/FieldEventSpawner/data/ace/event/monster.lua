@@ -403,6 +403,10 @@ local function get_param_data(em_id, map_data)
                 diff_array = pop_param._DifficultyParams_PopBelonging
             elseif param_key == "boss" then
                 ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
+                if not pop_param:get_IsBossSpawned() then
+                    goto continue
+                end
+
                 leg_prob = pop_param:get_BossLegendaryProbability()
                 em_param.none = leg_prob < 100
                 em_param.legendary = leg_prob > 0
