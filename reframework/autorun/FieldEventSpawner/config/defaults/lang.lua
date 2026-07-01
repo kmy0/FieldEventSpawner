@@ -5,6 +5,10 @@ return {
         text_pause_schedule = "Schedule paused",
         text_random = "Random",
         text_disabled = "Disabled",
+        text_star = "★",
+        text_attack = "Attack",
+        text_hp = "HP",
+        text_parts_vital = "Parts Vital",
     },
     menu = {
         config = {
@@ -35,7 +39,7 @@ return {
         combo_area = "Area",
         combo_em_param = "Difficulty Param",
         combo_em_param_values = {
-            legendary = "Tempered",
+            legendary = "Special",
             frenzy = "Frenzied",
             normal = "Normal",
             swarm = "Swarm",

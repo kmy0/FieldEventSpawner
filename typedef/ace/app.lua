@@ -415,3 +415,8 @@
 
 ---@class app.cExFieldEvent_AnimalEvent : app.cExFieldEvent_EnvEventBase
 ---@field set_IsVisibleOnSummary fun(self: app.cExFieldEvent_AnimalEvent, val: System.Boolean)
+
+---@class app.user_data.EmParamDifficulty2.cDifficultyRate : via.clr.ManagedObject
+---@field get_Health fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Single
+---@field get_Attack fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Single
+---@field get_PartsVital fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Single
