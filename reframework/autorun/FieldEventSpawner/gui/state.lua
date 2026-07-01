@@ -20,6 +20,8 @@ local config = require("FieldEventSpawner.config.init")
 local data = require("FieldEventSpawner.data.init")
 local helpers = require("FieldEventSpawner.data.helpers")
 local mod = require("FieldEventSpawner.data.mod")
+local s = require("FieldEventSpawner.util.ref.singletons")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local gui = data.gui
@@ -178,7 +180,36 @@ this.combo.em_difficulty_rank = combo:new(nil, {
         if key == -1 then
             return config.lang:tr("misc.text_random")
         end
-        return value
+
+        local enemyman = s.get("app.EnemyManager")
+        local em_setting = enemyman:get_Setting()
+        local diff2 = em_setting:get_Difficulty2()
+        local gui_helpers = require("FieldEventSpawner.gui.helpers")
+        local diff_table = gui_helpers.get_monster_difficulties_table()
+
+        if not diff_table then
+            return value
+        end
+
+        local em_difficulty = diff_table[this.combo.em_difficulty:get()]
+        if not em_difficulty then
+            return value
+        end
+
+        local guid = em_difficulty[key][1]
+        local rate = diff2:getDifficultyRate(guid)
+
+        return string.format(
+            "%s%s   |   %sx %s,  %sx %s,  %sx %s",
+            value,
+            config.lang:tr("misc.text_star"),
+            util_misc.round(rate:get_Health(), 2),
+            config.lang:tr("misc.text_hp"),
+            util_misc.round(rate:get_Attack(), 2),
+            config.lang:tr("misc.text_attack"),
+            util_misc.round(rate:get_PartsVital(), 2),
+            config.lang:tr("misc.text_parts_vital")
+        )
     end,
 })
 this.combo.spoffer = combo:new(nil, {
