@@ -66,12 +66,10 @@ end
 ---@return boolean
 function this.is_spoffer_swarm_disabled()
     local em_param = state.combo.em_param:get()
-    local em_param_mod = state.combo.em_param_mod:get()
 
     return mod.is_in_quest()
         or not mod.is_spoffer_unlocked(mod.state.stage)
         or (em_param ~= "swarm" and em_param ~= "boss")
-        or em_param_mod ~= "none"
         or config.current.mod.swarm_count < 2
         or config.current.mod.spawn_delay > 0
 end

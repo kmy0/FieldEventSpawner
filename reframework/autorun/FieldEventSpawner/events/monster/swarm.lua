@@ -103,7 +103,12 @@ function this:build()
 
     leader_data.cache_base.children = {}
     local member_data, member_rewards
-    for _ = 1, self.swarm_count do
+    for i = 1, self.swarm_count do
+        if self.spoffer and self.legendary_id > 0 and i == self.swarm_count then
+            -- game refuses to spawn spoffer when all monsters are tempered
+            self.legendary_id = e.get("app.EnemyDef.LEGENDARY_ID").NONE
+        end
+
         res, member_rewards, member_data = self:_build_member(swarm_data)
         if res ~= mod.enum.spawn_result.OK then
             return res
