@@ -211,4 +211,22 @@ function this.integer_to_hex(num)
     return string.format("0x%x", num)
 end
 
+---@param module_name string
+function this.lazy_require(module_name)
+    return setmetatable({}, {
+        __index = function(_, key)
+            return require(module_name)[key]
+        end,
+    })
+end
+
+function this.fnv1a(str)
+    local hash = 0x811c9dc5
+    for i = 1, #str do
+        hash = hash ~ str:byte(i)
+        hash = (hash * 0x01000193) & 0xFFFFFFFF
+    end
+    return hash
+end
+
 return this

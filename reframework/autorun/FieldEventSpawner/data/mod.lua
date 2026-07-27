@@ -200,12 +200,14 @@ function this.update_spoffer()
     while pop_em_enum:MoveNext() do
         local pop_em = pop_em_enum:get_Current()
         ---@cast pop_em app.cExFieldEvent_PopEnemy
+        local em_id = pop_em:get_EmID()
 
         if
-            em_global_param:isExclusiveEm(pop_em:get_EmID())
+            em_global_param:isExclusiveEm(em_id)
             or not pop_em:get_EnableSpOfferTarget()
             or not pop_em:get_EnableKeepQuestTarget()
             or pop_em:get_IsBattlefieldEm()
+            or helpers.is_invalid_em(pop_em)
         then
             goto continue
         end

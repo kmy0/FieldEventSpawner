@@ -1,5 +1,6 @@
 ---@class GuiValues
 ---@field old_data GuiValuesData
+---@field initialized boolean
 
 ---@class (exact) GuiValuesData
 ---@field event_type string
@@ -28,6 +29,7 @@
 local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
 local helpers = require("FieldEventSpawner.gui.helpers")
+local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
 local state = require("FieldEventSpawner.gui.state")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -46,19 +48,24 @@ local this = {
         environ = -1,
         area = -1,
     },
+    initialized = false,
 }
 
 ---@param dirty boolean
 ---@param combo Combo
----@param options table
+---@param key_to_value table
 ---@param field string
 ---@param current_data GuiValuesData
 ---@param changed ChangedData
 ---@param config_mod ModSettings
 ---@return boolean dirty
-local function sync_combo(dirty, combo, options, field, current_data, changed, config_mod)
+local function sync_combo(dirty, combo, key_to_value, field, current_data, changed, config_mod)
     if dirty then
-        config_mod[field] = combo:swap(options, config_mod[field])
+        if this.initialized then
+            config_mod[field] = combo:swap(key_to_value, config_mod[field])
+        else
+            config_mod[field] = combo:swap_init(key_to_value, config_mod[field])
+        end
         current_data[field] = combo:get()
         changed[field] = true
     end
@@ -85,8 +92,13 @@ local function sync_combo_with_disabled(
     disabled_keys
 )
     if dirty then
-        config_mod[field] =
-            helpers.swap_with_disabled(combo, key_to_value, config_mod[field], disabled_keys)
+        config_mod[field] = helpers.swap_with_disabled(
+            combo,
+            key_to_value,
+            config_mod[field],
+            disabled_keys,
+            not this.initialized
+        )
         current_data[field] = combo:get()
         changed[field] = true
     end
@@ -159,19 +171,35 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
             )
         or {}
 
-    dirty = sync_combo_with_disabled(
-        dirty,
-        combo.em_difficulty,
-        util_table.array_to_map2(util_table.keys(diff_table)),
-        "em_difficulty",
-        current_data,
-        changed,
-        config_mod
-    )
+    if current_data.em_param ~= "invalid" then
+        dirty = sync_combo_with_disabled(
+            dirty,
+            combo.em_difficulty,
+            util_table.array_to_map2(util_table.keys(diff_table)),
+            "em_difficulty",
+            current_data,
+            changed,
+            config_mod
+        )
+    else
+        dirty = sync_combo(
+            dirty,
+            combo.em_difficulty,
+            util_table.array_to_map2(util_table.keys(diff_table)),
+            "em_difficulty",
+            current_data,
+            changed,
+            config_mod
+        )
+    end
 
     if dirty then
-        local key_to_value =
-            util_table.array_to_map2(util_table.keys(diff_table[current_data.em_difficulty] or {}))
+        local values = {}
+        for _, guids in pairs(diff_table[current_data.em_difficulty] or {}) do
+            values = util_table.array_merge(values, guids)
+        end
+
+        local key_to_value = util_table.array_to_map2(values)
         if util_table.empty(key_to_value) then
             config_mod.em_difficulty_rank = helpers.swap_with_disabled(
                 combo.em_difficulty_rank,
@@ -182,7 +210,10 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
             config_mod.em_difficulty_rank =
                 combo.em_difficulty_rank:swap(key_to_value, config_mod.em_difficulty_rank) --[[@as integer]]
         end
-        current_data.em_difficulty_rank = combo.em_difficulty_rank:get()
+
+        local em_difficulty_rank = combo.em_difficulty_rank:get()
+        current_data.em_difficulty_rank = em_difficulty_rank
+            and m.getRewardRankFromDifficulty(em_difficulty_rank)
         changed.em_difficulty_rank = true
     end
 
@@ -194,6 +225,7 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
                 and event.map[current_data.stage].size_by_param_mod[current_data.em_param_mod]
             or {}
         local size = size_by_param_mod[current_data.em_difficulty_rank] or {}
+
         local min = size.min or ace.map.em_size_min
         local max = size.max or ace.map.em_size_max
 
@@ -228,6 +260,7 @@ end
 function this.update()
     local combo = state.combo
     local config_mod = config.current.mod
+    local em_difficulty = combo.em_difficulty_rank:get()
     ---@type GuiValuesData
     local current_data = {
         event_type = combo.event_type:get() or -1,
@@ -237,7 +270,7 @@ function this.update()
         em_param_mod = combo.em_param_mod:get() or -1,
         ignore_environ = config_mod.is_ignore_environ,
         em_difficulty = combo.em_difficulty:get() or -1,
-        em_difficulty_rank = combo.em_difficulty_rank:get() or -1,
+        em_difficulty_rank = em_difficulty and m.getRewardRankFromDifficulty(em_difficulty) or -1,
         environ = mod.state.environ or -1,
         area = combo.area:get() or -1,
     }
@@ -279,6 +312,7 @@ function this.update()
     end
 
     this.old_data = current_data
+    this.initialized = true
 end
 
 return this

@@ -24,6 +24,7 @@
 ---@field exec_time integer
 
 local config = require("FieldEventSpawner.config.init")
+local json_serializer = require("FieldEventSpawner.util.misc.json_serializer"):new()
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {
@@ -97,27 +98,13 @@ function this.overwrite_current()
 end
 
 function this.save()
-    json.dump_file(config.cache_path, util_table.key_to_string(this.event_cache))
+    json_serializer:dump_file(config.my_events_path, this.event_cache)
 end
 
 function this.load()
-    local loaded = json.load_file(config.cache_path)
+    local loaded = json_serializer:from_file(config.my_events_path)
     if loaded then
-        loaded = util_table.key_to_any(loaded, function(parent_key, key, level)
-            if not parent_key or (level and level > 3) then
-                return key
-            end
-
-            return tonumber(key)
-        end)
-        for k, _ in pairs(this.event_cache) do
-            if not loaded[k] then
-                goto continue
-            end
-
-            this.event_cache[k] = loaded[k]
-            ::continue::
-        end
+        this.event_cache = loaded
     end
 end
 

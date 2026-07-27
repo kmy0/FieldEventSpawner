@@ -10,6 +10,12 @@
 ---@field protected _updated_frame integer
 ---@field protected _auto_update boolean
 
+---@class TimerOptionalArgs
+---@field callback fun()?
+---@field auto_start boolean?
+---@field auto_restart boolean?
+---@field auto_update boolean?
+
 local frame_counter = require("FieldEventSpawner.util.misc.frame_counter")
 
 ---@class Timer
@@ -18,28 +24,26 @@ this.__index = this
 this._auto_instances = setmetatable({}, { __mode = "v" })
 
 ---@param timeout integer
----@param callback fun()?
----@param auto_start boolean? by default, false
----@param auto_restart boolean? by default, false
----@param auto_update boolean? by default, false
-function this:new(timeout, callback, auto_start, auto_restart, auto_update)
+---@param optional_args TimerOptionalArgs?
+function this:new(timeout, optional_args)
+    optional_args = optional_args or {}
     local o = {
-        auto_restart = auto_restart and true or false,
+        auto_restart = optional_args.auto_restart and true or false,
         timeout = timeout,
-        callback = callback,
+        callback = optional_args.callback,
         _finished = false,
         _started = false,
         _update_frame = 0,
-        _auto_update = auto_update,
+        _auto_update = optional_args.auto_update,
     }
     setmetatable(o, self)
     ---@cast o Timer
 
-    if auto_start then
+    if optional_args.auto_start then
         o:start()
     end
 
-    if auto_update then
+    if optional_args.auto_update then
         table.insert(this._auto_instances, o)
     end
 

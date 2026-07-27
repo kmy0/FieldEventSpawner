@@ -7,6 +7,7 @@
 ---@field spoffer_rewards EditedRewardData?
 ---@field size integer?
 ---@field spoffer_swarm boolean?
+---@field battlefield_slay boolean?
 
 ---@class (exact) ScheduledEvent
 ---@field event_data app.cExFieldScheduleExportData.cEventData
@@ -15,7 +16,7 @@
 ---@field cache_base CachedEventParent
 ---@field sub_events ScheduledEvent[]?
 
----@class (exact)MonsterSpawnEvent : SpawnEvent
+---@class (exact) MonsterSpawnEvent : SpawnEvent
 ---@field args MonsterSpawnEventArgs
 
 local ace = require("FieldEventSpawner.data.ace.init")
@@ -62,8 +63,9 @@ end
 ---@param sub_events ScheduledEvent[]?
 ---@param spoffer_rewards EditedRewardData?
 ---@param size integer?
+---@param battlefield_slay boolean?
 ---@return MonsterSpawnEvent
-function this.monster_ctor(
+function this.make_monster(
     event_data,
     name,
     area,
@@ -75,7 +77,8 @@ function this.monster_ctor(
     children,
     sub_events,
     spoffer_rewards,
-    size
+    size,
+    battlefield_slay
 )
     local ret = this.ctor(event_data, name, area, collision_flag, children, sub_events)
     ---@cast ret MonsterSpawnEvent
@@ -86,13 +89,14 @@ function this.monster_ctor(
         village_boost = village_boost,
         spoffer_rewards = spoffer_rewards,
         size = size,
+        battlefield_slay = battlefield_slay,
     }
     return ret
 end
 
 ---@param event_data app.cExFieldScheduleExportData.cEventData | app.cExFieldScheduleExportData.cEventData[]
 ---@return ScheduledEvent[]
-function this.subevent_ctor(event_data)
+function this.make_subevent(event_data)
     local t
     if type(event_data) == "table" then
         t = event_data
@@ -116,7 +120,7 @@ end
 ---@param area integer?
 ---@param collision_flag EventCollisionFlag?
 ---@return CachedEventChild
-function this.child_ctor(unique_index, event_data, area, collision_flag)
+function this.make_child(unique_index, event_data, area, collision_flag)
     ---@type CachedEventChild
     local ret = {
         type = mod.enum.cached_event_type.CHILD,

@@ -118,7 +118,7 @@ function this:build()
 
         table.insert(
             leader_data.cache_base.children,
-            sched.spawn_event.child_ctor(
+            sched.spawn_event.make_child(
                 member_data.event_data._UniqueIndex,
                 member_data.event_data,
                 swarm_data.area
@@ -208,8 +208,8 @@ function this:_build_member(swarm_data)
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
     return mod.enum.spawn_result.OK,
-        sched.spawn_event.subevent_ctor(reward_data.reward_array),
-        sched.spawn_event.subevent_ctor(event_data)[1]
+        sched.spawn_event.make_subevent(reward_data.reward_array),
+        sched.spawn_event.make_subevent(event_data)[1]
 end
 
 ---@protected

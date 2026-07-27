@@ -215,4 +215,11 @@ function this.get_fields(type_def, predicate)
     return ret
 end
 
+---@param guid string
+---@return System.Guid
+function this.parse_guid(guid)
+    local ret = util_ref.ctor("System.Guid")
+    return ret:Parse(guid)
+end
+
 return this

@@ -24,6 +24,7 @@
 ---@field mData4_5 System.Byte
 ---@field mData4_6 System.Byte
 ---@field mData4_7 System.Byte
+---@field Parse fun(self: System.Guid, guid_string: string): System.Guid
 
 ---@class System.Nullable<T> : System.ValueType
 ---@field _Value any

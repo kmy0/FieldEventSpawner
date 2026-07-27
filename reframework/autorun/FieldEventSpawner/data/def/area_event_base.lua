@@ -1,18 +1,19 @@
----@class (exact) MapData
----@field stage app.FieldDef.STAGE
----@field area_by_env table<app.EnvironmentType.ENVIRONMENT, integer[]>
----@field area integer[]
----@field area_to_area_fixed table<integer, integer>
+---@class (exact) AreaEventData : EventData, SerialClass
+---@field map table<app.FieldDef.STAGE, MapData>
+---@field type app.EX_FIELD_EVENT_TYPE
 
 ---@class (exact) EventData
 ---@field id any
 ---@field name_english string
 ---@field name_local string
 
----@class (exact) AreaEventData : EventData
----@field map table<app.FieldDef.STAGE, MapData>
----@field type app.EX_FIELD_EVENT_TYPE
----@field map_data_ctor fun(stage: app.FieldDef.STAGE): MapData
+---@class SerialClass
+---@field __type string
+
+---@class (exact) MapData
+---@field stage app.FieldDef.STAGE
+---@field area_by_env table<app.EnvironmentType.ENVIRONMENT, integer[]>
+---@field area integer[]
 
 ---@class AreaEventData
 local this = {}
@@ -29,17 +30,19 @@ function this:new(name_english, name_local, type)
         name_local = name_local,
         map = {},
         type = type,
+        __type = "__AreaEventData",
     }
     setmetatable(o, self)
     ---@cast o AreaEventData
     return o
 end
 
----@param stage app.FieldDef.STAGE
----@param area integer
----@return integer
-function this:get_area_fixed(stage, area)
-    return self.map[stage].area_to_area_fixed[area]
+---@param serialized_class table
+---@return AreaEventData
+function this:new_from_serial(serialized_class)
+    local o = setmetatable(serialized_class, self)
+    ---@cast o AreaEventData
+    return o
 end
 
 ---@param stage app.FieldDef.STAGE
@@ -58,15 +61,24 @@ function this:get_area_array(stage, environ)
 end
 
 ---@param stage app.FieldDef.STAGE
+---@param args {
+--- area_by_env: table<app.EnvironmentType.ENVIRONMENT, integer[]>?,
+--- area: integer[]?,
+--- }?
 ---@return MapData
-function this.map_data_ctor(stage)
-    ---@type MapData
-    return {
+function this:add_map(stage, args)
+    if self.map[stage] then
+        return self.map[stage]
+    end
+
+    args = args or {}
+    self.map[stage] = {
+        area_by_env = args.area_by_env or {},
+        area = args.area or {},
         stage = stage,
-        area_by_env = {},
-        area = {},
-        area_to_area_fixed = {},
     }
+
+    return self.map[stage]
 end
 
 return this

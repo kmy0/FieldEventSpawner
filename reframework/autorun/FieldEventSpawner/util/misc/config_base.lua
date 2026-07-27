@@ -31,9 +31,11 @@ function this:new(default_settings, path, save_delay)
         path = path,
     }
 
-    o.save_timer = timer:new(save_delay or 0.5, function()
-        o:save_no_timer()
-    end)
+    o.save_timer = timer:new(save_delay or 0.5, {
+        callback = function()
+            o:save_no_timer()
+        end,
+    })
     setmetatable(o, self)
     ---@cast o ConfigBase
 

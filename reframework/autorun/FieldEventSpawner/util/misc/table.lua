@@ -182,7 +182,7 @@ end
 
 ---@generic K, V, R
 ---@param t table<K,  V>
----@param value_getter (fun(o: V): R)?
+---@param value_getter (fun(o: V): R?)?
 ---@return R|V[]
 function this.values(t, value_getter)
     local ret = {}
@@ -191,7 +191,10 @@ function this.values(t, value_getter)
         if value_getter then
             value = value_getter(o_value)
         end
-        table.insert(ret, value)
+
+        if value then
+            table.insert(ret, value)
+        end
     end
     return ret
 end
@@ -264,6 +267,30 @@ function this.insert_nested_value(t, keys, value)
     end
 
     table.insert(current, value)
+    return t
+end
+
+---@generic T: table
+---@param t T
+---@param keys any[]
+---@param value any
+---@return T
+function this.insert_nested_value_unique(t, keys, value)
+    local current = t
+    local size = #keys
+
+    for i = 1, size do
+        local key = keys[i]
+        if current[key] == nil then
+            current[key] = {}
+        end
+        current = current[key]
+    end
+
+    if not this.contains(current, value) then
+        table.insert(current, value)
+    end
+
     return t
 end
 
@@ -824,6 +851,12 @@ function this.sum_values(...)
     end
 
     return ret
+end
+
+---@param ... string
+function this.make_key(...)
+    local t = { ... }
+    return table.concat(t, ".")
 end
 
 return this

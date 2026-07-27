@@ -240,6 +240,7 @@
 ---@field get_FreeMiniValue6 fun(self: app.cExFieldEventBase): System.Byte
 ---@field toEndFromExternal fun(self: app.cExFieldEventBase)
 ---@field get_Executed fun(self: app.cExFieldEventBase): System.Boolean
+---@field get_ExecMinute fun(self: app.cExFieldEventBase): System.Int32
 
 ---@class app.cExFieldEvent_GimmickEvent : app.cExFieldEvent_EnvEventBase
 ---@field get_IsAssistNpc fun(self: app.cExFieldEvent_GimmickEvent): System.Boolean
@@ -260,6 +261,10 @@
 ---@field findEm fun(self: app.cExFieldEvent_PopEnemy): app.cEnemyContextHolder
 ---@field get_Rank fun(self: app.cExFieldEvent_PopEnemy): app.QuestDef.EM_REWARD_RANK
 ---@field set_StayMinute_Real fun(self: app.cExFieldEvent_PopEnemy, t: System.Byte)
+---@field get_DifficultyID fun(self: app.cExFieldEvent_PopEnemy): System.Guid
+---@field get_RoleID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.ROLE_ID
+---@field get_LegendaryID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.LEGENDARY_ID
+---@field get_StayMinute_Real fun(self: app.cExFieldEvent_PopEnemy): System.Byte
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE
@@ -287,8 +292,9 @@
 ---@field get_AnimalEvent fun(self: app.user_data.ExFieldParam_LayoutData.cAnimalEventParam): app.ExDef.ANIMAL_EVENT
 
 ---@class app.GameFlowManager : ace.GAElement
----@field get_CurrentGameScene fun(self: app.GameFlowManager) : app.cFieldSceneParam.SCENE_TYPE
----@field get_NextGameStateType fun(self: app.GameFlowManager) : app.cFieldSceneParam.SCENE_TYPE?
+---@field get_CurrentGameScene fun(self: app.GameFlowManager): app.cFieldSceneParam.SCENE_TYPE
+---@field get_NextGameStateType fun(self: app.GameFlowManager): app.cFieldSceneParam.SCENE_TYPE?
+---@field get_IsPlayableScene fun(self: app.GameFlowManager): System.Boolean
 
 ---@class app.MasterFieldManager : ace.GAElement
 ---@field get_CurrentStage fun(self: app.MasterFieldManager): app.FieldDef.STAGE
@@ -312,6 +318,7 @@
 ---@field lotDifficultyID_PopBelonging fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield, legendary_id: app.EnemyDef.LEGENDARY_ID): System.Guid
 ---@field getLotPopBelongingStageParam fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam
 ---@field get_OptionTagValue_AfterPopBelongingStage fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Int64
+---@field get_PopBelongingStageProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Byte
 
 ---@class app.CharacterBase : app.AppBehavior
 ---@field get_GameObject fun(self: app.CharacterBase) : via.GameObject
@@ -336,6 +343,8 @@
 
 ---@class app.MissionManager : ace.GAElement
 ---@field get_IsActiveQuest fun(self: app.MissionManager): System.Boolean
+---@field getBossZakoLayoutData fun(self: app.MissionManager, id: app.MissionIDList.ID): app.user_data.EnemyLayoutDataBossZako
+---@field reflectStreamQuestListCache fun(self: app.MissionManager)
 
 ---@class app.cExSpOfferFactory.cSpOfferByStage : via.clr.ManagedObject
 ---@field get_SpOfferList fun(self: app.cExSpOfferFactory.cSpOfferByStage): System.Array<app.cExSpOfferFactory.SpOfferInfo>
@@ -353,6 +362,18 @@
 ---@field get_Difficulty2 fun(self: app.user_data.EnemyManagerSetting): app.user_data.EmParamDifficulty2
 ---@field get_RandomSize fun(self: app.user_data.EnemyManagerSetting): app.user_data.EmParamRandomSize
 ---@field get_Size fun(self: app.user_data.EnemyManagerSetting): app.user_data.EmParamSize
+---@field get_StageResident fun(self: app.user_data.EnemyManagerSetting): app.user_data.EnemyAppearanceStageData
+
+---@class app.user_data.EnemyAppearanceStageData : via.UserData
+---@field _DataList System.Array<app.user_data.EnemyAppearanceStageData.cData>
+
+---@class app.user_data.EnemyAppearanceStageData.cData : via.clr.ManagedObject
+---@field get_Stage fun(self: app.user_data.EnemyAppearanceStageData.cData): app.FieldDef.STAGE_Fixed
+---@field _EmIDList System.Array<app.EnemyDef.ID_Fixed>
+---@field _Stage app.FieldDef.STAGE_Serializable
+
+---@class app.FieldDef.STAGE_Serializable : via.clr.ManagedObject
+---@field get_Value fun(self: app.FieldDef.STAGE_Serializable): System.Int32
 
 ---@class app.user_data.EmParamRandomSize : via.UserData
 ---@field _EnemyRandomSizeTblArray System.Array<app.user_data.EmParamRandomSize.cEnemyTableData>
@@ -393,9 +414,12 @@
 ---@class app.user_data.EmParamDifficulty2.cDifficultyRate : via.clr.ManagedObject
 ---@field get_RewardGrade fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Int32
 ---@field get_RewardRank fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): app.QuestDef.EM_REWARD_RANK_Fixed
+---@field get_InstanceGuid fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Guid
 
 ---@class app.cEnemyContextHolder : app.cGameContextHolder
 ---@field get_Em fun(self: app.cEnemyContextHolder): app.cEnemyContext
+---@field get_Object fun(self: app.cEnemyContextHolder): via.GameObject
+---@field get_IsHealthZero fun(self: app.cEnemyContextHolder): System.Boolean
 
 ---@class app.cEnemyContext : app.cGameContext
 ---@field Area app.cEmModuleArea
@@ -420,3 +444,11 @@
 ---@field get_Health fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Single
 ---@field get_Attack fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Single
 ---@field get_PartsVital fun(self: app.user_data.EmParamDifficulty2.cDifficultyRate): System.Single
+
+---@class app.user_data.EnemyLayoutDataBossZako : via.UserData
+---@field get_MainTargetDataList fun(self: app.user_data.EnemyLayoutDataBossZako): app.user_data.EnemyLayoutDataBossZako.cMainTarget[]
+
+---@class app.user_data.EnemyLayoutDataBossZako.cMainTarget : via.clr.ManagedObject
+---@field get_DifficultyRankId fun(self: app.user_data.EnemyLayoutDataBossZako.cMainTarget): System.Guid
+---@field get_FixedEmID fun(self: app.user_data.EnemyLayoutDataBossZako.cMainTarget): app.EnemyDef.ID_Fixed
+---@field get_LegendaryID fun(self: app.user_data.EnemyLayoutDataBossZako.cMainTarget): app.EnemyDef.LEGENDARY_ID

@@ -41,6 +41,7 @@
 
 local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
+local helpers = require("FieldEventSpawner.data.helpers")
 local mod = require("FieldEventSpawner.data.mod")
 local monster_factory = require("FieldEventSpawner.events.monster.monster")
 local sched = require("FieldEventSpawner.schedule.init")
@@ -101,11 +102,15 @@ function this:new(
     ---@cast o BattlefieldEventFactory
     o.battlefield_state = battlefield_state
     o.pop_em_type = o:_get_em_pop_type_bf()
-    o._area_array = monster_data:get_area_array(
-        stage,
-        not environ and mod.get_environ(stage) or nil,
+
+    local em_param =
         ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[o.pop_em_type]]
-    )
+    if difficulty and helpers.is_invalid_em2(monster_data, difficulty[1]) then
+        em_param = "invalid"
+    end
+
+    o._area_array =
+        monster_data:get_area_array(stage, not environ and mod.get_environ(stage) or nil, em_param)
     return o
 end
 
@@ -156,6 +161,7 @@ function this:build()
         return mod.enum.spawn_result.NO_REWARDS
     end
 
+    self:_adjust_legendary_id()
     local event_data = sched.util.create_event_data()
     event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
     event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
@@ -176,10 +182,10 @@ function this:build()
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + 1
     event_data._UniqueIndex = self._schedule_timeline:newEventUniqueIndex(self.stage)
 
-    local sub_events = sched.spawn_event.subevent_ctor(reward_data.reward_array)
-    table.insert(sub_events, sched.spawn_event.subevent_ctor(event_data)[1])
+    local sub_events = sched.spawn_event.make_subevent(reward_data.reward_array)
+    table.insert(sub_events, sched.spawn_event.make_subevent(event_data)[1])
     return mod.enum.spawn_result.OK,
-        sched.spawn_event.monster_ctor(
+        sched.spawn_event.make_monster(
             self:_get_battlefield_data(
                 em_pop_param,
                 event_data._ExecMinute - 1,
@@ -194,7 +200,7 @@ function this:build()
             nil,
             mod.enum.event_collision_flag.EVENT_TYPE,
             {
-                sched.spawn_event.child_ctor(
+                sched.spawn_event.make_child(
                     event_data._UniqueIndex,
                     event_data,
                     area,
@@ -203,7 +209,8 @@ function this:build()
             },
             sub_events,
             nil,
-            self.size
+            self.size,
+            self.battlefield_state == mod.enum.battlefield_state.battlefield_slay
         )
 end
 

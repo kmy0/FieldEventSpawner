@@ -4,7 +4,10 @@
 ---@field ex_field_param app.user_data.ExFieldParam
 ---@field map AceMap
 ---@field initialized boolean
+---@field invalid_difficulties_loaded boolean
 ---@field init fun(): boolean
+---@field load_invalid_difficulties fun()
+---@field restore_em_stage_appearance fun()
 
 ---@class (exact) EventDataByType
 ---@field monster MonsterData[]
@@ -34,6 +37,14 @@
 ---@field em_size_max integer
 ---@field item_key_to_name_local table<string, string>
 ---@field dummy_area integer
+---@field replace_em_rank_guid table<app.EnemyDef.LEGENDARY_ID, string>
+---@field bad_monsters table<app.EnemyDef.ID, boolean>
+---@field legendary_to_key table<app.EnemyDef.LEGENDARY_ID, string>
+---@field missing_em_stage table<app.EnemyDef.ID, app.FieldDef.STAGE[]>
+---@field em_stage table<app.EnemyDef.ID, app.FieldDef.STAGE[]>
+---@field missing_em_stage_string string
+---@field garkveld_em_stage_string string
+---@field is_all_em_all_stage boolean
 
 ---@class AceData
 local this = {
@@ -92,8 +103,17 @@ local this = {
         swarm_monsters = {},
         item_key_to_name_local = {},
         dummy_area = -100,
+        replace_em_rank_guid = {},
+        bad_monsters = {},
+        legendary_to_key = {},
+        missing_em_stage = {},
+        em_stage = {},
+        missing_em_stage_string = "",
+        garkveld_em_stage_string = "",
+        is_all_em_all_stage = false,
     },
     initialized = false,
+    invalid_difficulties_loaded = false,
 }
 
 return this

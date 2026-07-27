@@ -19,6 +19,11 @@
 ---@field disable_button_cooldown boolean
 ---@field display_cheat_errors boolean
 ---@field pause_schedule boolean
+---@field merge_invalid_difficulties boolean
+---@field add_invalid_difficulties boolean
+---@field add_guardian_arkveld boolean
+---@field add_missing_monsters boolean
+---@field add_invalid_monsters boolean
 ---
 ---@field event_type integer
 ---@field event integer
@@ -62,6 +67,11 @@ return {
         disable_button_cooldown = false,
         display_cheat_errors = true,
         pause_schedule = false,
+        merge_invalid_difficulties = false,
+        add_invalid_difficulties = false,
+        add_guardian_arkveld = false,
+        add_missing_monsters = false,
+        add_invalid_monsters = false,
         --
         event = 1,
         event_type = 1,

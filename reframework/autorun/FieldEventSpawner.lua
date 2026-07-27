@@ -22,10 +22,6 @@ m.getRewardRankFromDifficulty =
     m.wrap(m.get("app.EnemyUtil.getRewardRankFromDifficulty(System.Guid)")) --[[@as fun(guid:  System.Guid): app.QuestDef.EM_REWARD_RANK]]
 m.isBossID = m.wrap(m.get("app.EnemyDef.isBossID(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Boolean]]
 m.isEmValid = m.wrap(m.get("app.EnemyDef.isValid(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Boolean]]
-m.getEnemyLegendaryName = m.wrap(m.get("app.EnemyDef.EnemyLegendaryName(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Guid]]
-m.getEnemyLegendaryKingName = m.wrap(m.get("app.EnemyDef.EnemyLegendaryKingName(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Guid]]
-m.getEnemyFrenzyName = m.wrap(m.get("app.EnemyDef.EnemyFrenzyName(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Guid]]
-m.getEnemyExtraName = m.wrap(m.get("app.EnemyDef.EnemyExtraName(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Guid]]
 m.getGimmickEventName = m.wrap(m.get("app.ExDef.Name(app.ExDef.GIMMICK_EVENT)")) --[[@as fun(gm_ev: app.ExDef.GIMMICK_EVENT): System.Guid]]
 m.getAnimalEventName = m.wrap(m.get("app.ExDef.AnimalEventName(app.ExDef.ANIMAL_EVENT)")) --[[@as fun(am_ev: app.ExDef.ANIMAL_EVENT): System.Guid]]
 m.getGimmickID = m.wrap(m.get("app.ExDef.GimmickID(app.ExDef.GIMMICK_EVENT)")) --[[@as fun(gm_ev: app.ExDef.GIMMICK_EVENT): app.GimmickDef.ID]]
@@ -36,6 +32,11 @@ m.isValidItem = m.wrap(m.get("app.ItemDef.isValidItem(app.ItemDef.ID)")) --[[@as
 m.getIncorrectStatusBit =
     m.wrap(m.get("app.QuestCheckUtil.getIncorrectStatusBit(app.QuestCheckUtil.INCORRECT_STATUS)")) --[[@as fun(status: app.QuestCheckUtil.INCORRECT_STATUS): System.Int32]]
 m.realSec_to_GameMinute = m.wrap(m.get("app.ExFieldUtil.realSec_to_GameMinute(System.Single)")) --[[@as fun(sec: System.Single): System.Single]]
+m.getEnemyName = m.wrap(
+    m.get("app.EnemyDef.Name(app.EnemyDef.ID, app.EnemyDef.ROLE_ID, app.EnemyDef.LEGENDARY_ID)")
+) --[[@as fun(em_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID): System.Guid]]
+m.getStageNameGuid =
+    m.wrap(m.get("app.GUIUtilApp.MapUtil.getStageFullName(app.FieldDef.STAGE, System.Guid)")) --[[@as fun(stage: app.FieldDef.STAGE, guid_ptr: integer): System.Boolean]]
 
 m.hook(
     "app.QuestCheckUtil.checkExQuest(System.Int32, app.cKeepQuestData)",
@@ -109,6 +110,7 @@ m.hook(
 )
 m.hook("app.user_data.ExFieldParam.lotIsVillageBoost", nil, sched.hook.spoffer_village_boost_post)
 m.hook("app.cExFieldDirector.findExecutedPopEms", nil, sched.hook.force_spoffer_array_post)
+m.hook("app.cExFieldDirector.findExecutedPopEms", nil, sched.hook.filter_spoffer_array_post)
 m.hook(
     "app.cExFieldDirector.recreateEmPopEvent_BeforeExecute(app.cExFieldEvent_PopEnemy, "
         .. "app.cExFieldEvent_PopEnemy, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Boolean)",
@@ -143,6 +145,18 @@ m.hook(
     "app.cExSpOfferFactory.saveSpOffer(app.cExSpOfferFactory.cSpOfferByStage, System.Boolean, app.savedata.cFieldExParam)",
     sched.hook.create_spoffer_swarm_pre,
     sched.hook.create_spoffer_swarm_post
+)
+m.hook("app.cExFieldDirector.init()", nil, data.ace.load_invalid_difficulties)
+m.hook(
+    "app.QuestUtil.getKeepQuestCost(app.QuestDef.EM_REWARD_RANK, app.EnemyDef.LEGENDARY_ID)",
+    nil,
+    sched.hook.get_keep_quest_post
+)
+m.hook("app.cKeepQuestData.getAcceptableHR()", nil, sched.hook.get_accept_hr_post)
+m.hook(
+    "app.QuestUtil.isEnableExecute_Instant(System.Int32, app.cExFieldEvent_PopEnemy, app.cEnemyContext, System.Boolean, System.Single, System.Boolean)",
+    nil,
+    sched.hook.is_enable_execute_instant_post
 )
 
 re.on_draw_ui(function()

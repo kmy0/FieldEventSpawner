@@ -54,6 +54,10 @@ function this.add(stage, event)
         ---@cast event MonsterSpawnEvent
         event.args.unique_index = event.event_data._UniqueIndex
         this.hook.set_em_args(event.args)
+
+        if event.args.battlefield_slay then
+            this.hook.set_ex_instant_flag(true)
+        end
     end
 
     schedule._EventList:AddWithResize(event.event_data)

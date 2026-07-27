@@ -1,4 +1,4 @@
----@class (exact) GimmickData : AreaEventData
+---@class (exact) GimmickData : AnimalGimmickData
 ---@field id app.ExDef.GIMMICK_EVENT_Fixed
 ---@field ex_id app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
 ---@field id_not_fixed app.ExDef.GIMMICK_EVENT
@@ -6,9 +6,10 @@
 ---@class (exact) NpcData : GimmickData
 ---@field guid System.Guid
 
-local data_event = require("FieldEventSpawner.data.ace.event.event")
+local animal_gimmick = require("FieldEventSpawner.data.def.animal_gimmick")
 local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
+local helpers = require("FieldEventSpawner.data.ace.event.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -16,47 +17,31 @@ local util_table = require("FieldEventSpawner.util.misc.table")
 local this = {}
 
 ---@param cache table<integer, GimmickData>
----@return GimmickData[]
-local function cache_to_ret(cache)
-    ---@type GimmickData[]
-    local ret = {}
-    for _, struct in pairs(cache) do
-        for _, map_data in pairs(struct.map) do
-            if not util_table.empty(map_data.area) then
-                map_data.area = util_table.unique(map_data.area)
-                table.sort(map_data.area)
-            end
-        end
-        table.insert(ret, struct)
-    end
-    return ret
-end
-
----@param cache table<integer, GimmickData>
 ---@param gimmick_event app.ExDef.GIMMICK_EVENT
 ---@param ex_id app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
 ---@param lang via.Language
 ---@param guid System.Guid?
 ---@return GimmickData
-local function get_event_struct(cache, gimmick_event, ex_id, lang, guid)
+local function get_gimmick_data(cache, gimmick_event, ex_id, lang, guid)
     if not cache[gimmick_event] then
         local name_guid = m.getGimmickEventName(gimmick_event)
         local type = e.get("app.EX_FIELD_EVENT_TYPE").GIMMICK_EVENT
-        local ev = data_event:new(
+        local gimmick_data = animal_gimmick:new(
             game_lang.get_message_local(name_guid, 1),
             game_lang.get_message_local(name_guid, lang, true),
             type
         )
-        ---@cast ev GimmickData
-        ev.id = e.to_fixed("app.ExDef.GIMMICK_EVENT_Fixed", gimmick_event)
-        ev.ex_id = ex_id
-        ev.id_not_fixed = gimmick_event
+        ---@cast gimmick_data GimmickData
+        gimmick_data.id = e.to_fixed("app.ExDef.GIMMICK_EVENT_Fixed", gimmick_event)
+        gimmick_data.ex_id = ex_id
+        gimmick_data.id_not_fixed = gimmick_event
         if guid then
-            ---@cast ev NpcData
-            ev.guid = guid
+            ---@cast gimmick_data NpcData
+            gimmick_data.guid = guid
         end
-        cache[gimmick_event] = ev
+        cache[gimmick_event] = gimmick_data
     end
+
     return cache[gimmick_event]
 end
 
@@ -80,33 +65,23 @@ local function get_npc_data(ex_field_param, lang)
         while npc_gimmick_enum:MoveNext() do
             local npc_gimmick = npc_gimmick_enum:get_Current()
             ---@cast npc_gimmick app.user_data.ExFieldParam.cAssistNpcGimmick
-            local event_struct =
-                get_event_struct(cache, npc_gimmick:get_GimmickEvent(), ex_id, lang, guid)
+            local gimmick_data =
+                get_gimmick_data(cache, npc_gimmick:get_GimmickEvent(), ex_id, lang, guid)
             local area = npc_gimmick:get_AreaNo()
             local stage = npc_gimmick:get_Stage()
-
-            if not event_struct.map[stage] then
-                event_struct.map[stage] = data_event.map_data_ctor(stage)
-            end
+            local map_data = gimmick_data:add_map(stage)
 
             for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                 if npc_gimmick:checkEnableEnvBit(environ_type) then
-                    util_table.insert_nested_value(
-                        event_struct.map[stage],
-                        { "area_by_env", environ_type },
-                        area
-                    )
+                    helpers.merge_map_areas(map_data, { area }, { [environ_type] = { area } })
                 end
             end
-            table.insert(event_struct.map[stage].area, area)
-            util_table.set_nested_value(
-                event_struct.map[stage],
-                { "area_to_area_fixed", area },
-                npc_gimmick:get_AreaID_Fixed()
-            )
+
+            map_data.area_to_area_fixed[area] = npc_gimmick:get_AreaID_Fixed()
         end
     end
-    return cache_to_ret(cache)
+
+    return util_table.values(cache)
 end
 
 ---@param ex_field_param app.user_data.ExFieldParam
@@ -132,12 +107,9 @@ local function get_tokusan_data(ex_field_param, lang)
             local area_fixed = tokusan_param:get_AreaID_Fixed()
             local param_area_info_by_env = tokusan_param:get_ParamsByEnv()
             local by_env_enum = util_game.get_array_enum(param_area_info_by_env._EnvParams)
-            local event_struct =
-                get_event_struct(cache, tokusan_param:get_GimmickEvent(), ex_id, lang)
-
-            if not event_struct.map[stage] then
-                event_struct.map[stage] = data_event.map_data_ctor(stage)
-            end
+            local gimmick_data =
+                get_gimmick_data(cache, tokusan_param:get_GimmickEvent(), ex_id, lang)
+            local map_data = gimmick_data:add_map(stage)
 
             while by_env_enum:MoveNext() do
                 local tokusan_param_by_env = by_env_enum:get_Current()
@@ -146,23 +118,19 @@ local function get_tokusan_data(ex_field_param, lang)
                     goto continue
                 end
 
-                local environ = tokusan_param_by_env:get_EnvType()
-                util_table.insert_nested_value(
-                    event_struct.map[stage],
-                    { "area_by_env", environ },
-                    area
+                helpers.merge_map_areas(
+                    map_data,
+                    { area },
+                    { [tokusan_param_by_env:get_EnvType()] = { area } }
                 )
                 ::continue::
             end
-            table.insert(event_struct.map[stage].area, area)
-            util_table.set_nested_value(
-                event_struct.map[stage],
-                { "area_to_area_fixed", area },
-                area_fixed
-            )
+
+            map_data.area_to_area_fixed[area] = area_fixed
         end
     end
-    return cache_to_ret(cache)
+
+    return util_table.values(cache)
 end
 
 ---@param ex_field_param app.user_data.ExFieldParam
@@ -193,31 +161,22 @@ local function get_env_data(ex_field_param, lang)
             while gimmick_param_enum:MoveNext() do
                 local gimmick_param = gimmick_param_enum:get_Current()
                 ---@cast gimmick_param app.user_data.ExFieldParam_LayoutData.cGimmickEventParam
-                local event_struct =
-                    get_event_struct(cache, gimmick_param:get_GimmickEvent(), ex_id, lang)
-                if not event_struct.map[stage] then
-                    event_struct.map[stage] = data_event.map_data_ctor(stage)
-                end
+                local gimmick_data =
+                    get_gimmick_data(cache, gimmick_param:get_GimmickEvent(), ex_id, lang)
+                local map_data = gimmick_data:add_map(stage)
 
                 for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                     if gimmick_param:getRandomWeight(stage, environ_type) then
-                        util_table.insert_nested_value(
-                            event_struct.map[stage],
-                            { "area_by_env", environ_type },
-                            area
-                        )
+                        helpers.merge_map_areas(map_data, { area }, { [environ_type] = { area } })
                     end
                 end
-                table.insert(event_struct.map[stage].area, area)
-                util_table.set_nested_value(
-                    event_struct.map[stage],
-                    { "area_to_area_fixed", area },
-                    area_fixed
-                )
+
+                map_data.area_to_area_fixed[area] = area_fixed
             end
         end
     end
-    return cache_to_ret(cache)
+
+    return util_table.values(cache)
 end
 
 ---@param ex_field_param app.user_data.ExFieldParam

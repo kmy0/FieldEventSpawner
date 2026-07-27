@@ -43,11 +43,13 @@ local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
 local game_lang = require("FieldEventSpawner.util.game.lang")
+local helpers = require("FieldEventSpawner.data.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
 local reward_factory = require("FieldEventSpawner.events.reward")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
@@ -104,11 +106,15 @@ function this:new(
     o.difficulty = difficulty
     o.environ = environ
     o.size = size
-    o._area_array = monster_data:get_area_array(
-        stage,
-        not environ and mod.get_environ(stage) or nil,
+
+    local em_param =
         ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
-    )
+    if difficulty and helpers.is_invalid_em2(monster_data, difficulty[1]) then
+        em_param = "invalid"
+    end
+
+    o._area_array =
+        monster_data:get_area_array(stage, not environ and mod.get_environ(stage) or nil, em_param)
     return o
 end
 
@@ -122,20 +128,25 @@ function this:build()
     if not areas or self.environ then
         areas = self._area_array
     end
+
     ---@cast areas integer[]
     local area = self.area and self.area or self:_get_area(other_monsters_lua, areas)
-
     if not area then
         return mod.enum.spawn_result.NO_AREA
     end
 
-    local em_pop_param = self:_get_em_pop_param()
-    if not em_pop_param then
-        return mod.enum.spawn_result.NO_EM_PARAM
+    local difficulty_guid
+    if self.difficulty then
+        difficulty_guid = self.difficulty[math.random(#self.difficulty)]
+    else
+        local em_pop_param = self:_get_em_pop_param()
+        if not em_pop_param then
+            return mod.enum.spawn_result.NO_EM_PARAM
+        end
+
+        difficulty_guid = self:_get_difficulty(em_pop_param)
     end
 
-    local difficulty_guid = self.difficulty and self.difficulty[math.random(#self.difficulty)]
-        or self:_get_difficulty(em_pop_param)
     if not difficulty_guid then
         return mod.enum.spawn_result.NO_DIFFICULTY
     end
@@ -148,6 +159,7 @@ function this:build()
         return mod.enum.spawn_result.NO_REWARDS
     end
 
+    self:_adjust_legendary_id()
     local event_data = sched.util.create_event_data()
     event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
     event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
@@ -167,7 +179,7 @@ function this:build()
     event_data._FreeMiniValue6 = 255
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
 
-    local ret = sched.spawn_event.monster_ctor(
+    local ret = sched.spawn_event.make_monster(
         event_data,
         self:_get_monster_name(),
         area,
@@ -177,7 +189,7 @@ function this:build()
         self.spoffer,
         nil,
         nil,
-        sched.spawn_event.subevent_ctor(reward_data.reward_array),
+        sched.spawn_event.make_subevent(reward_data.reward_array),
         spoffer_rewards,
         self.size
     )
@@ -197,7 +209,7 @@ end
 ---@return System.Guid, integer[]?
 function this:_get_route_data(other_ems, environ_type)
     local route_pattern_array = self._field_director:getRoutePatternList(
-        self.event_data.id,
+        self.event_data.spoofed_id_for_route or self.event_data.spoofed_id or self.event_data.id,
         self.monster_role,
         self.legendary_id,
         self.pop_em_type,
@@ -237,7 +249,10 @@ function this:_get_em_pop_param()
         ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[self.pop_em_type]]
     local pop_param_array = pop_param_by_hr:get_field(field_name)
     ---@cast pop_param_array  System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base>
-    return field_layout:getPopParamByEmID(self.event_data.id, pop_param_array)
+    return field_layout:getPopParamByEmID(
+        self.event_data.spoofed_id or self.event_data.id,
+        pop_param_array
+    )
 end
 
 ---@protected
@@ -271,14 +286,14 @@ end
 
 ---@protected
 ---@param difficulty_guid System.Guid
----@return RewardData
-function this:_get_game_reward_data(difficulty_guid)
+---@return System.Array<app.savedata.cItemWork>, System.Array<System.Boolean>
+function this:_get_reward_array(difficulty_guid)
     local out_item_work_array_vt = util_ref.value_type("app.savedata.cItemWork[]")
     local out_bool_array_vt = util_ref.value_type("System.Boolean[]")
     self._field_director:createRewardData(
         out_item_work_array_vt,
         out_bool_array_vt,
-        self.event_data.id,
+        self.event_data.spoofed_id or self.event_data.id,
         self.monster_role,
         self.legendary_id,
         difficulty_guid,
@@ -288,8 +303,27 @@ function this:_get_game_reward_data(difficulty_guid)
     local item_work_array = sdk.to_managed_object(
         util_ref.deref_ptr((out_item_work_array_vt --[[@as ValueType]]):address())
     ) --[[@as System.Array<app.savedata.cItemWork>]]
+
+    if
+        item_work_array:get_Count() == 0
+        and helpers.is_invalid_em2(self.event_data, difficulty_guid)
+    then
+        return self:_get_reward_array(
+            util_game.parse_guid(ace.map.replace_em_rank_guid[self.legendary_id])
+        )
+    end
+
     local bool_array =
         sdk.to_managed_object(util_ref.deref_ptr((out_bool_array_vt --[[@as ValueType]]):address())) --[[@as System.Array<System.Boolean>]]
+
+    return item_work_array, bool_array
+end
+
+---@protected
+---@param difficulty_guid System.Guid
+---@return RewardData
+function this:_get_game_reward_data(difficulty_guid)
+    local item_work_array, bool_array = self:_get_reward_array(difficulty_guid)
     local out_reward_id_array_vt = util_ref.value_type("System.Int32[]")
     local out_event_reward_array_vt = util_ref.value_type("app.cExFieldEvent_EmReward[]")
     self._field_director:createExEmRewardEvent(
@@ -355,8 +389,17 @@ function this:_lot_option_tag(environ_type, difficulty_guid)
         e.get("app.QuestDef.RANK").EX,
         reward_rank
     )
+    local ret = 0
 
-    return enemy_global_param:lotOptionTagIdx(self.stage, environ_type)
+    util_misc.try(function()
+        ret = enemy_global_param:lotOptionTagIdx(self.stage, environ_type)
+    end, function(err)
+        if not helpers.is_invalid_em2(self.event_data, difficulty_guid) then
+            error(err)
+        end
+    end)
+
+    return ret
 end
 
 ---@protected
@@ -373,25 +416,34 @@ function this:_get_option_tag(option_value, difficulty_guid)
         e.get("app.QuestDef.RANK").EX,
         reward_rank
     )
-    return enemy_global_param:getOptionTagIdx(option_value)
+    local ret = 0
+
+    util_misc.try(function()
+        ret = enemy_global_param:getOptionTagIdx(option_value)
+    end, function(err)
+        if not helpers.is_invalid_em2(self.event_data, difficulty_guid) then
+            error(err)
+        end
+    end)
+
+    return ret
 end
 
 ---@protected
 ---@return string
 function this:_get_monster_name()
-    local name_guid
-    if self.legendary_id == e.get("app.EnemyDef.LEGENDARY_ID").NORMAL then
-        name_guid = m.getEnemyLegendaryName(self.event_data.id)
-    elseif self.legendary_id == e.get("app.EnemyDef.LEGENDARY_ID").KING then
-        name_guid = m.getEnemyLegendaryKingName(self.event_data.id)
-    elseif self.monster_role == e.get("app.EnemyDef.ROLE_ID").BOSS then
-        name_guid = m.getEnemyExtraName(self.event_data.id)
-    elseif self.pop_em_type == e.get("app.ExDef.POP_EM_TYPE_Fixed").FRENZY then
-        name_guid = m.getEnemyFrenzyName(self.event_data.id)
-    else
-        name_guid = m.getEnemyNameGuid(self.event_data.id)
+    local guid = m.getEnemyName(self.event_data.id, self.monster_role, self.legendary_id)
+    return game_lang.get_message_local(guid, game_lang.get_language(), true)
+end
+
+---@protected
+function this:_adjust_legendary_id()
+    --FIXME: silly way to detect if tempered/arch-tempered version of a monster exist in the game, couldnt find anything more sane
+    local name = self:_get_monster_name()
+    while name == "" and self.legendary_id >= 0 do
+        self.legendary_id = self.legendary_id - 1
+        name = self:_get_monster_name()
     end
-    return game_lang.get_message_local(name_guid, game_lang.get_language(), true)
 end
 
 return this

@@ -1,8 +1,11 @@
 local ace = require("FieldEventSpawner.data.ace.init")
-local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
+local s = require("FieldEventSpawner.util.ref.singletons")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
+---@module "FieldEventSpawner.data.mod"
+local mod = util_misc.lazy_require("FieldEventSpawner.data.mod")
 
 local this = {}
 
@@ -10,20 +13,9 @@ local this = {}
 ---@return string
 function this.get_monster_name(pop_em)
     local id = pop_em:get_EmID()
-    local guid
-    local _FreeMiniValue2 = pop_em:get_FreeMiniValue2()
-
-    if _FreeMiniValue2 >> 0 == e.get("app.EnemyDef.ROLE_ID").BOSS then
-        guid = m.getEnemyExtraName(id)
-    elseif _FreeMiniValue2 >> 0 == e.get("app.EnemyDef.ROLE_ID").FRENZY then
-        guid = m.getEnemyFrenzyName(id)
-    elseif _FreeMiniValue2 >> 4 == e.get("app.EnemyDef.LEGENDARY_ID").NORMAL then
-        guid = m.getEnemyLegendaryName(id)
-    elseif _FreeMiniValue2 >> 4 == e.get("app.EnemyDef.LEGENDARY_ID").KING then
-        guid = m.getEnemyLegendaryKingName(id)
-    else
-        guid = m.getEnemyNameGuid(id)
-    end
+    local role_id = pop_em:get_RoleID()
+    local legendary_id = pop_em:get_LegendaryID()
+    local guid = m.getEnemyName(id, role_id, legendary_id)
     return game_lang.get_message_local(guid, game_lang.get_language(), true)
 end
 
@@ -63,6 +55,57 @@ function this.filter_item_rewards(query)
     end
 
     return ret
+end
+
+---@param guid System.Guid
+---@return app.user_data.EmParamDifficulty2.cDifficultyRate
+function this.get_difficulty_rate(guid)
+    local enemyman = s.get("app.EnemyManager")
+    local em_setting = enemyman:get_Setting()
+    local diff2 = em_setting:get_Difficulty2()
+    return diff2:getDifficultyRate(guid)
+end
+
+---@param pop_em app.cExFieldEvent_PopEnemy
+---@return boolean
+function this.is_invalid_em(pop_em)
+    local em_id = pop_em:get_EmID()
+    if ace.map.bad_monsters[em_id] then
+        return true
+    end
+
+    local em_data = this.get_monster_data(em_id)
+    if not em_data then
+        return false
+    end
+
+    local guid = pop_em:get_DifficultyID()
+    return em_data:is_difficulty_invalid(guid, mod.state.stage)
+end
+
+---@param em_id app.EnemyDef.ID
+---@return MonsterData?
+function this.get_monster_data(em_id)
+    for _, em in pairs(ace.event.by_type.monster) do
+        if em.id == em_id then
+            return em
+        end
+    end
+end
+
+---@param em MonsterData
+---@param difficulty System.Guid?
+---@return boolean
+function this.is_invalid_em2(em, difficulty)
+    if ace.map.bad_monsters[em.id] then
+        return true
+    end
+
+    if not difficulty then
+        return false
+    end
+
+    return em:is_difficulty_invalid(difficulty, mod.state.stage)
 end
 
 return this

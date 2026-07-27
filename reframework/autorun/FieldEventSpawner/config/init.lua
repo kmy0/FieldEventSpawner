@@ -10,13 +10,14 @@
 ---@field name string
 ---
 ---@field default_config_path string
----@field cache_path string
+---@field my_events_path string
 ---
 ---@field spawn_cooldown SpawnCooldown
 ---@field display_cheat_timer integer
 ---@field em_size_min integer
 ---@field em_size_max integer
 ---@field force_area_timer integer
+---@field max_em_exit_time integer
 
 ---@class (exact) SpawnCooldown
 ---@field normal integer
@@ -41,8 +42,11 @@ this.commit = version.commit
 this.name = mod_name
 
 this.default_config_path = config_path
-this.cache_path = util_misc.join_paths(this.name, "data", "cache.json")
+this.my_events_path = util_misc.join_paths(this.name, "data", "my_events.json")
+this.event_data_path = util_misc.join_paths(this.name, "data", "event_data.json")
+this.current_thread_path = util_misc.join_paths(this.name, "data", "current_thread")
 
+this.max_em_exit_time = 90
 this.display_cheat_timer = 30
 this.force_area_timer = 60
 this.em_size_max = -1

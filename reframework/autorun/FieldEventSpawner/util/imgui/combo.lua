@@ -63,11 +63,12 @@ end
 ---@return integer?
 function this:swap(key_to_value, current_index, disabled_keys)
     self.disabled = {}
+    local ret = 1
 
     if current_index then
         local current_value = self.map[current_index]
         local current_key = current_value and current_value.key
-        local ret = current_index
+        ret = current_key and current_index or 1
 
         self:_map(key_to_value)
         if self._translate_fn then
@@ -80,16 +81,36 @@ function this:swap(key_to_value, current_index, disabled_keys)
             end) or 1
         end
 
-        for _, key in pairs(disabled_keys or {}) do
-            self:disable_item(key)
-        end
-
-        return ret
+        self:disable_items(disabled_keys or {})
+    else
+        self:_map(key_to_value)
+        self:disable_items(disabled_keys or {})
     end
 
+    return ret
+end
+
+---@overload fun(key_to_value: table, current_index: integer): integer
+---@overload fun(key_to_value: table)
+---@param key_to_value table
+---@param current_index integer?
+---@param disabled_keys any[]?
+---@return integer?
+function this:swap_init(key_to_value, current_index, disabled_keys)
+    self.disabled = {}
+
     self:_map(key_to_value)
-    for _, key in pairs(disabled_keys or {}) do
-        self:disable_item(key)
+    if self._translate_fn then
+        self:translate()
+    end
+
+    self:disable_items(disabled_keys or {})
+    if current_index then
+        if self.map[current_index] then
+            return current_index
+        else
+            return 1
+        end
     end
 end
 
@@ -224,6 +245,20 @@ end
 function this:disable_all_items()
     for _, v in pairs(util_table.values(self.map)) do
         self:disable_item(v.key)
+    end
+end
+
+---@param keys any[]
+function this:disable_items(keys)
+    for _, key in pairs(keys) do
+        self:disable_item(key)
+    end
+end
+
+---@param keys any[]
+function this:enable_items(keys)
+    for _, key in pairs(keys) do
+        self:enable_item(key)
     end
 end
 

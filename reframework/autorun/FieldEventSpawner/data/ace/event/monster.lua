@@ -1,180 +1,117 @@
----@class (exact) MonsterParamModifier
----@field legendary boolean
----@field none boolean
----@field legendary_king boolean
-
----@class (exact) MonsterSizeData
----@field min integer
----@field max integer
-
----@class (exact) MonsterCrown
----@field small integer
----@field large integer
----@field king integer
-
----@class (exact) MonsterSize
----@field legendary table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>
----@field none table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>
----@field legendary_king table<app.QuestDef.EM_REWARD_RANK, MonsterSizeData>
-
----@class (exact) MonsterDifficulty
----@field legendary table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
----@field none table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
----@field legendary_king table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
-
----@class (exact) MonsterParam
----@field frenzy MonsterParamModifier?
----@field legendary MonsterParamModifier?
----@field swarm MonsterParamModifier?
----@field nushi MonsterParamModifier?
----@field cocoon MonsterParamModifier?
----@field normal MonsterParamModifier?
----@field boss MonsterParamModifier?
----@field battlefield_repel MonsterParamModifier?
----@field battlefield_slay MonsterParamModifier?
----@field pop_many2 MonsterParamModifier?
-
----@class (exact) MonsterMapData : MapData
----@field param MonsterParam
----@field param_by_env table<app.EnvironmentType.ENVIRONMENT, MonsterParam>
----@field area_by_param table<string, integer[]>
----@field area_by_env_by_param table<app.EnvironmentType.ENVIRONMENT, table<string, integer[]>>
----@field difficulty_by_param table<string, MonsterDifficulty>
----@field difficulty_by_env_by_param table<app.EnvironmentType.ENVIRONMENT, table<string, MonsterDifficulty>>
----@field env_by_param table<string, app.EnvironmentType.ENVIRONMENT[]>
----@field size_by_param_mod MonsterSize
-
----@class (exact) MonsterData : AreaEventData
----@field id app.EnemyDef.ID
----@field map table<app.FieldDef.STAGE, MonsterMapData>
----@field crown MonsterCrown
----@field exclusive boolean
----@field monster_map_data_ctor fun(stage: app.FieldDef.STAGE, is_battlefield: boolean?): MonsterMapData
-
 local ace = require("FieldEventSpawner.data.ace.ace")
-local data_event = require("FieldEventSpawner.data.ace.event.event")
+local cache = require("FieldEventSpawner.util.misc.cache")
 local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local gui = require("FieldEventSpawner.data.gui")
+local monster = require("FieldEventSpawner.data.def.monster")
+---@module "FieldEventSpawner.data.helpers"
+local data_helpers =
+    require("HudController.util.misc.init").lazy_require("FieldEventSpawner.data.helpers")
+local helpers = require("FieldEventSpawner.data.ace.event.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
----@class MonsterData
-local MonsterData = {}
----@diagnostic disable-next-line: inject-field
-MonsterData.__index = MonsterData
-setmetatable(MonsterData, { __index = data_event })
 
----@param id app.EnemyDef.ID
----@param name_english string
----@param name_local string
----@param type app.EX_FIELD_EVENT_TYPE
----@param crown MonsterCrown
----@param exclusive boolean
----@return MonsterData
-function MonsterData:new(id, name_english, name_local, type, crown, exclusive)
-    local o = data_event.new(self, name_english, name_local, type)
-    setmetatable(o, self)
-    ---@cast o MonsterData
-    o.id = id
-    o.crown = crown
-    o.exclusive = exclusive
-    return o
-end
-
+---@param monster_data MonsterData
 ---@param stage app.FieldDef.STAGE
----@return MonsterMapData
-function MonsterData.monster_map_data_ctor(stage)
-    local ret = data_event.map_data_ctor(stage)
-    ---@cast ret MonsterMapData
-    ret.param = {}
-    ret.param_by_env = {}
-    ret.difficulty_by_param = {}
-    ret.difficulty_by_env_by_param = {}
-    ret.area_by_param = {}
-    ret.area_by_env_by_param = {}
-    ret.env_by_param = {}
-    ---@diagnostic disable-next-line: missing-fields
-    ret.size_by_param_mod = {}
-    return ret
-end
-
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT?
----@param em_param string
----@return integer[]?
-function MonsterData:get_area_array(stage, environ, em_param)
-    local map = self.map[stage]
-    if not map then
+local function add_invalid_param(monster_data, stage)
+    if monster_data.map[stage].param.invalid then
         return
     end
 
-    if environ then
-        return util_table.get_nested_value(map.area_by_env_by_param, { environ, em_param })
+    local param_preference = {
+        "normal",
+        "pop_many2",
+        "nushi",
+        "boss",
+        "legendary",
+        "frenzy",
+        "swarm",
+        "cocoon",
+        "battlefield_slay",
+        "battlefield_repel",
+    }
+    local param_key = "normal"
+    for _, param_pref in ipairs(param_preference) do
+        if monster_data.map[stage].param[param_pref] then
+            param_key = param_pref
+            break
+        end
     end
-    return map.area_by_param[em_param]
+
+    for env, by_param in pairs(monster_data.map[stage].area_by_env_by_param) do
+        local areas = by_param[param_key]
+        if areas then
+            helpers.add_param_areas(monster_data, "invalid", stage, env, areas)
+        end
+    end
 end
 
+---@param monster_data MonsterData
 ---@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT?
----@param em_param string
----@param em_param_mod string
----@return table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
-function MonsterData:get_difficulty_table(stage, environ, em_param, em_param_mod)
-    local map = self.map[stage]
-    if not map then
-        return
+local function make_all_params_invalid(monster_data, stage)
+    local map_data = monster_data.map[stage]
+
+    map_data.difficulty_valid = {}
+    add_invalid_param(monster_data, stage)
+
+    local function clear_except_invalid(t)
+        for key, _ in pairs(t) do
+            if key ~= "invalid" then
+                t[key] = nil
+            end
+        end
     end
 
-    if environ then
-        return util_table.get_nested_value(
-            map.difficulty_by_env_by_param,
-            { environ, em_param, em_param_mod }
-        )
+    clear_except_invalid(map_data.area_by_param)
+    clear_except_invalid(map_data.param)
+
+    for _, by_param in pairs(map_data.area_by_env_by_param) do
+        clear_except_invalid(by_param)
     end
 
-    local t = map.difficulty_by_param[em_param] or {}
-    return t[em_param_mod]
-end
-
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT?
----@param em_param string
----@param em_param_mod string
----@param em_difficulty integer
----@return table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>?
-function MonsterData:get_difficulty_rank_table(
-    stage,
-    environ,
-    em_param,
-    em_param_mod,
-    em_difficulty
-)
-    local difficulty_table = self:get_difficulty_table(stage, environ, em_param, em_param_mod)
-
-    if not difficulty_table then
-        return
+    for _, mon_param in pairs(map_data.param_by_env) do
+        clear_except_invalid(mon_param)
     end
 
-    return difficulty_table[em_difficulty]
-end
-
----@param stage app.FieldDef.STAGE
----@param environ app.EnvironmentType.ENVIRONMENT?
----@return MonsterParam?
-function MonsterData:get_param_struct(stage, environ)
-    local map = self.map[stage]
-    if not map then
-        return
+    for _, by_param in pairs(map_data.difficulty_by_env_by_param) do
+        clear_except_invalid(by_param)
     end
 
-    if environ then
-        return map.param_by_env[environ]
+    for _, mon_dif in pairs(map_data.difficulty_by_param) do
+        for param_mod, by_grade in
+            pairs(
+                mon_dif --[[@as table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>]]
+            )
+        do
+            for grade, by_rank in pairs(by_grade) do
+                for rank, guids in pairs(by_rank) do
+                    for _, guid in pairs(guids) do
+                        if not monster_data:is_difficulty_invalid(guid, stage) then
+                            for _, env in pairs(map_data.env_by_param.invalid) do
+                                local guid_str = monster_data:add_difficulty(
+                                    "invalid",
+                                    param_mod,
+                                    stage,
+                                    env,
+                                    grade,
+                                    rank,
+                                    guid
+                                )
+
+                                map_data.difficulty_invalid[guid_str] = true
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
-    return map.param
+
+    clear_except_invalid(map_data.difficulty_by_param)
 end
 
 ---@param em_id app.EnemyDef.ID
@@ -194,19 +131,21 @@ local function get_pop_param(em_id, stage, pop_em_type)
     return field_layout:getPopParamByEmID(em_id, type_param_array)
 end
 
----@param em_id app.EnemyDef.ID
----@return table<app.FieldDef.STAGE, MonsterMapData>
-local function get_battlefield_data(em_id)
-    local ret = {}
+---@param monster_data MonsterData
+local function add_battlefield_data(monster_data)
     local pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed").BATTLEFIELD
     for _, stage in e.iter("app.FieldDef.STAGE") do
-        local pop_param = get_pop_param(em_id, stage, pop_em_type)
+        local pop_param = get_pop_param(monster_data.id, stage, pop_em_type)
         if not pop_param then
             goto continue
         end
         ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
         local belonging_array = pop_param._PopBelongingStageParam
-        ret[stage] = MonsterData.monster_map_data_ctor(stage)
+        local map_data = monster_data:add_map(stage)
+        ---@type integer[]
+        local all_areas = {}
+        ---@type table<app.EnvironmentType.ENVIRONMENT, integer[]>
+        local area_by_env = {}
 
         if belonging_array:get_Count() > 0 then
             local belonging_enum = util_game.get_array_enum(belonging_array)
@@ -215,33 +154,29 @@ local function get_battlefield_data(em_id)
                 ---@cast belonging app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam
                 local area = belonging:get_AreaNo()
                 for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
-                    util_table.insert_nested_value(
-                        ret[stage],
-                        { "area_by_env", environ_type },
-                        area
-                    )
+                    util_table.insert_nested_value(area_by_env, { environ_type }, area)
                 end
-                table.insert(ret[stage].area, area)
+
+                table.insert(all_areas, area)
             end
         else
             local area = ace.map.dummy_area
             for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
-                util_table.insert_nested_value(ret[stage], { "area_by_env", environ_type }, area)
+                util_table.insert_nested_value(area_by_env, { environ_type }, area)
             end
-            table.insert(ret[stage].area, area)
+            table.insert(all_areas, area)
         end
+
+        helpers.merge_map_areas(map_data, all_areas, area_by_env)
         ::continue::
     end
-    return ret
 end
 
+---@param monster_data MonsterData
 ---@param area_move_info_by_em app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfoByEm
----@return table<app.FieldDef.STAGE, MonsterMapData>
-local function get_stage_data(area_move_info_by_em)
+local function add_stage_data(monster_data, area_move_info_by_em)
     local area_move_info_array = area_move_info_by_em:get_AllAreaMoveInfoArray()
     local enum = util_game.get_array_enum(area_move_info_array)
-    ---@type table<app.FieldDef.STAGE, MonsterMapData>
-    local ret = {}
 
     while enum:MoveNext() do
         local area_move_info = enum:get_Current()
@@ -249,7 +184,11 @@ local function get_stage_data(area_move_info_by_em)
         local stage = area_move_info:get_Stage()
         local param_area_info_by_env = area_move_info._AreaInfoByEnv
         local by_env_enum = util_game.get_array_enum(param_area_info_by_env._EnvParams)
-        local map_data = MonsterData.monster_map_data_ctor(stage)
+        local map_data = monster_data:add_map(stage)
+        ---@type integer[]
+        local all_areas = {}
+        ---@type table<app.EnvironmentType.ENVIRONMENT, integer[]>
+        local area_by_env = {}
 
         while by_env_enum:MoveNext() do
             local area_info_by_env = by_env_enum:get_Current()
@@ -268,36 +207,26 @@ local function get_stage_data(area_move_info_by_em)
                 table.insert(areas, area_enum:get_Current())
             end
 
-            table.sort(areas)
-            map_data.area_by_env[environ] = areas
-            map_data.area = util_table.merge(map_data.area, areas)
+            area_by_env[environ] = areas
+            all_areas = util_table.merge(all_areas, areas)
             ::continue::
         end
 
-        if not util_table.empty(map_data.area) then
-            map_data.area = util_table.unique(map_data.area)
-            table.sort(map_data.area)
-            ret[stage] = map_data
-        end
+        helpers.merge_map_areas(map_data, all_areas, area_by_env)
     end
-    return ret
 end
 
 ---@param difficulty_params System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@return table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
 local function get_difficulty(difficulty_params, legendary_id)
-    local enemyman = s.get("app.EnemyManager")
-    local em_setting = enemyman:get_Setting()
-    local diff2 = em_setting:get_Difficulty2()
-
     ---@type table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>
     local ret = {}
     for i = 0, difficulty_params:get_Count() - 1 do
         local weight = difficulty_params:get_Item(i)
         ---@cast weight app.user_data.ExFieldParam_LayoutData.cDifficultyWeight
         local guid = weight:call("getDifficultyRankID(app.EnemyDef.LEGENDARY_ID)", legendary_id)
-        local rate = diff2:getDifficultyRate(guid)
+        local rate = data_helpers.get_difficulty_rate(guid)
         util_table.insert_nested_value(ret, {
             rate:get_RewardGrade(),
             e.to_enum("app.QuestDef.EM_REWARD_RANK", rate:get_RewardRank()),
@@ -331,57 +260,65 @@ local function environment_check(pop_param_by_env, environ)
     return param_by_env_base:get_RandomWeight() > 0
 end
 
----@param md MonsterMapData
----@param key string
+---@param monster_data MonsterData
+---@param stage app.FieldDef.STAGE
+---@param param_key string
 ---@param em_param MonsterParamModifier
 ---@param pop_param_by_env app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base?
 ---@param diff_array System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
-local function add_params(md, key, em_param, pop_param_by_env, diff_array)
-    local legendary = {
-        none = e.get("app.EnemyDef.LEGENDARY_ID").NONE,
-        legendary = e.get("app.EnemyDef.LEGENDARY_ID").NORMAL,
-        legendary_king = e.get("app.EnemyDef.LEGENDARY_ID").KING,
-    }
-
+local function add_params(monster_data, stage, param_key, em_param, pop_param_by_env, diff_array)
+    ---@type table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>
     local em_difficulty = {}
-    for param_key, bool in pairs(em_param) do
+    for param_mod, bool in pairs(em_param) do
         if bool then
-            em_difficulty[param_key] = get_difficulty(diff_array, legendary[param_key])
+            em_difficulty[param_mod] = get_difficulty(
+                diff_array,
+                util_table.reverse_lookup(ace.map.legendary_to_key, param_mod)
+            )
         end
     end
 
+    local md = monster_data.map[stage]
     for env, areas in pairs(md.area_by_env) do
         if not environment_check(pop_param_by_env, env) then
             goto continue
         end
 
-        util_table.set_nested_value(md.param_by_env, { env, key }, em_param)
-        util_table.set_nested_value(md.area_by_env_by_param, { env, key }, areas)
-        util_table.set_nested_value(md.difficulty_by_env_by_param, { env, key }, em_difficulty)
-        md.env_by_param = util_table.insert_nested_value(md.env_by_param, { key }, env)
-        md.env_by_param[key] = util_table.unique(md.env_by_param[key])
-        md.area_by_param[key] =
-            util_table.unique(util_table.merge_t(md.area_by_param[key] or {}, areas))
-        md.difficulty_by_param[key] = em_difficulty
+        for param_mod, by_grade in pairs(em_difficulty) do
+            for grade, by_rank in pairs(by_grade) do
+                for rank, guids in pairs(by_rank) do
+                    for _, guid in pairs(guids) do
+                        local guid_str = monster_data:add_difficulty(
+                            param_key,
+                            param_mod,
+                            stage,
+                            env,
+                            grade,
+                            rank,
+                            guid
+                        )
 
-        if md.param[key] then
-            md.param[key].none = md.param[key].none or em_param.none
-            md.param[key].legendary = md.param[key].legendary or em_param.legendary
-            md.param[key].legendary_king = md.param[key].legendary_king or em_param.legendary_king
-        else
-            md.param[key] = em_param
+                        md.difficulty_valid[guid_str] = true
+                    end
+                end
+            end
         end
+
+        helpers.add_param_areas(monster_data, param_key, stage, env, areas)
         ::continue::
     end
 end
 
----@param em_id app.EnemyDef.ID
----@param map_data table<app.FieldDef.STAGE, MonsterMapData>
-local function get_param_data(em_id, map_data)
-    for stage, md in pairs(map_data) do
+---@param monster_data MonsterData
+local function add_param_data(monster_data)
+    for stage, md in pairs(monster_data.map) do
         for param_key, pop_em in pairs(gui.map.em_param_to_pop_em) do
+            if param_key == "invalid" then
+                goto continue
+            end
+
             local pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em]
-            local pop_param = get_pop_param(em_id, stage, pop_em_type)
+            local pop_param = get_pop_param(monster_data.id, stage, pop_em_type)
 
             if not pop_param then
                 goto continue
@@ -391,15 +328,17 @@ local function get_param_data(em_id, map_data)
             local em_param = {
                 none = leg_prob < 100,
                 legendary = leg_prob > 0,
-                legendary_king = false,
             }
             local diff_array = pop_param._DifficultyParams
 
             if param_key == "legendary" then
-                em_param.none = false
                 em_param.legendary = true
             elseif param_key == "battlefield_repel" then
                 ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
+                if pop_param:get_PopBelongingStageProbability() == 0 then
+                    goto continue
+                end
+
                 diff_array = pop_param._DifficultyParams_PopBelonging
             elseif param_key == "boss" then
                 ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
@@ -413,7 +352,7 @@ local function get_param_data(em_id, map_data)
                 diff_array = pop_param._BossDifficultyParams
             end
 
-            add_params(md, param_key, em_param, pop_param._ParamsByEnv, diff_array)
+            add_params(monster_data, stage, param_key, em_param, pop_param._ParamsByEnv, diff_array)
             ::continue::
         end
 
@@ -424,59 +363,29 @@ local function get_param_data(em_id, map_data)
     end
 end
 
----@param md table<app.FieldDef.STAGE, MonsterMapData>
----@param battlefield_data table<app.FieldDef.STAGE, MonsterMapData>
----@return table<app.FieldDef.STAGE, MonsterMapData>
-local function merge_map_data(md, battlefield_data)
-    for stage, mmd in pairs(battlefield_data) do
-        local map_data = md[stage]
-        for _, key in pairs({ "param", "area_by_param", "env_by_param", " difficulty_by_param" }) do
-            map_data[key] = mmd[key].battlefield_slay
-            map_data[key] = mmd[key].battlefield_repel
-        end
-
-        for env, param in pairs(mmd.param_by_env) do
-            map_data.param_by_env[env].battlefield_slay = param.battlefield_slay
-            map_data.param_by_env[env].battlefield_repel = param.battlefield_repel
-        end
-
-        for env, param in pairs(mmd.area_by_env_by_param) do
-            map_data.area_by_env_by_param[env].battlefield_slay = param.battlefield_slay
-            map_data.area_by_env_by_param[env].battlefield_repel = param.battlefield_repel
-        end
-
-        for env, param in pairs(mmd.difficulty_by_env_by_param) do
-            map_data.difficulty_by_env_by_param[env].battlefield_slay = param.battlefield_slay
-            map_data.difficulty_by_env_by_param[env].battlefield_repel = param.battlefield_repel
+---@param monster_data MonsterData
+---@return boolean
+local function filter_map_data(monster_data)
+    for stage, md in pairs(monster_data.map) do
+        if
+            util_table.empty(monster_data.map[stage].area)
+            or util_table.all(md.param, function(o)
+                return not o
+            end)
+        then
+            monster_data.map[stage] = nil
         end
     end
 
-    return md
-end
-
----@param map_data table<app.FieldDef.STAGE, MonsterMapData>
----@return table<app.FieldDef.STAGE, MonsterMapData>?
-local function filter_map_data(map_data)
-    for stage, md in pairs(map_data) do
-        if util_table.all(md.param, function(o)
-            return not o
-        end) then
-            map_data[stage] = nil
-        end
+    if not util_table.empty(monster_data.map) then
+        return true
     end
 
-    if not util_table.empty(map_data) then
-        return map_data
-    end
+    return false
 end
 
 ---@return table<app.EnemyDef.ID, {crown: MonsterCrown, sizes: MonsterSize}>
 local function get_size_data()
-    local legendary = {
-        [e.get("app.EnemyDef.LEGENDARY_ID").NONE] = "none",
-        [e.get("app.EnemyDef.LEGENDARY_ID").NORMAL] = "legendary",
-        [e.get("app.EnemyDef.LEGENDARY_ID").KING] = "legendary_king",
-    }
     ---@type table<app.EnemyDef.ID, {crown: MonsterCrown, sizes: MonsterSize}>
     local ret = {}
     local enemyman = s.get("app.EnemyManager")
@@ -488,7 +397,7 @@ local function get_size_data()
     util_game.do_something(em_tbl_data, function(_, _, tbl_data)
         local em_size_tbl = tbl_data._SizeTable
         local legendary_id = tbl_data:get_LegendaryId()
-        local param = legendary[legendary_id]
+        local param_mod = ace.map.legendary_to_key[legendary_id]
         local em_id_fixed = tbl_data:get_EmIdFixed()
         local em_id = e.to_enum("app.EnemyDef.ID", em_id_fixed)
 
@@ -541,14 +450,242 @@ local function get_size_data()
             for reward_rank = lower_bound, upper_bound do
                 util_table.set_nested_value(
                     ret[em_id],
-                    { "sizes", param, reward_rank },
+                    { "sizes", param_mod, reward_rank },
                     { min = size_min, max = size_max }
                 )
             end
         end)
     end)
 
+    for _, d in pairs(ret) do
+        for param_mod, sizes in pairs(d.sizes) do
+            if util_table.empty(sizes) then
+                d.sizes[param_mod] = d.sizes.none
+            end
+        end
+    end
+
     return ret
+end
+
+---@param monster_data MonsterData[]
+---@return string, string
+function this.get_lower_upper_difficulties(monster_data)
+    local lower_valid_dif = { grade = math.huge, rank = math.huge, guid_str = "" }
+    local upper_valid_dif = { grade = -math.huge, rank = -math.huge, guid_str = "" }
+
+    for _, em in pairs(monster_data) do
+        for _, map in pairs(em.map) do
+            for _, mon_dif in pairs(map.difficulty_by_param) do
+                for _, by_grade in
+                    pairs(
+                        mon_dif --[[@as table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>]]
+                    )
+                do
+                    for grade, by_rank in pairs(by_grade) do
+                        for rank, guids in pairs(by_rank) do
+                            local guid = guids[1]
+                            if
+                                rank < lower_valid_dif.rank
+                                or (rank == lower_valid_dif.rank and grade < lower_valid_dif.grade)
+                            then
+                                lower_valid_dif.grade = grade
+                                lower_valid_dif.rank = rank
+                                lower_valid_dif.guid_str = util_game.format_guid(guid)
+                            end
+
+                            if
+
+                                rank > upper_valid_dif.rank
+                                or (rank == upper_valid_dif.rank and grade > upper_valid_dif.grade)
+                            then
+                                upper_valid_dif.grade = grade
+                                upper_valid_dif.rank = rank
+                                upper_valid_dif.guid_str = util_game.format_guid(guid)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return lower_valid_dif.guid_str, upper_valid_dif.guid_str
+end
+
+---@param monster_data MonsterData[]
+---@param merge_difficulties boolean
+function this.add_invalid_difficulties(monster_data, merge_difficulties)
+    ---@param mon_data MonsterData
+    ---@param difficulty System.Guid
+    ---@param param_mod string
+    local function add_difficulty(mon_data, difficulty, param_mod)
+        if mon_data:has_difficulty(difficulty) then
+            return
+        end
+
+        local rate = data_helpers.get_difficulty_rate(difficulty)
+        local rank = e.to_enum("app.QuestDef.EM_REWARD_RANK", rate:get_RewardRank())
+        local grade = rate:get_RewardGrade()
+        for _, map in pairs(mon_data.map) do
+            add_invalid_param(mon_data, map.stage)
+
+            for _, env in pairs(map.env_by_param.invalid) do
+                local guid_str = mon_data:add_difficulty(
+                    "invalid",
+                    param_mod,
+                    map.stage,
+                    env,
+                    grade,
+                    rank,
+                    difficulty
+                )
+                map.difficulty_invalid[guid_str] = true
+            end
+        end
+    end
+
+    local by_em = util_table.map_array(monster_data, function(o)
+        return o.id
+    end) --[[@as table<app.EnemyDef.ID, MonsterData>]]
+    local missman = s.get("app.MissionManager")
+    for _, id in e.iter("app.MissionIDList.ID") do
+        local layout_data = missman:getBossZakoLayoutData(id)
+        if not layout_data then
+            goto continue
+        end
+
+        util_game.do_something(layout_data:get_MainTargetDataList(), function(_, _, value)
+            local em_id = e.to_enum("app.EnemyDef.ID", value:get_FixedEmID())
+            local mon_data = by_em[em_id]
+
+            if not mon_data then
+                return
+            end
+
+            local guid = value:get_DifficultyRankId()
+            local param_mod = ace.map.legendary_to_key[value:get_LegendaryID()]
+            if merge_difficulties then
+                for _, mon_data in pairs(monster_data) do
+                    add_difficulty(mon_data, guid, param_mod)
+                end
+            else
+                add_difficulty(mon_data, guid, param_mod)
+            end
+        end)
+
+        ::continue::
+    end
+end
+
+---@param monster_data MonsterData[]
+---@param to_spoof app.EnemyDef.ID
+---@param to_copy app.EnemyDef.ID
+---@param maps app.FieldDef.STAGE[]
+function this.spoof_monster(monster_data, to_spoof, to_copy, maps)
+    local spoof_data = util_table.deep_copy(util_table.value(monster_data, function(_, value)
+        return value.id == to_copy
+    end) --[[@as MonsterData]])
+    local name_guid = m.getEnemyNameGuid(to_spoof)
+    local lang = game_lang.get_language()
+
+    spoof_data.id = to_spoof
+    spoof_data.name_english = game_lang.get_message_local(name_guid, 1)
+    spoof_data.name_local = game_lang.get_message_local(name_guid, lang, true)
+    spoof_data.spoofed_id = to_copy
+
+    for _, stage in pairs(maps) do
+        make_all_params_invalid(spoof_data, stage)
+    end
+
+    for stage, map_data in pairs(spoof_data.map) do
+        if not util_table.contains(maps, stage) then
+            spoof_data.map[stage] = nil
+        else
+            map_data.size_by_param_mod = get_size_data()[to_spoof].sizes
+        end
+    end
+
+    table.insert(monster_data, spoof_data)
+end
+
+---@param monster_data MonsterData[]
+---@param to_spoof app.FieldDef.STAGE
+---@param monsters app.EnemyDef.ID[]
+---@param battlefield_ok boolean?
+function this.spoof_map(monster_data, to_spoof, monsters, battlefield_ok)
+    battlefield_ok = battlefield_ok or false
+
+    ---@type integer[]
+    local areas
+    for _, em in pairs(monster_data) do
+        for stage, map_data in pairs(em.map) do
+            if stage == to_spoof then
+                areas = util_table.deep_copy(map_data.area)
+                break
+            end
+        end
+    end
+
+    for _, em in pairs(monsters) do
+        local em_data = util_table.value(monster_data, function(_, value)
+            return value.id == em
+        end) --[[@as MonsterData]]
+
+        if em_data.map[to_spoof] or (not battlefield_ok and em_data:is_battlefield()) then
+            goto next_em
+        end
+
+        em_data:add_map(to_spoof)
+        em_data.spoofed_id_for_route = e.get("app.EnemyDef.ID").EM0160_00_0 -- arkveld
+        for _, env in e.iter("app.EnvironmentType.ENVIRONMENT") do
+            helpers.add_param_areas(em_data, "invalid", to_spoof, env, areas)
+        end
+
+        for stage, map_data in pairs(em_data.map) do
+            if stage == to_spoof then
+                goto next_stage
+            end
+
+            for param_key, mon_dif in pairs(map_data.difficulty_by_param) do
+                for param_mod, by_grade in
+                    pairs(
+                        mon_dif --[[@as table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>]]
+                    )
+                do
+                    for grade, by_rank in pairs(by_grade) do
+                        for rank, guids in pairs(by_rank) do
+                            for _, guid in pairs(guids) do
+                                if
+                                    not em_data:is_difficulty_invalid(guid, to_spoof)
+                                    and not em_data:has_difficulty(guid, to_spoof)
+                                then
+                                    for _, env in pairs(map_data.env_by_param[param_key]) do
+                                        local guid_str = em_data:add_difficulty(
+                                            "invalid",
+                                            param_mod,
+                                            to_spoof,
+                                            env,
+                                            grade,
+                                            rank,
+                                            guid
+                                        )
+
+                                        em_data.map[to_spoof].difficulty_invalid[guid_str] = true
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            em_data.map[to_spoof].size_by_param_mod = get_size_data()[em].sizes
+            ::next_stage::
+        end
+
+        ::next_em::
+    end
 end
 
 ---@param ex_field_param app.user_data.ExFieldParam
@@ -558,23 +695,16 @@ function this.get_data(ex_field_param)
     local size_data = get_size_data()
     local ex_em_global_param = ex_field_param:get_ExEnemyGlobalParam()
     local type = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
-    ---@type table<app.EnemyDef.ID, MonsterData>
-    local cache = {}
+    ---@type MonsterData[]
+    local ret = {}
 
     for _, em_id in e.iter("app.EnemyDef.ID") do
         if not m.isEmValid(em_id) or not m.isBossID(em_id) or not size_data[em_id] then
             goto continue
         end
 
-        local battlefield_data = get_battlefield_data(em_id)
-        local map_data = {}
-        local area_move_info_by_em = ex_em_global_param:getAreaMoveInfo(em_id)
-        if area_move_info_by_em then
-            map_data = get_stage_data(area_move_info_by_em)
-        end
-
         local name_guid = m.getEnemyNameGuid(em_id)
-        local monster_data = MonsterData:new(
+        local monster_data = monster:new(
             em_id,
             game_lang.get_message_local(name_guid, 1),
             game_lang.get_message_local(name_guid, lang, true),
@@ -583,41 +713,28 @@ function this.get_data(ex_field_param)
             ex_em_global_param:isExclusiveEm(em_id)
         )
 
-        local map_data_param, battlefield_data_param, all_data_param
-        if not util_table.empty(map_data) then
-            get_param_data(em_id, map_data)
-            map_data_param = filter_map_data(map_data)
+        local area_move_info_by_em = ex_em_global_param:getAreaMoveInfo(em_id)
+        if area_move_info_by_em then
+            add_stage_data(monster_data, area_move_info_by_em)
         end
 
-        if not util_table.empty(battlefield_data) then
-            get_param_data(em_id, battlefield_data)
-            battlefield_data_param = filter_map_data(battlefield_data)
-        end
+        add_battlefield_data(monster_data)
+        add_param_data(monster_data)
 
-        if map_data_param and battlefield_data_param then
-            all_data_param = merge_map_data(map_data_param, battlefield_data_param)
-        else
-            all_data_param = map_data_param or battlefield_data_param
-        end
-
-        if all_data_param then
-            monster_data.map = all_data_param
-            cache[em_id] = monster_data
-
+        if filter_map_data(monster_data) then
             for _, md in pairs(monster_data.map) do
                 md.size_by_param_mod = size_data[em_id].sizes
             end
+
+            table.insert(ret, monster_data)
         end
 
         ::continue::
     end
 
-    ---@type MonsterData[]
-    local ret = {}
-    for _, struct in pairs(cache) do
-        table.insert(ret, struct)
-    end
     return ret
 end
+
+get_size_data = cache.memoize(get_size_data)
 
 return this

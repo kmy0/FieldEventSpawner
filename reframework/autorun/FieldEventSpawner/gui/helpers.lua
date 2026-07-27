@@ -13,8 +13,16 @@ local this = {}
 
 ---@return boolean
 function this.is_battlefield()
-    local bf = state.combo.em_param:get()
-    return bf == "battlefield_slay" or bf == "battlefield_repel"
+    local em_param = state.combo.em_param:get()
+
+    return em_param == "battlefield_slay"
+        or em_param == "battlefield_repel"
+        or em_param == "invalid"
+            and (this.get_current_event() --[[@as MonsterData]]):is_battlefield()
+end
+
+function this.is_battlefield_current_stage()
+    return (this.get_current_event() --[[@as MonsterData]]):is_battlefield_current_stage()
 end
 
 ---@return boolean
@@ -145,28 +153,20 @@ end
 ---@param key_to_value table
 ---@param current_index integer?
 ---@param disabled_keys any[]?
+---@param is_init boolean?
 ---@return integer?
-function this.swap_with_disabled(combo, key_to_value, current_index, disabled_keys)
+function this.swap_with_disabled(combo, key_to_value, current_index, disabled_keys, is_init)
     key_to_value = util_table.deep_copy(key_to_value)
     key_to_value[-1] = -1
-    local ret = combo:swap(key_to_value, current_index, disabled_keys)
+    local ret
+    if is_init then
+        ret = combo:swap_init(key_to_value, current_index, disabled_keys)
+    else
+        ret = combo:swap(key_to_value, current_index, disabled_keys)
+    end
+
     ret = combo:translate(ret)
     return ret
-end
-
----@return System.Guid[]?
-function this.get_monster_difficulties()
-    local diff_table = this.get_monster_difficulties_table()
-    if not diff_table then
-        return
-    end
-
-    local em_difficulty = diff_table[state.combo.em_difficulty:get()]
-    if not em_difficulty then
-        return
-    end
-
-    return em_difficulty[state.combo.em_difficulty_rank:get()]
 end
 
 ---@return table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>?
@@ -194,10 +194,9 @@ function this.get_monster_all_difficulties()
     end
 
     local ret = {}
-    local rank = combo.em_difficulty_rank:get()
-    if rank then
-        combo.em_difficulty_rank:get_key(config.current.mod.em_difficulty_rank)
-        ret[rank] = util_table.deep_copy(diff_table[rank])
+    local guid = combo.em_difficulty_rank:get()
+    if guid then
+        ret[m.getRewardRankFromDifficulty(guid)] = { guid }
     else
         for _, difs in pairs(diff_table) do
             for rank, guids in pairs(difs) do
@@ -222,6 +221,14 @@ function this.get_spoffer_disabled_keys()
     local ret = {}
     local difficulties = this.get_monster_all_difficulties()
     if not difficulties then
+        return ret
+    end
+
+    local event = this.get_current_event() --[[@as MonsterData]]
+    local difficulty = state.combo.em_difficulty_rank:get()
+    if helpers.is_invalid_em2(event, difficulty) then
+        return util_table.keys(mod.state.spoffer)
+    elseif difficulty then
         return ret
     end
 
@@ -284,7 +291,7 @@ function this.spawn()
                 ].env_by_param[em_param]
             or nil
         local spoffer = combo.spoffer:get()
-        local difficulty = this.get_monster_difficulties()
+        local difficulty = combo.em_difficulty_rank:get() and { combo.em_difficulty_rank:get() } --[==[@as System.Guid[]?]==]
 
         if spoffer and not difficulty then
             difficulty = this.get_valid_spoffer_difficulties()
@@ -309,7 +316,7 @@ function this.spawn()
                 this.get_em_size(),
                 this.get_is_spoffer_swarm()
             )
-        elseif em_param == "battlefield_repel" or em_param == "battlefield_slay" then
+        elseif this.is_battlefield_current_stage() then
             return spawner.battlefield(
                 event,
                 role_id,
@@ -317,7 +324,9 @@ function this.spawn()
                 mod.state.stage,
                 config_mod.time,
                 this.get_is_yummy(),
-                mod.enum.battlefield_state[em_param],
+                helpers.is_invalid_em2(event, difficulty and difficulty[1])
+                        and mod.enum.battlefield_state["battlefield_slay"]
+                    or mod.enum.battlefield_state[em_param],
                 combo.area:get(),
                 rewards,
                 difficulty,

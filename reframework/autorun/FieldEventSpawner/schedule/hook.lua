@@ -2,12 +2,15 @@
 ---@field flags HookFlags
 ---@field actions HookActions
 ---@field cheat {message: string, timer: Timer}
+---@field em_exit {check: Timer, ems: {[app.cExFieldEvent_PopEnemy]: Timer}}
 
 ---@class (exact) HookFlags
 ---@field rebuild boolean
 ---@field clear boolean
 ---@field spawn boolean
 ---@field done boolean
+---@field spoffer boolean
+---@field ex_instant boolean
 
 ---@class (exact) HookActions
 ---@field repop_gm CachedEvent?
@@ -25,12 +28,14 @@ local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local event_cache = require("FieldEventSpawner.schedule.event_cache")
+local helpers = require("FieldEventSpawner.data.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local special_offer = require("FieldEventSpawner.events.special_offer")
 local timer = require("FieldEventSpawner.util.misc.timer")
 local util_game = require("FieldEventSpawner.util.game.init")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
@@ -42,6 +47,8 @@ local this = {
             clear = false,
             spawn = false,
             done = false,
+            spoffer = false,
+            ex_instant = false,
         },
         actions = {
             force_area = { ongoing = {} },
@@ -50,6 +57,10 @@ local this = {
         cheat = {
             message = "",
             timer = timer:new(config.display_cheat_timer),
+        },
+        em_exit = {
+            check = timer:new(10, { auto_update = true }),
+            ems = {},
         },
     },
 }
@@ -94,6 +105,11 @@ end
 ---@param val boolean
 function this.set_spawn_flag(val)
     flags.spawn = val
+end
+
+---@param val boolean
+function this.set_ex_instant_flag(val)
+    flags.ex_instant = val
 end
 
 ---@param val boolean
@@ -197,6 +213,47 @@ function this.ex_director_update_post(_)
         actions.repop_gm = nil
         actions.force_spoffer_swarm = nil
     end
+
+    if state.em_exit.check:active() then
+        return
+    end
+
+    -- monsters that cannot spawn normally on the current map linger forever after their event ends
+    local _, schedule_timeline = mod.get_field_director()
+    local events = schedule_timeline._KeyList
+
+    util_game.do_something(events, function(_, _, event)
+        if util_ref.is_a(event, "app.cExFieldEvent_PopEnemy") then
+            ---@cast event app.cExFieldEvent_PopEnemy
+
+            if
+                helpers.is_invalid_em(event)
+                and not state.em_exit.ems[event]
+                and event:get_IsRequestedExit()
+            then
+                state.em_exit.ems[event] = timer:new(config.max_em_exit_time, {
+                    callback = function()
+                        util_misc.try(function()
+                            local ctx_holder = event:call("findEm()") --[[@as app.cEnemyContextHolder]]
+                            if ctx_holder and not ctx_holder:get_IsHealthZero() then
+                                local game_object = ctx_holder:get_Object()
+
+                                if game_object then
+                                    game_object:destroy(game_object)
+                                end
+                            end
+                        end)
+
+                        state.em_exit.ems[event] = nil
+                    end,
+                    auto_start = true,
+                    auto_update = true,
+                })
+            end
+        end
+    end)
+
+    state.em_exit.check:restart()
 end
 
 function this.gimmick_execute_post(_)
@@ -214,6 +271,8 @@ function this.on_game_load_post(_)
 end
 
 function this.create_spoffer_pre(args)
+    flags.spoffer = true
+
     if flags.spawn and actions.force_spoffer then
         local spoffer_stage = sdk.to_managed_object(args[3])
         ---@cast spoffer_stage app.cExSpOfferFactory.cSpOfferByStage
@@ -234,6 +293,8 @@ function this.create_spoffer_post(_)
             special_offer.swap_rewards(spoffer_info, actions.force_spoffer.rewards)
         end
     end
+
+    flags.spoffer = false
 end
 
 function this.create_spoffer_swarm_pre(args)
@@ -297,6 +358,24 @@ function this.force_spoffer_array_post(retval)
             schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer.pop_index_first)
         pop_em_array:AddWithResize(main_pop_em)
         pop_em_array:AddWithResize(pop_em)
+    end
+end
+
+function this.filter_spoffer_array_post(retval)
+    if flags.spoffer and not actions.force_spoffer then
+        local ret = sdk.to_managed_object(retval) --[==[@as System.Array<app.cExFieldEvent_PopEnemy>]==]
+        local filtered = {}
+
+        util_game.do_something(ret, function(_, _, em)
+            if not helpers.is_invalid_em(em) then
+                table.insert(filtered, em)
+            end
+        end)
+
+        ret:Clear()
+        for _, em in pairs(filtered) do
+            ret:AddWithResize(em)
+        end
     end
 end
 
@@ -391,7 +470,7 @@ function this.force_context_area_pre(args)
         local context_args = sdk.to_managed_object(args[3]) --[[@as app.cContextCreateArg_Enemy]]
         context_args:set_AreaNo(actions.force_area.once.area)
         actions.force_area.ongoing[actions.force_area.once.pop_index] =
-            timer:new(config.force_area_timer, nil, true)
+            timer:new(config.force_area_timer, { auto_start = true })
     end
 end
 
@@ -461,6 +540,28 @@ end
 function this.pause_schedule_pre(args)
     if config.current.mod.pause_schedule and config.gui.current.gui.main.is_opened then
         args[7] = sdk.float_to_ptr(0.0)
+    end
+end
+
+function this.get_keep_quest_post(retval)
+    -- invalid low rank difficulties
+    if util_ref.to_int(retval) == 99999999 then
+        return 700
+    end
+end
+
+function this.get_accept_hr_post(retval)
+    -- invalid tempered and arch-tempered difficulties
+    if util_ref.to_int(retval) == 0 then
+        return 30
+    end
+end
+
+function this.is_enable_execute_instant_post(_)
+    -- battlefield_slay events with invalid difficulty display Quest Creation Unavailable message instead of rewards
+    if flags.ex_instant then
+        flags.ex_instant = false
+        return true
     end
 end
 

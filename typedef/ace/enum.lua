@@ -30,3 +30,4 @@
 ---@class app.ItemDef.ID_Fixed : System.Enum
 ---@class app.EnemyDef.ID_Fixed : System.Enum
 ---@class app.QuestCheckUtil.INCORRECT_STATUS : System.Enum
+---@class app.MissionIDList.ID : System.Enum

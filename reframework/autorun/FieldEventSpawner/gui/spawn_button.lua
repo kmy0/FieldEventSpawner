@@ -82,7 +82,7 @@ function this.is_disabled()
     return this.state ~= mod.enum.spawn_button_state.OK
         or this.cooldown > 0
         or not state.combo.event:get()
-        or (helpers.is_battlefield() and mod.is_in_quest())
+        or (helpers.is_battlefield_current_stage() and mod.is_in_quest())
 end
 
 function this.draw()

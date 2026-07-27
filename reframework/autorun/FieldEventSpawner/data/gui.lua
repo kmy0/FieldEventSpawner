@@ -47,6 +47,7 @@ local this = {
             battlefield_slay = "NORMAL",
             cocoon = "COCOON",
             pop_many2 = "NORMAL",
+            invalid = "NORMAL",
         },
         ---@enum EmParamModToLeg
         em_param_mod_to_legendary = {
@@ -66,6 +67,7 @@ local this = {
             battlefield_repel = "BATTLEFIELD",
             battlefield_slay = "BATTLEFIELD",
             boss = "SWARM",
+            invalid = "NORMAL",
         },
         ---@enum EventTypeToExEvent
         event_type_to_ex_event = {

@@ -1,3 +1,4 @@
+local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
 local mod = require("FieldEventSpawner.data.mod")
 local sched = require("FieldEventSpawner.schedule.init")
@@ -49,6 +50,35 @@ local function draw_mod_menu()
     set:menu_item(util_gui.tr("mod.box_ignore_environ"), "mod.is_ignore_environ")
     util_imgui.tooltip(config.lang:tr("mod.tooltip_ignore_environ"))
     set:menu_item(util_gui.tr("mod.box_allow_invalid_quest"), "mod.is_allow_invalid_quest")
+
+    imgui.separator()
+    set:menu_item(
+        util_gui.tr("menu.config.add_invalid_difficulties"),
+        "mod.add_invalid_difficulties"
+    )
+    util_imgui.tooltip(config.lang:tr("menu.config.tooltip_add_invalid_difficulties"))
+    set:menu_item(
+        util_gui.tr("menu.config.merge_invalid_difficulties"),
+        "mod.merge_invalid_difficulties",
+        not config.current.mod.add_invalid_difficulties
+    )
+    util_imgui.tooltip(config.lang:tr("menu.config.tooltip_merge_invalid_difficulties"))
+    set:menu_item(util_gui.tr("menu.config.add_missing_monsters"), "mod.add_missing_monsters")
+    util_imgui.tooltip(
+        config.lang:tr("menu.config.tooltip_add_missing_monsters")
+            .. ace.map.missing_em_stage_string
+    )
+    set:menu_item(
+        util_gui.tr("menu.config.add_invalid_monsters"),
+        "mod.add_invalid_monsters",
+        not config.current.mod.add_missing_monsters
+    )
+    util_imgui.tooltip(config.lang:tr("menu.config.tooltip_add_invalid_monsters"))
+    set:menu_item(util_gui.tr("menu.config.add_guardian_arkveld"), "mod.add_guardian_arkveld")
+    util_imgui.tooltip(
+        config.lang:tr("menu.config.tooltip_add_guardian_arkveld")
+            .. ace.map.garkveld_em_stage_string
+    )
 
     imgui.pop_style_var(1)
 end

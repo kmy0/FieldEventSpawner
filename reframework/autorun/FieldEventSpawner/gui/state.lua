@@ -19,8 +19,9 @@ local combo = require("FieldEventSpawner.util.imgui.combo")
 local config = require("FieldEventSpawner.config.init")
 local data = require("FieldEventSpawner.data.init")
 local helpers = require("FieldEventSpawner.data.helpers")
+local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
-local s = require("FieldEventSpawner.util.ref.singletons")
+local util_game = require("FieldEventSpawner.util.game.init")
 local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
@@ -69,6 +70,9 @@ this.combo.event_type = combo:new(nil, {
 })
 this.combo.event = combo:new(nil, {
     sort_fn = sort_by_value,
+    translate_fn = function(key, value)
+        return string.format("%s##%s", value, key)
+    end,
     getter_fn = function(self)
         if self:is_disabled() then
             return
@@ -93,10 +97,15 @@ this.combo.area = combo:new(nil, {
             return true
         end
 
+        local gui_helpers = require("FieldEventSpawner.gui.helpers")
+
         return (
             this.combo.event_type:get() == "monster"
             and this.combo.em_param:get() == "battlefield_slay"
-        ) or util_table.contains(self.values, tostring(data.ace.map.dummy_area))
+        )
+            or util_table.contains(self.values, tostring(data.ace.map.dummy_area))
+            or this.combo.em_param:get() == "invalid"
+                and gui_helpers.is_battlefield_current_stage()
     end,
     translate_fn = function(key, value)
         if key == -1 then
@@ -157,7 +166,19 @@ this.combo.em_difficulty = combo:new(nil, {
     end,
 })
 this.combo.em_difficulty_rank = combo:new(nil, {
-    sort_fn = sort_by_key,
+    sort_fn = function(a, b)
+        local a_rank = m.getRewardRankFromDifficulty(a.key)
+        local b_rank = m.getRewardRankFromDifficulty(b.key)
+
+        if a_rank ~= b_rank then
+            return a_rank < b_rank
+        end
+
+        local a_rate = helpers.get_difficulty_rate(a.key)
+        local b_rate = helpers.get_difficulty_rate(b.key)
+
+        return a_rate:get_Health() < b_rate:get_Health()
+    end,
     map_fn = function(o)
         return tostring(o)
     end,
@@ -181,9 +202,6 @@ this.combo.em_difficulty_rank = combo:new(nil, {
             return config.lang:tr("misc.text_random")
         end
 
-        local enemyman = s.get("app.EnemyManager")
-        local em_setting = enemyman:get_Setting()
-        local diff2 = em_setting:get_Difficulty2()
         local gui_helpers = require("FieldEventSpawner.gui.helpers")
         local diff_table = gui_helpers.get_monster_difficulties_table()
 
@@ -196,19 +214,18 @@ this.combo.em_difficulty_rank = combo:new(nil, {
             return value
         end
 
-        local guid = em_difficulty[key][1]
-        local rate = diff2:getDifficultyRate(guid)
-
+        local rate = helpers.get_difficulty_rate(key)
         return string.format(
-            "%s%s   |   %sx %s,  %sx %s,  %sx %s",
-            value,
+            "%s%s   |   %sx %s,  %sx %s,  %sx %s##%s",
+            m.getRewardRankFromDifficulty(key),
             config.lang:tr("misc.text_star"),
             util_misc.round(rate:get_Health(), 2),
             config.lang:tr("misc.text_hp"),
             util_misc.round(rate:get_Attack(), 2),
             config.lang:tr("misc.text_attack"),
             util_misc.round(rate:get_PartsVital(), 2),
-            config.lang:tr("misc.text_parts_vital")
+            config.lang:tr("misc.text_parts_vital"),
+            util_game.format_guid(key)
         )
     end,
 })

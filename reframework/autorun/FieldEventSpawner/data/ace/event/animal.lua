@@ -1,9 +1,10 @@
----@class (exact) AnimalData : AreaEventData
+---@class (exact) AnimalData : AnimalGimmickData
 ---@field id app.ExDef.ANIMAL_EVENT_Fixed
 
-local data_event = require("FieldEventSpawner.data.ace.event.event")
+local animal_gimmick = require("FieldEventSpawner.data.def.animal_gimmick")
 local e = require("FieldEventSpawner.util.game.enum")
 local game_lang = require("FieldEventSpawner.util.game.lang")
+local helpers = require("FieldEventSpawner.data.ace.event.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -19,21 +20,18 @@ function this.get_data(ex_field_param)
     local field_layout_enum = util_game.get_array_enum(field_layout_array)
     ---@type table<integer, AnimalData>
     local cache = {}
-    ---@type AnimalData[]
-    local ret = {}
 
-    local function get_event_struct(animal_event)
+    local function get_animal_data(animal_event)
         if not cache[animal_event] then
             local name_guid = m.getAnimalEventName(animal_event)
             local type = e.get("app.EX_FIELD_EVENT_TYPE").ANIMAL_EVENT
-            local ev = data_event:new(
+            local animal_data = animal_gimmick:new(
                 game_lang.get_message_local(name_guid, 1),
                 game_lang.get_message_local(name_guid, lang, true),
                 type
-            )
-            ---@cast ev AnimalData
-            ev.id = e.to_fixed("app.ExDef.ANIMAL_EVENT_Fixed", animal_event)
-            cache[animal_event] = ev
+            ) --[[@as AnimalData]]
+            animal_data.id = e.to_fixed("app.ExDef.ANIMAL_EVENT_Fixed", animal_event)
+            cache[animal_event] = animal_data
         end
         return cache[animal_event]
     end
@@ -56,41 +54,21 @@ function this.get_data(ex_field_param)
             while animal_param_enum:MoveNext() do
                 local animal_param = animal_param_enum:get_Current()
                 ---@cast animal_param app.user_data.ExFieldParam_LayoutData.cAnimalEventParam
-                local event_struct = get_event_struct(animal_param:get_AnimalEvent())
-
-                if not event_struct.map[stage] then
-                    event_struct.map[stage] = data_event.map_data_ctor(stage)
-                end
+                local animal_data = get_animal_data(animal_param:get_AnimalEvent())
+                local map_data = animal_data:add_map(stage)
 
                 for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                     if animal_param:getRandomWeight(stage, environ_type) then
-                        util_table.insert_nested_value(
-                            event_struct.map[stage],
-                            { "area_by_env", environ_type },
-                            area
-                        )
+                        helpers.merge_map_areas(map_data, { area }, { [environ_type] = { area } })
                     end
                 end
-                table.insert(event_struct.map[stage].area, area)
-                util_table.set_nested_value(
-                    event_struct.map[stage],
-                    { "area_to_area_fixed", area },
-                    area_fixed
-                )
+
+                map_data.area_to_area_fixed[area] = area_fixed
             end
         end
     end
 
-    for _, struct in pairs(cache) do
-        for _, map_data in pairs(struct.map) do
-            if not util_table.empty(map_data.area) then
-                map_data.area = util_table.unique(map_data.area)
-                table.sort(map_data.area)
-            end
-        end
-        table.insert(ret, struct)
-    end
-    return ret
+    return util_table.values(cache)
 end
 
 return this

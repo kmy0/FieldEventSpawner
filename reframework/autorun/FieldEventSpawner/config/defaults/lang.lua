@@ -9,6 +9,7 @@ return {
         text_attack = "Attack",
         text_hp = "HP",
         text_parts_vital = "Parts Vital",
+        text_all_monsters = "All Monsters",
     },
     menu = {
         config = {
@@ -17,6 +18,16 @@ return {
             display_cheat_errors = "Display Cheat Errors",
             pause_schedule = "Pause Schedule",
             tooltip_pause_schedule = "Pauses schedule progression while the mod window is open",
+            add_invalid_difficulties = "Add Invalid Difficulties",
+            tooltip_add_invalid_difficulties = "Requires Script Reset. Adds an Invalid Difficulty Param containing all difficulties from other quests in the game (Arch-Tempered, Event 10★, etc)",
+            merge_invalid_difficulties = "Merge Invalid Difficulties",
+            tooltip_merge_invalid_difficulties = "Requires Script Reset. Makes all Invalid difficulties available for all monsters",
+            add_guardian_arkveld = "Add Guardian Arkveld",
+            tooltip_add_guardian_arkveld = "Requires Script Reset. Adds Guardian Arkveld to the monster list.\nMaps: ",
+            add_missing_monsters = "Add Missing Monsters",
+            tooltip_add_missing_monsters = "Requires Script Reset. Adds missing monsters to the following maps:\n",
+            add_invalid_monsters = "Add Invalid Monsters",
+            tooltip_add_invalid_monsters = "Requires the AllMonstersAllMaps file and a Script Reset. Adds Gogmazios, Zoh Shia, Jin Dahaad, and Omega Planetes to all maps.\nQuests that have them as a main target may not be completable",
         },
         language = {
             name = "Language",
@@ -48,6 +59,8 @@ return {
             battlefield_repel = "Battlefield Repel",
             battlefield_slay = "Battlefield Slay",
             pop_many2 = "Normal",
+            invalid = "Invalid",
+            cocoon = "Guardian",
         },
         combo_em_param_mod = "Difficulty Mod",
         combo_em_param_mod_values = {
@@ -122,6 +135,6 @@ return {
         tooltip_spoffer_swarm = "Requires Difficulty set to Swarm or Alpha, and Swarm Count set to atleast 2",
         tooltip_yummy = "Requires Quest Rewards to be set to Random",
         tooltip_village_boost = "Not available for Swarm and Battlefield",
-        tooltip_spoffer = "Does not work while Spawn Delay is enabled",
+        tooltip_spoffer = "Does not work while Spawn Delay is enabled, or when Difficulty Param is set to Invalid",
     },
 }

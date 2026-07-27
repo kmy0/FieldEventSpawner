@@ -46,6 +46,13 @@ function this.get_message_local(guid, lang, fallback)
     return msg
 end
 
+---@param guid System.Guid
+---@return string
+function this.get_message_local2(guid)
+    local lang = this.get_language()
+    return this.get_message_local(guid, lang, true)
+end
+
 ---@return via.Language
 function this.get_language()
     return sdk.call_native_func(
