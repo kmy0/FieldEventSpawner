@@ -80,10 +80,14 @@ function this:swap(key_to_value, current_index, disabled_keys)
             end) or 1
         end
 
+        for _, key in pairs(disabled_keys or {}) do
+            self:disable_item(key)
+        end
+
         return ret
     end
-    self:_map(key_to_value)
 
+    self:_map(key_to_value)
     for _, key in pairs(disabled_keys or {}) do
         self:disable_item(key)
     end
