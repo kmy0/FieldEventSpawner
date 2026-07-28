@@ -100,19 +100,40 @@ local function draw_lang_menu()
     imgui.separator()
 
     set:menu_item(util_gui.tr("menu.language.fallback"), "mod.lang.fallback")
-    util_imgui.tooltip(config.lang:tr("menu.language.fallback_tooltip"))
+    util_imgui.tooltip(config.lang:tr("menu.language.tooltip_fallback"))
+
+    imgui.indent(2)
+    draw_menu(util_gui.tr("menu.language.font_size.name"), function()
+        imgui.spacing()
+
+        if set:slider_int("##font_size_slider", "mod.lang.font_size", 8, 48) then
+            config_lang.font_size = math.min(math.max(config_lang.font_size, 8), 48)
+        end
+
+        imgui.same_line()
+
+        if imgui.button(util_gui.tr("menu.language.font_size.button_apply")) then
+            config.lang:change(nil, config_lang.font_size)
+        end
+
+        imgui.spacing()
+    end)
+    imgui.unindent(2)
 
     imgui.pop_style_var(1)
 end
 
 local function draw_my_events_menu()
     local events = sched.event_cache.get_stage_table(mod.state.stage)
+    local step_x = 300 / config.lang.default_font_size
+    local step_y = 4 * 46 / config.lang.default_font_size
+
     if
         imgui.begin_table(
             "events_info",
             3,
             1 << 7 | 1 << 13 | 1 << 25 --[[@as ImGuiTableFlags]],
-            Vector2f.new(300, 4 * 46)
+            Vector2f.new(step_x * config.lang.font_size, step_y * config.lang.font_size)
         )
     then
         local sorted = util_table.values(events)

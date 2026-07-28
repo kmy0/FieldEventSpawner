@@ -33,6 +33,10 @@ return {
             name = "Language",
             fallback = "Fallback",
             tooltip_fallback = "Display message in english if key is missing",
+            font_size = {
+                name = "Font Size",
+                button_apply = "Apply",
+            },
         },
         my_events = {
             name = "My Events",
