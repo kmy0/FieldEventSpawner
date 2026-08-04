@@ -288,7 +288,12 @@ end
 
 ---@return boolean
 function this:is_battlefield_current_stage()
-    for param_key, _ in pairs(self.map[mod.state.stage].param) do
+    local map_data = self.map[mod.state.stage]
+    if not map_data then
+        return false
+    end
+
+    for param_key, _ in pairs(map_data.param) do
         if param_key == "invalid" then
             goto continue
         end

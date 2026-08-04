@@ -12,17 +12,28 @@ local util_table = require("FieldEventSpawner.util.misc.table")
 local this = {}
 
 ---@return boolean
-function this.is_battlefield()
-    local em_param = state.combo.em_param:get()
+function this.is_battlefield_monster()
+    local event = this.get_current_event()
+    if not event or not event:is_monster_event() then
+        return false
+    end
 
+    ---@cast event MonsterData
+
+    local em_param = state.combo.em_param:get()
     return em_param == "battlefield_slay"
         or em_param == "battlefield_repel"
-        or em_param == "invalid"
-            and (this.get_current_event() --[[@as MonsterData]]):is_battlefield()
+        or em_param == "invalid" and event:is_battlefield()
 end
 
-function this.is_battlefield_current_stage()
-    return (this.get_current_event() --[[@as MonsterData]]):is_battlefield_current_stage()
+---@return boolean
+function this.is_battlefield_monster_current_stage()
+    local event = this.get_current_event()
+    if not event or not event:is_monster_event() then
+        return false
+    end
+    ---@cast event MonsterData
+    return event:is_battlefield_current_stage()
 end
 
 ---@return boolean
@@ -42,6 +53,9 @@ function this.is_swarm_count_disabled()
 
     if em_param == "legendary" then
         local event = this.get_current_event()
+        if not event or not event:is_monster_event() then
+            return true
+        end
         ---@cast event MonsterData
         local param = event:get_param_struct(
             mod.state.stage,
@@ -67,7 +81,7 @@ end
 function this.is_village_boost_disabled()
     return mod.is_in_quest()
         or not mod.is_village_boost_unlocked(mod.state.stage)
-        or this.is_battlefield()
+        or this.is_battlefield_monster()
         or config.current.mod.swarm_count > 0 and state.combo.em_param:get() ~= "boss"
 end
 
@@ -224,7 +238,12 @@ function this.get_spoffer_disabled_keys()
         return ret
     end
 
-    local event = this.get_current_event() --[[@as MonsterData]]
+    local event = this.get_current_event()
+    if not event or not event:is_monster_event() then
+        return util_table.keys(mod.state.spoffer)
+    end
+
+    ---@cast event MonsterData
     local difficulty = state.combo.em_difficulty_rank:get()
     if helpers.is_invalid_em2(event, difficulty) then
         return util_table.keys(mod.state.spoffer)
@@ -265,9 +284,19 @@ function this.get_valid_spoffer_difficulties()
     return util_table.unique(ret)
 end
 
----@return AreaEventData
+---@return AreaEventData?
 function this.get_current_event()
-    return ace.event.by_stage[mod.state.stage][state.combo.event_type:get()][state.combo.event:get()]
+    local all_events = ace.event.by_stage[mod.state.stage]
+    if not all_events then
+        return
+    end
+
+    local events = all_events[state.combo.event_type:get()]
+    if not events then
+        return
+    end
+
+    return events[state.combo.event:get()]
 end
 
 function this.spawn()
@@ -316,7 +345,7 @@ function this.spawn()
                 this.get_em_size(),
                 this.get_is_spoffer_swarm()
             )
-        elseif this.is_battlefield_current_stage() then
+        elseif this.is_battlefield_monster_current_stage() then
             return spawner.battlefield(
                 event,
                 role_id,

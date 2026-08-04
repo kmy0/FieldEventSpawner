@@ -40,7 +40,7 @@ function this._update_spawn_state()
     then
         this.state = mod.enum.spawn_button_state.BAD_ENVIRONMENT
     elseif not combo.event:is_disabled() then
-        local event = helpers.get_current_event()
+        local event = helpers.get_current_event() --[[@as AreaEventData]]
         if
             state.combo.event_type:get() == "monster"
             and mod.is_monster_banned(
@@ -82,7 +82,7 @@ function this.is_disabled()
     return this.state ~= mod.enum.spawn_button_state.OK
         or this.cooldown > 0
         or not state.combo.event:get()
-        or (helpers.is_battlefield_current_stage() and mod.is_in_quest())
+        or (helpers.is_battlefield_monster_current_stage() and mod.is_in_quest())
 end
 
 function this.draw()

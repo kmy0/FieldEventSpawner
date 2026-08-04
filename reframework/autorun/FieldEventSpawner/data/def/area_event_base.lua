@@ -15,6 +15,8 @@
 ---@field area_by_env table<app.EnvironmentType.ENVIRONMENT, integer[]>
 ---@field area integer[]
 
+local e = require("FieldEventSpawner.util.game.enum")
+
 ---@class AreaEventData
 local this = {}
 ---@diagnostic disable-next-line: inject-field
@@ -79,6 +81,21 @@ function this:add_map(stage, args)
     }
 
     return self.map[stage]
+end
+
+---@return boolean
+function this:is_monster_event()
+    return self.type == e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
+end
+
+---@return boolean
+function this:is_animal_event()
+    return self.type == e.get("app.EX_FIELD_EVENT_TYPE").ANIMAL_EVENT
+end
+
+---@return boolean
+function this:is_gimmick_event()
+    return self.type == e.get("app.EX_FIELD_EVENT_TYPE").GIMMICK_EVENT
 end
 
 return this

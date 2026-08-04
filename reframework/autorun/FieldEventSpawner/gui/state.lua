@@ -105,7 +105,7 @@ this.combo.area = combo:new(nil, {
         )
             or util_table.contains(self.values, tostring(data.ace.map.dummy_area))
             or this.combo.em_param:get() == "invalid"
-                and gui_helpers.is_battlefield_current_stage()
+                and gui_helpers.is_battlefield_monster_current_stage()
     end,
     translate_fn = function(key, value)
         if key == -1 then
@@ -245,7 +245,7 @@ this.combo.spoffer = combo:new(nil, {
         local helpers = require("FieldEventSpawner.gui.helpers")
         return mod.is_in_quest()
             or not mod.is_spoffer_unlocked(mod.state.stage)
-            or helpers.is_battlefield()
+            or helpers.is_battlefield_monster()
             or config.current.mod.swarm_count > 0
             or config.current.mod.spawn_delay > 0
     end,
