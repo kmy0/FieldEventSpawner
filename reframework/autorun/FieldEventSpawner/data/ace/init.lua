@@ -329,15 +329,6 @@ function this.load_invalid_difficulties()
         end
     end
 
-    if config_mod.add_invalid_difficulties then
-        s.get("app.MissionManager"):reflectStreamQuestListCache()
-
-        data_monster.add_invalid_difficulties(
-            this.event.by_type.monster,
-            config_mod.merge_invalid_difficulties
-        )
-    end
-
     if config_mod.add_missing_monsters then
         if config_mod.add_invalid_monsters and this.map.is_all_em_all_stage then
             local arkveld_id = e.get("app.EnemyDef.ID").EM0160_00_0
@@ -379,6 +370,15 @@ function this.load_invalid_difficulties()
                 )
             end
         end
+    end
+
+    if config_mod.add_invalid_difficulties then
+        s.get("app.MissionManager"):reflectStreamQuestListCache()
+
+        data_monster.add_invalid_difficulties(
+            this.event.by_type.monster,
+            config_mod.merge_invalid_difficulties
+        )
     end
 
     if config_mod.add_guardian_arkveld or config_mod.add_missing_monsters then

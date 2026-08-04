@@ -549,7 +549,10 @@ function this.add_invalid_difficulties(monster_data, merge_difficulties)
         return o.id
     end) --[[@as table<app.EnemyDef.ID, MonsterData>]]
     local missman = s.get("app.MissionManager")
-    for _, id in e.iter("app.MissionIDList.ID") do
+    local ids = util_table.keys(e.get("app.MissionIDList.ID").enum_to_field)
+    table.sort(ids)
+
+    for _, id in ipairs(ids) do
         local layout_data = missman:getBossZakoLayoutData(id)
         if not layout_data then
             goto continue
