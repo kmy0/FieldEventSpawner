@@ -6,7 +6,7 @@ local gui = require("FieldEventSpawner.data.gui")
 local monster = require("FieldEventSpawner.data.def.monster")
 ---@module "FieldEventSpawner.data.helpers"
 local data_helpers =
-    require("HudController.util.misc.init").lazy_require("FieldEventSpawner.data.helpers")
+    require("FieldEventSpawner.util.misc.init").lazy_require("FieldEventSpawner.data.helpers")
 local helpers = require("FieldEventSpawner.data.ace.event.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
