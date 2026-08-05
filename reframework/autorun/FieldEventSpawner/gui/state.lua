@@ -8,6 +8,7 @@
 ---@field event Combo
 ---@field area Combo
 ---@field em_param Combo
+---@field em_role Combo
 ---@field em_param_mod Combo
 ---@field em_difficulty Combo
 ---@field em_difficulty_rank Combo
@@ -125,6 +126,19 @@ this.combo.em_param = combo:new(nil, {
         end
 
         return self:get_key(config.current.mod.em_param)
+    end,
+})
+this.combo.em_role = combo:new(nil, {
+    sort_fn = sort_by_key,
+    translate_fn = function(_, value)
+        return config.lang:tr("mod.combo_em_role_values." .. value)
+    end,
+    getter_fn = function(self)
+        if self:is_disabled() then
+            return
+        end
+
+        return self:get_key(config.current.mod.em_role)
     end,
 })
 this.combo.em_param_mod = combo:new(nil, {

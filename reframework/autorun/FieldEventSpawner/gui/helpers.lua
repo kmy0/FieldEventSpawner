@@ -245,7 +245,8 @@ function this.get_spoffer_disabled_keys()
 
     ---@cast event MonsterData
     local difficulty = state.combo.em_difficulty_rank:get()
-    if helpers.is_invalid_em2(event, difficulty) then
+    local role = state.combo.em_role:get()
+    if helpers.is_invalid_em2(event, difficulty, role) then
         return util_table.keys(mod.state.spoffer)
     elseif difficulty then
         return ret
@@ -308,8 +309,7 @@ function this.spawn()
     if event_type == "monster" then
         ---@cast event MonsterData
         local em_param = combo.em_param:get()
-        local role = gui.map.em_param_to_role[em_param]
-        local role_id = e.get("app.EnemyDef.ROLE_ID")[role]
+        local role_id = combo.em_role:get()
         local legendary = gui.map.em_param_mod_to_legendary[combo.em_param_mod:get()]
         local legendary_id = e.get("app.EnemyDef.LEGENDARY_ID")[legendary]
         local pop_em_type = gui.map.em_param_to_pop_em[em_param]
@@ -353,7 +353,7 @@ function this.spawn()
                 mod.state.stage,
                 config_mod.time,
                 this.get_is_yummy(),
-                helpers.is_invalid_em2(event, difficulty and difficulty[1])
+                helpers.is_invalid_em2(event, difficulty and difficulty[1], role_id)
                         and mod.enum.battlefield_state["battlefield_slay"]
                     or mod.enum.battlefield_state[em_param],
                 combo.area:get(),

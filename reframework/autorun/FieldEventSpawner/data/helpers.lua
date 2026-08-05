@@ -79,8 +79,14 @@ function this.is_invalid_em(pop_em)
         return false
     end
 
+    local map = em_data.map[mod.state.stage] --[[@as MonsterMapData?]]
+    if not map then
+        return false
+    end
+
+    local role = pop_em:get_RoleID()
     local guid = pop_em:get_DifficultyID()
-    return em_data:is_difficulty_invalid(guid, mod.state.stage)
+    return em_data:is_difficulty_invalid(guid, mod.state.stage, role)
 end
 
 ---@param em_id app.EnemyDef.ID
@@ -95,17 +101,18 @@ end
 
 ---@param em MonsterData
 ---@param difficulty System.Guid?
+---@param role app.EnemyDef.ROLE_ID?
 ---@return boolean
-function this.is_invalid_em2(em, difficulty)
+function this.is_invalid_em2(em, difficulty, role)
     if ace.map.bad_monsters[em.id] then
         return true
     end
 
-    if not difficulty then
+    if not difficulty or not role then
         return false
     end
 
-    return em:is_difficulty_invalid(difficulty, mod.state.stage)
+    return em:is_difficulty_invalid(difficulty, mod.state.stage, role)
 end
 
 return this

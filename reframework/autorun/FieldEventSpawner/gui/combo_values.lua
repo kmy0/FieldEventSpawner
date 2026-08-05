@@ -13,6 +13,7 @@
 ---@field em_difficulty_rank app.QuestDef.EM_REWARD_RANK
 ---@field environ app.EnvironmentType.ENVIRONMENT
 ---@field area integer
+---@field em_role app.EnemyDef.ROLE_ID
 
 ---@class (exact) ChangedData
 ---@field event boolean
@@ -25,9 +26,11 @@
 ---@field em_difficulty_rank boolean
 ---@field environ boolean
 ---@field area boolean
+---@field em_role boolean
 
 local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
+local e = require("FieldEventSpawner.util.game.enum")
 local helpers = require("FieldEventSpawner.gui.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
@@ -47,6 +50,7 @@ local this = {
         em_difficulty_rank = -1,
         environ = -1,
         area = -1,
+        em_role = -1,
     },
     initialized = false,
 }
@@ -124,6 +128,23 @@ end
 ---@param event MonsterData?
 ---@param current_data GuiValuesData
 ---@param changed ChangedData
+local function swap_em_role_array(event, current_data, changed)
+    local combo = state.combo
+    local config_mod = config.current.mod
+    local role_ids = event and event:get_role_array(current_data.stage, current_data.em_param) or {}
+    local t = util_table.map_table(role_ids, function(o)
+        return role_ids[o]
+    end, function(o)
+        return e.get("app.EnemyDef.ROLE_ID")[o]
+    end)
+    config_mod.em_role = state.combo.em_role:swap(t, config_mod.em_role) --[[@as integer]]
+    current_data.em_role = combo.em_role:get()
+    changed.em_role = true
+end
+
+---@param event MonsterData?
+---@param current_data GuiValuesData
+---@param changed ChangedData
 ---@param dirty boolean
 ---@param environ app.EnvironmentType.ENVIRONMENT?
 local function update_monster_fields(event, current_data, changed, dirty, environ)
@@ -144,6 +165,7 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
 
     if dirty then
         swap_area_array(event, current_data, changed, environ)
+        swap_em_role_array(event, current_data, changed)
     end
 
     dirty = sync_combo(
@@ -273,6 +295,7 @@ function this.update()
         em_difficulty_rank = em_difficulty and m.getRewardRankFromDifficulty(em_difficulty) or -1,
         environ = mod.state.environ or -1,
         area = combo.area:get() or -1,
+        em_role = combo.em_role:get() or -1,
     }
     ---@type ChangedData
     ---@diagnostic disable-next-line: missing-fields

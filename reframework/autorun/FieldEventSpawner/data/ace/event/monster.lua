@@ -15,6 +15,62 @@ local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
 
+---@param map_data MonsterMapData
+---@param roles app.EnemyDef.ROLE_ID[]
+---@param guid_str string
+local function mark_invalid_for_roles(map_data, roles, guid_str)
+    for _, role in pairs(roles) do
+        util_table.set_nested_value(map_data.difficulty_invalid, { role, guid_str }, true)
+    end
+end
+
+---@param monster_data MonsterData
+---@param stage app.FieldDef.STAGE
+---@param param_mod string
+---@param grade integer
+---@param rank app.QuestDef.EM_REWARD_RANK
+---@param guid System.Guid
+---@param role app.EnemyDef.ROLE_ID
+---@param envs app.EnvironmentType.ENVIRONMENT[]?
+---@return string?
+local function add_invalid_difficulty(monster_data, stage, param_mod, grade, rank, guid, role, envs)
+    if monster_data:is_difficulty_invalid(guid, stage, role) then
+        return
+    end
+
+    ---@type string
+    local ret
+    local map_data = monster_data.map[stage]
+    for _, env in pairs(envs or map_data.env_by_param.invalid) do
+        ret = monster_data:add_difficulty("invalid", param_mod, stage, env, grade, rank, guid, role)
+        mark_invalid_for_roles(map_data, { role }, ret)
+    end
+
+    return ret
+end
+
+local function param_key_to_role(param_key)
+    return e.get("app.EnemyDef.ROLE_ID")[gui.map.em_param_to_role[param_key]]
+end
+
+local function merge_all_roles_invalid(monster_data, stage)
+    local map_data = monster_data.map[stage]
+    for _, md in pairs(monster_data.map) do
+        for _, roles in pairs(md.role_by_param) do
+            map_data.role_by_param.invalid =
+                util_table.array_merge(map_data.role_by_param.invalid or {}, roles)
+        end
+    end
+
+    map_data.role_by_param.invalid = util_table.unique(map_data.role_by_param.invalid)
+
+    local by_param_mod = map_data.difficulty_by_param.invalid or {}
+    for _, _, _, guid in monster_data:iter_difficulties(by_param_mod) do
+        local guid_str = util_game.format_guid(guid)
+        mark_invalid_for_roles(map_data, map_data.role_by_param.invalid, guid_str)
+    end
+end
+
 ---@param monster_data MonsterData
 ---@param stage app.FieldDef.STAGE
 local function add_invalid_param(monster_data, stage)
@@ -48,6 +104,8 @@ local function add_invalid_param(monster_data, stage)
             helpers.add_param_areas(monster_data, "invalid", stage, env, areas)
         end
     end
+
+    merge_all_roles_invalid(monster_data, stage)
 end
 
 ---@param monster_data MonsterData
@@ -55,7 +113,6 @@ end
 local function make_all_params_invalid(monster_data, stage)
     local map_data = monster_data.map[stage]
 
-    map_data.difficulty_valid = {}
     add_invalid_param(monster_data, stage)
 
     local function clear_except_invalid(t)
@@ -68,6 +125,7 @@ local function make_all_params_invalid(monster_data, stage)
 
     clear_except_invalid(map_data.area_by_param)
     clear_except_invalid(map_data.param)
+    clear_except_invalid(map_data.role_by_param)
 
     for _, by_param in pairs(map_data.area_by_env_by_param) do
         clear_except_invalid(by_param)
@@ -81,33 +139,11 @@ local function make_all_params_invalid(monster_data, stage)
         clear_except_invalid(by_param)
     end
 
-    for _, mon_dif in pairs(map_data.difficulty_by_param) do
-        for param_mod, by_grade in
-            pairs(
-                mon_dif --[[@as table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>]]
-            )
-        do
-            for grade, by_rank in pairs(by_grade) do
-                for rank, guids in pairs(by_rank) do
-                    for _, guid in pairs(guids) do
-                        if not monster_data:is_difficulty_invalid(guid, stage) then
-                            for _, env in pairs(map_data.env_by_param.invalid) do
-                                local guid_str = monster_data:add_difficulty(
-                                    "invalid",
-                                    param_mod,
-                                    stage,
-                                    env,
-                                    grade,
-                                    rank,
-                                    guid
-                                )
+    for param_key, mon_dif in pairs(map_data.difficulty_by_param) do
+        local role = param_key_to_role(param_key)
 
-                                map_data.difficulty_invalid[guid_str] = true
-                            end
-                        end
-                    end
-                end
-            end
+        for param_mod, grade, rank, guid in monster_data:iter_difficulties(mon_dif) do
+            add_invalid_difficulty(monster_data, stage, param_mod, grade, rank, guid, role)
         end
     end
 
@@ -142,29 +178,27 @@ local function add_battlefield_data(monster_data)
         ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
         local belonging_array = pop_param._PopBelongingStageParam
         local map_data = monster_data:add_map(stage)
+
+        ---@type integer[]
+        local areas
+        if belonging_array:get_Count() > 0 then
+            local belonging_enum = util_game.get_array_enum(belonging_array)
+            areas = util_game.enumerator_to_table(belonging_enum, function(o)
+                return o:get_AreaNo()
+            end)
+        else
+            areas = { ace.map.dummy_area }
+        end
+
         ---@type integer[]
         local all_areas = {}
         ---@type table<app.EnvironmentType.ENVIRONMENT, integer[]>
         local area_by_env = {}
-
-        if belonging_array:get_Count() > 0 then
-            local belonging_enum = util_game.get_array_enum(belonging_array)
-            while belonging_enum:MoveNext() do
-                local belonging = belonging_enum:get_Current()
-                ---@cast belonging app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam
-                local area = belonging:get_AreaNo()
-                for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
-                    util_table.insert_nested_value(area_by_env, { environ_type }, area)
-                end
-
-                table.insert(all_areas, area)
-            end
-        else
-            local area = ace.map.dummy_area
+        for _, area in ipairs(areas) do
+            table.insert(all_areas, area)
             for _, environ_type in e.iter("app.EnvironmentType.ENVIRONMENT") do
                 util_table.insert_nested_value(area_by_env, { environ_type }, area)
             end
-            table.insert(all_areas, area)
         end
 
         helpers.merge_map_areas(map_data, all_areas, area_by_env)
@@ -201,11 +235,7 @@ local function add_stage_data(monster_data, area_move_info_by_em)
             end
 
             local area_enum = util_game.get_array_enum(area_array)
-            ---@type integer[]
-            local areas = {}
-            while area_enum:MoveNext() do
-                table.insert(areas, area_enum:get_Current())
-            end
+            local areas = util_game.enumerator_to_table(area_enum)
 
             area_by_env[environ] = areas
             all_areas = util_table.merge(all_areas, areas)
@@ -279,29 +309,14 @@ local function add_params(monster_data, stage, param_key, em_param, pop_param_by
     end
 
     local md = monster_data.map[stage]
+    local role = param_key_to_role(param_key)
     for env, areas in pairs(md.area_by_env) do
         if not environment_check(pop_param_by_env, env) then
             goto continue
         end
 
-        for param_mod, by_grade in pairs(em_difficulty) do
-            for grade, by_rank in pairs(by_grade) do
-                for rank, guids in pairs(by_rank) do
-                    for _, guid in pairs(guids) do
-                        local guid_str = monster_data:add_difficulty(
-                            param_key,
-                            param_mod,
-                            stage,
-                            env,
-                            grade,
-                            rank,
-                            guid
-                        )
-
-                        md.difficulty_valid[guid_str] = true
-                    end
-                end
-            end
+        for param_mod, grade, rank, guid in monster_data:iter_difficulties(em_difficulty) do
+            monster_data:add_difficulty(param_key, param_mod, stage, env, grade, rank, guid, role)
         end
 
         helpers.add_param_areas(monster_data, param_key, stage, env, areas)
@@ -477,33 +492,24 @@ function this.get_lower_upper_difficulties(monster_data)
     for _, em in pairs(monster_data) do
         for _, map in pairs(em.map) do
             for _, mon_dif in pairs(map.difficulty_by_param) do
-                for _, by_grade in
-                    pairs(
-                        mon_dif --[[@as table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>]]
-                    )
-                do
-                    for grade, by_rank in pairs(by_grade) do
-                        for rank, guids in pairs(by_rank) do
-                            local guid = guids[1]
-                            if
-                                rank < lower_valid_dif.rank
-                                or (rank == lower_valid_dif.rank and grade < lower_valid_dif.grade)
-                            then
-                                lower_valid_dif.grade = grade
-                                lower_valid_dif.rank = rank
-                                lower_valid_dif.guid_str = util_game.format_guid(guid)
-                            end
+                for _, grade, rank, guid in em:iter_difficulties(mon_dif) do
+                    if
+                        rank < lower_valid_dif.rank
+                        or (rank == lower_valid_dif.rank and grade < lower_valid_dif.grade)
+                    then
+                        lower_valid_dif.grade = grade
+                        lower_valid_dif.rank = rank
+                        lower_valid_dif.guid_str = util_game.format_guid(guid)
+                    end
 
-                            if
+                    if
 
-                                rank > upper_valid_dif.rank
-                                or (rank == upper_valid_dif.rank and grade > upper_valid_dif.grade)
-                            then
-                                upper_valid_dif.grade = grade
-                                upper_valid_dif.rank = rank
-                                upper_valid_dif.guid_str = util_game.format_guid(guid)
-                            end
-                        end
+                        rank > upper_valid_dif.rank
+                        or (rank == upper_valid_dif.rank and grade > upper_valid_dif.grade)
+                    then
+                        upper_valid_dif.grade = grade
+                        upper_valid_dif.rank = rank
+                        upper_valid_dif.guid_str = util_game.format_guid(guid)
                     end
                 end
             end
@@ -527,20 +533,14 @@ function this.add_invalid_difficulties(monster_data, merge_difficulties)
         local rate = data_helpers.get_difficulty_rate(difficulty)
         local rank = e.to_enum("app.QuestDef.EM_REWARD_RANK", rate:get_RewardRank())
         local grade = rate:get_RewardGrade()
-        for _, map in pairs(mon_data.map) do
+        local role = param_key_to_role("invalid")
+        for stage, map in pairs(mon_data.map) do
             add_invalid_param(mon_data, map.stage)
+            local guid_str =
+                add_invalid_difficulty(mon_data, stage, param_mod, grade, rank, difficulty, role)
 
-            for _, env in pairs(map.env_by_param.invalid) do
-                local guid_str = mon_data:add_difficulty(
-                    "invalid",
-                    param_mod,
-                    map.stage,
-                    env,
-                    grade,
-                    rank,
-                    difficulty
-                )
-                map.difficulty_invalid[guid_str] = true
+            if guid_str then
+                mark_invalid_for_roles(map, map.role_by_param.invalid, guid_str)
             end
         end
     end
@@ -578,6 +578,12 @@ function this.add_invalid_difficulties(monster_data, merge_difficulties)
         end)
 
         ::continue::
+    end
+
+    for _, mon_data in pairs(monster_data) do
+        for stage in pairs(mon_data.map) do
+            merge_all_roles_invalid(mon_data, stage)
+        end
     end
 end
 
@@ -651,34 +657,20 @@ function this.spoof_map(monster_data, to_spoof, monsters, battlefield_ok)
             end
 
             for param_key, mon_dif in pairs(map_data.difficulty_by_param) do
-                for param_mod, by_grade in
-                    pairs(
-                        mon_dif --[[@as table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>]]
-                    )
-                do
-                    for grade, by_rank in pairs(by_grade) do
-                        for rank, guids in pairs(by_rank) do
-                            for _, guid in pairs(guids) do
-                                if
-                                    not em_data:is_difficulty_invalid(guid, to_spoof)
-                                    and not em_data:has_difficulty(guid, to_spoof)
-                                then
-                                    for _, env in pairs(map_data.env_by_param[param_key]) do
-                                        local guid_str = em_data:add_difficulty(
-                                            "invalid",
-                                            param_mod,
-                                            to_spoof,
-                                            env,
-                                            grade,
-                                            rank,
-                                            guid
-                                        )
+                local role = param_key_to_role(param_key)
 
-                                        em_data.map[to_spoof].difficulty_invalid[guid_str] = true
-                                    end
-                                end
-                            end
-                        end
+                for param_mod, grade, rank, guid in em_data:iter_difficulties(mon_dif) do
+                    if not em_data:has_difficulty(guid, to_spoof) then
+                        add_invalid_difficulty(
+                            em_data,
+                            to_spoof,
+                            param_mod,
+                            grade,
+                            rank,
+                            guid,
+                            role,
+                            map_data.env_by_param[param_key]
+                        )
                     end
                 end
             end
@@ -688,6 +680,26 @@ function this.spoof_map(monster_data, to_spoof, monsters, battlefield_ok)
         end
 
         ::next_em::
+    end
+end
+
+---@param monster_data MonsterData
+---@param role_id app.EnemyDef.ROLE_ID[]
+---@param maps app.FieldDef.STAGE[]?
+function this.add_invalid_role_id(monster_data, role_id, maps)
+    maps = maps or util_table.keys(monster_data.map)
+    for _, stage in pairs(maps) do
+        add_invalid_param(monster_data, stage)
+        local map_data = monster_data.map[stage]
+        map_data.role_by_param.invalid = {}
+
+        for _, mon_dif in pairs(map_data.difficulty_by_param) do
+            for _, role in pairs(role_id) do
+                for param_mod, grade, rank, guid in monster_data:iter_difficulties(mon_dif) do
+                    add_invalid_difficulty(monster_data, stage, param_mod, grade, rank, guid, role)
+                end
+            end
+        end
     end
 end
 

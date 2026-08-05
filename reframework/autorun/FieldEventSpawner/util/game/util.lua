@@ -137,6 +137,20 @@ function this.lua_array_to_system_array(lua_array, type_name)
     return ret
 end
 
+---@generic T, R
+---@param enumerator System.ArrayEnumerator<T>
+---@param transform (fun(o: T): R)?
+---@overload fun(enumerator: System.ArrayEnumerator<T>): T[]
+---@overload fun(enumerator: System.ArrayEnumerator<T>, transform: fun(o: T): R): R[]
+function this.enumerator_to_table(enumerator, transform)
+    local ret = {}
+    while enumerator:MoveNext() do
+        local item = enumerator:get_Current()
+        table.insert(ret, transform and transform(item) or item)
+    end
+    return ret
+end
+
 ---@generic T
 ---@param array System.Array<T>
 ---@return System.ArrayEnumerator<T>

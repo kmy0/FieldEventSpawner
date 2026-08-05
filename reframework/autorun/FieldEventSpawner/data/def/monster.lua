@@ -45,8 +45,8 @@
 ---@field env_by_param table<string, app.EnvironmentType.ENVIRONMENT[]>
 ---@field size_by_param_mod MonsterSize
 ---@field difficulty_unique table<string, boolean> unique_key
----@field difficulty_invalid table<string, boolean> guid_str
----@field difficulty_valid table<string, boolean> guid_str
+---@field difficulty_invalid table<app.EnemyDef.ROLE_ID, table<string, boolean>> guid_str
+---@field role_by_param table<string, app.EnemyDef.ROLE_ID[]>
 
 ---@class (exact) MonsterData : AreaEventData
 ---@field id app.EnemyDef.ID
@@ -120,7 +120,7 @@ function this:add_map(stage, args)
     self.map[stage].size_by_param_mod = {}
     self.map[stage].difficulty_unique = {}
     self.map[stage].difficulty_invalid = {}
-    self.map[stage].difficulty_valid = {}
+    self.map[stage].role_by_param = {}
 
     return self.map[stage]
 end
@@ -139,6 +139,18 @@ function this:get_area_array(stage, environ, em_param)
         return util_table.get_nested_value(map.area_by_env_by_param, { environ, em_param })
     end
     return map.area_by_param[em_param]
+end
+
+---@param stage app.FieldDef.STAGE
+---@param em_param string
+---@return app.EnemyDef.ROLE_ID[]?
+function this:get_role_array(stage, em_param)
+    local map = self.map[stage]
+    if not map then
+        return
+    end
+
+    return map.role_by_param[em_param]
 end
 
 ---@param stage app.FieldDef.STAGE
@@ -199,21 +211,17 @@ end
 ---@return boolean
 function this:has_difficulty(difficulty, stage)
     local unique_key = helpers.get_unique_difficulty_key(difficulty)
-
-    if stage then
-        local map = self.map[stage]
-
-        if not map then
-            return false
+    if not stage then
+        for _, map in pairs(self.map) do
+            if map.difficulty_unique[unique_key] then
+                return true
+            end
         end
-
-        return map.difficulty_unique[unique_key]
     end
 
-    for _, map in pairs(self.map) do
-        if map.difficulty_unique[unique_key] then
-            return true
-        end
+    local map = self.map[stage]
+    if not map then
+        return false
     end
 
     return false
@@ -221,15 +229,21 @@ end
 
 ---@param difficulty System.Guid
 ---@param stage app.FieldDef.STAGE
+---@param role app.EnemyDef.ROLE_ID
 ---@return boolean
-function this:is_difficulty_invalid(difficulty, stage)
+function this:is_difficulty_invalid(difficulty, stage, role)
     local map = self.map[stage]
 
     if not map then
         return false
     end
 
-    return map.difficulty_invalid[util_game.format_guid(difficulty)]
+    local by_role = map.difficulty_invalid[role]
+    if not by_role then
+        return false
+    end
+
+    return by_role[util_game.format_guid(difficulty)]
 end
 
 ---@param param_key string
@@ -239,8 +253,9 @@ end
 ---@param grade integer
 ---@param rank app.QuestDef.EM_REWARD_RANK
 ---@param difficulty System.Guid
+---@param role app.EnemyDef.ROLE_ID?
 ---@return string -- guid_str
-function this:add_difficulty(param_key, param_mod, stage, env, grade, rank, difficulty)
+function this:add_difficulty(param_key, param_mod, stage, env, grade, rank, difficulty, role)
     util_table.set_nested_value(
         self.map[stage],
         { "param_by_env", env, param_key, param_mod },
@@ -258,6 +273,10 @@ function this:add_difficulty(param_key, param_mod, stage, env, grade, rank, diff
         difficulty
     )
     util_table.set_nested_value(self.map[stage], { "param", param_key, param_mod }, true)
+
+    if role then
+        util_table.insert_nested_value_unique(self.map[stage], { "role_by_param", param_key }, role)
+    end
 
     self.map[stage].difficulty_unique[helpers.get_unique_difficulty_key(difficulty)] = true
     return util_game.format_guid(difficulty)
@@ -306,6 +325,22 @@ function this:is_battlefield_current_stage()
     end
 
     return false
+end
+
+---@param mon_dif MonsterDifficulty
+---@return fun(): string, integer, app.QuestDef.EM_REWARD_RANK, System.Guid
+function this:iter_difficulties(mon_dif)
+    return coroutine.wrap(function()
+        for param_mod, by_grade in pairs(mon_dif) do
+            for grade, by_rank in pairs(by_grade) do
+                for rank, guids in pairs(by_rank) do
+                    for _, guid in pairs(guids) do
+                        coroutine.yield(param_mod, grade, rank, guid)
+                    end
+                end
+            end
+        end
+    end)
 end
 
 return this

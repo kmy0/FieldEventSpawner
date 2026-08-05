@@ -329,6 +329,17 @@ function this.load_invalid_difficulties()
         end
     end
 
+    if config_mod.add_nerscylla_clone then
+        local nerscylla_id = e.get("app.EnemyDef.ID").EM0070_00_0
+        local nerscylla_data = util_table.value(this.event.by_type.monster, function(_, value)
+            return value.id == nerscylla_id
+        end) --[[@as MonsterData]]
+        data_monster.add_invalid_role_id(
+            nerscylla_data,
+            { e.get("app.EnemyDef.ROLE_ID").ROLE_COLLAB_01 }
+        )
+    end
+
     if config_mod.add_missing_monsters then
         if config_mod.add_invalid_monsters and this.map.is_all_em_all_stage then
             local arkveld_id = e.get("app.EnemyDef.ID").EM0160_00_0

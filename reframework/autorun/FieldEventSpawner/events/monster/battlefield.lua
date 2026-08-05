@@ -39,9 +39,7 @@
     _FreeMiniValue6 = if pop_belonging then _AreaNo else _AreaNo_AfterPopBelongingStage
 ]]
 
-local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
-local helpers = require("FieldEventSpawner.data.helpers")
 local mod = require("FieldEventSpawner.data.mod")
 local monster_factory = require("FieldEventSpawner.events.monster.monster")
 local sched = require("FieldEventSpawner.schedule.init")
@@ -103,14 +101,11 @@ function this:new(
     o.battlefield_state = battlefield_state
     o.pop_em_type = o:_get_em_pop_type_bf()
 
-    local em_param =
-        ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[o.pop_em_type]]
-    if difficulty and helpers.is_invalid_em2(monster_data, difficulty[1]) then
-        em_param = "invalid"
-    end
-
-    o._area_array =
-        monster_data:get_area_array(stage, not environ and mod.get_environ(stage) or nil, em_param)
+    o._area_array = monster_data:get_area_array(
+        stage,
+        not environ and mod.get_environ(stage) or nil,
+        o:_get_em_param()
+    )
     return o
 end
 

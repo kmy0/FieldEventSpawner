@@ -10,6 +10,7 @@
 ---@field difficulty System.Guid[]?
 ---@field environ app.EnvironmentType.ENVIRONMENT[]?
 ---@field size integer?
+---@field is_invalid boolean
 
 --[[ app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -106,15 +107,15 @@ function this:new(
     o.difficulty = difficulty
     o.environ = environ
     o.size = size
+    o.is_invalid = difficulty
+            and helpers.is_invalid_em2(monster_data, difficulty[1], o.monster_role)
+        or false
 
-    local em_param =
-        ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]]
-    if difficulty and helpers.is_invalid_em2(monster_data, difficulty[1]) then
-        em_param = "invalid"
-    end
-
-    o._area_array =
-        monster_data:get_area_array(stage, not environ and mod.get_environ(stage) or nil, em_param)
+    o._area_array = monster_data:get_area_array(
+        stage,
+        not environ and mod.get_environ(stage) or nil,
+        o:_get_em_param()
+    )
     return o
 end
 
@@ -208,23 +209,42 @@ end
 ---@param environ_type app.EnvironmentType.ENVIRONMENT
 ---@return System.Guid, integer[]?
 function this:_get_route_data(other_ems, environ_type)
-    local route_pattern_array = self._field_director:getRoutePatternList(
-        self.event_data.spoofed_id_for_route or self.event_data.spoofed_id or self.event_data.id,
-        self.monster_role,
-        self.legendary_id,
-        self.pop_em_type,
-        self.stage,
-        environ_type,
-        other_ems,
-        1
-    )
-    local route_info = route_pattern_array._Array:get_Item(0)
-    ---@cast route_info app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo
-    local area_array = self._field_director:getInitAreaList(route_info, self.stage, environ_type)
-    local enum = util_game.get_array_enum(area_array._Array)
-    ---@type integer[]
-    local ret = {}
+    local id = self.event_data.spoofed_id_for_route
+        or self.event_data.spoofed_id
+        or self.event_data.id
 
+    local function fetch_route_info(role)
+        local array = self._field_director:getRoutePatternList(
+            id,
+            role,
+            self.legendary_id,
+            self.pop_em_type,
+            self.stage,
+            environ_type,
+            other_ems,
+            1
+        )
+        return array._Array:get_Item(0)
+    end
+
+    ---@type app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfo
+    local route_info
+
+    util_misc.try(function()
+        route_info = fetch_route_info(self.monster_role)
+        if not route_info then
+            error("NO ROUTE INFO")
+        end
+    end, function(err)
+        if not self.is_invalid then
+            error(err)
+        end
+        route_info = fetch_route_info(e.get("app.EnemyDef.ROLE_ID").NORMAL)
+    end)
+
+    local area_array = self._field_director:getInitAreaList(route_info, self.stage, environ_type)
+    local ret = {}
+    local enum = util_game.get_array_enum(area_array._Array)
     while enum:MoveNext() do
         local area = enum:get_Current()
         if area ~= nil then
@@ -233,11 +253,7 @@ function this:_get_route_data(other_ems, environ_type)
     end
 
     local guid = route_info:get_AreaMoveGuid()
-    if util_table.empty(ret) then
-        return guid
-    end
-
-    return guid, ret
+    return guid, util_table.empty(ret) and nil or ret
 end
 
 ---@protected
@@ -304,10 +320,7 @@ function this:_get_reward_array(difficulty_guid)
         util_ref.deref_ptr((out_item_work_array_vt --[[@as ValueType]]):address())
     ) --[[@as System.Array<app.savedata.cItemWork>]]
 
-    if
-        item_work_array:get_Count() == 0
-        and helpers.is_invalid_em2(self.event_data, difficulty_guid)
-    then
+    if item_work_array:get_Count() == 0 and self.is_invalid then
         return self:_get_reward_array(
             util_game.parse_guid(ace.map.replace_em_rank_guid[self.legendary_id])
         )
@@ -394,7 +407,7 @@ function this:_lot_option_tag(environ_type, difficulty_guid)
     util_misc.try(function()
         ret = enemy_global_param:lotOptionTagIdx(self.stage, environ_type)
     end, function(err)
-        if not helpers.is_invalid_em2(self.event_data, difficulty_guid) then
+        if not self.is_invalid then
             error(err)
         end
     end)
@@ -421,7 +434,7 @@ function this:_get_option_tag(option_value, difficulty_guid)
     util_misc.try(function()
         ret = enemy_global_param:getOptionTagIdx(option_value)
     end, function(err)
-        if not helpers.is_invalid_em2(self.event_data, difficulty_guid) then
+        if not self.is_invalid then
             error(err)
         end
     end)
@@ -444,6 +457,16 @@ function this:_adjust_legendary_id()
         self.legendary_id = self.legendary_id - 1
         name = self:_get_monster_name()
     end
+end
+
+---@protected
+---@return string
+function this:_get_em_param()
+    if self.is_invalid then
+        return "invalid"
+    end
+
+    return ace.map.pop_em_to_em_param_key[e.get("app.ExDef.POP_EM_TYPE_Fixed")[self.pop_em_type]]
 end
 
 return this

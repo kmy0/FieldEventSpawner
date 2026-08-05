@@ -25,6 +25,7 @@
 ---@field add_guardian_arkveld boolean
 ---@field add_missing_monsters boolean
 ---@field add_invalid_monsters boolean
+---@field add_nerscylla_clone boolean
 ---
 ---@field event_type integer
 ---@field event integer
@@ -36,6 +37,7 @@
 ---@field battlefield_state integer
 ---@field em_difficulty integer
 ---@field em_difficulty_rank integer
+---@field em_role integer
 ---
 ---@field em_size integer
 ---@field time integer
@@ -74,6 +76,7 @@ return {
         add_guardian_arkveld = false,
         add_missing_monsters = false,
         add_invalid_monsters = false,
+        add_nerscylla_clone = false,
         --
         event = 1,
         event_type = 1,
@@ -85,6 +88,7 @@ return {
         spoffer = 1,
         em_difficulty = 1,
         em_difficulty_rank = 1,
+        em_role = 1,
         --
         time = 30,
         swarm_count = 2,

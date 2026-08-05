@@ -28,6 +28,8 @@ return {
             tooltip_add_missing_monsters = "Requires Script Reset. Adds missing monsters to the following maps:\n",
             add_invalid_monsters = "Add Invalid Monsters",
             tooltip_add_invalid_monsters = "Requires the AllMonstersAllMaps file and a Script Reset. Adds Gogmazios, Zoh Shia, Jin Dahaad, and Omega Planetes to all maps.\nQuests that have them as a main target may not be completable",
+            add_nerscylla_clone = "Add Nerscylla Clone",
+            tooltip_add_nerscylla_clone = "Adds DLC3 Monster Param to Nerscylla",
         },
         language = {
             name = "Language",
@@ -55,7 +57,7 @@ return {
         combo_em_param = "Difficulty Param",
         combo_em_param_values = {
             legendary = "Special",
-            frenzy = "Frenzied",
+            frenzy = "Frenzy",
             normal = "Normal",
             swarm = "Swarm",
             boss = "Alpha",
@@ -65,6 +67,15 @@ return {
             pop_many2 = "Normal",
             invalid = "Invalid",
             cocoon = "Guardian",
+        },
+        combo_em_role = "Monster Param",
+        combo_em_role_values = {
+            NORMAL = "Normal",
+            BOSS = "Alpha",
+            CHILED = "???",
+            FRENZY = "Frenzy",
+            COCOON = "Guardian",
+            ROLE_COLLAB_01 = "DLC3",
         },
         combo_em_param_mod = "Difficulty Mod",
         combo_em_param_mod_values = {

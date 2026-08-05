@@ -191,6 +191,7 @@ function this.draw()
         util_imgui.separator_text(config.lang:tr("mod.tooltip_category_difficulty"))
 
         combo_with_disabled(state.combo.em_param, util_gui.tr("mod.combo_em_param"), "mod.em_param")
+        combo_with_disabled(state.combo.em_role, util_gui.tr("mod.combo_em_role"), "mod.em_role")
         combo_with_disabled(
             state.combo.em_param_mod,
             util_gui.tr("mod.combo_em_param_mod"),

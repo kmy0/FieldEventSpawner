@@ -79,6 +79,8 @@ local function draw_mod_menu()
         config.lang:tr("menu.config.tooltip_add_guardian_arkveld")
             .. ace.map.garkveld_em_stage_string
     )
+    set:menu_item(util_gui.tr("menu.config.add_nerscylla_clone"), "mod.add_nerscylla_clone")
+    util_imgui.tooltip(config.lang:tr("menu.config.tooltip_add_nerscylla_clone"))
 
     imgui.pop_style_var(1)
 end
