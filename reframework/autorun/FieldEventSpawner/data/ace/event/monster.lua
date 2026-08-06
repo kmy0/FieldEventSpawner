@@ -534,6 +534,11 @@ function this.add_invalid_difficulties(monster_data, merge_difficulties)
         local rate = data_helpers.get_difficulty_rate(difficulty)
         local rank = e.to_enum("app.QuestDef.EM_REWARD_RANK", rate:get_RewardRank())
         local grade = rate:get_RewardGrade()
+
+        if not rank or not grade then
+            return
+        end
+
         local role = param_key_to_role("invalid")
         for stage, map in pairs(mon_data.map) do
             add_invalid_param(mon_data, map.stage)
