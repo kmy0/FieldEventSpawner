@@ -347,6 +347,7 @@ local function add_param_data(monster_data)
             local diff_array = pop_param._DifficultyParams
 
             if param_key == "legendary" then
+                em_param.none = false
                 em_param.legendary = true
             elseif param_key == "battlefield_repel" then
                 ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
