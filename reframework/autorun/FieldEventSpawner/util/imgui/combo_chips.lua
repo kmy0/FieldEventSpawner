@@ -5,6 +5,8 @@
 
 local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
+---@module "FieldEventSpawner.util.imgui.init"
+local util_imgui = util_misc.lazy_require("FieldEventSpawner.util.imgui.init")
 
 local this = {}
 
@@ -104,14 +106,37 @@ function this.combo_chips(
     local button_width = imgui.calc_text_size(util_misc.split_string(button_label, "##")[1]).x
         + FRAME_PADDING_X * 2
     local combo_width = total_width - button_width - ITEM_SPACING_X
+    local disabled = util_table.empty(combo.values)
+    local text_value
 
-    imgui.begin_disabled(util_table.empty(combo.values))
-    imgui.set_next_item_width(combo_width)
-    changed, selection = imgui.combo("##" .. id, selection, combo.values)
-    imgui.same_line()
-    if imgui.button(button_label) then
-        this.select_item(selection, item_selection, combo)
-        changed = true
+    if #combo.values <= 1 then
+        text_value = #combo.values == 1 and combo.values[1] or ""
+    end
+
+    imgui.begin_disabled(disabled)
+    changed, selection = util_imgui.fake_combo(function()
+        imgui.set_next_item_width(combo_width)
+        ---@diagnostic disable-next-line: cast-local-type
+        changed, selection = imgui.combo("##" .. id, selection, combo.values)
+        imgui.same_line()
+        if imgui.button(button_label) then
+            this.select_item(selection, item_selection, combo)
+            changed = true
+        end
+
+        return changed, selection
+    end, "", text_value, selection, disabled, combo_width)
+
+    if text_value then
+        imgui.same_line()
+        local pos = imgui.get_cursor_pos()
+        pos.x = pos.x - 4
+        imgui.set_cursor_pos(pos)
+
+        if imgui.button(button_label) then
+            this.select_item(selection, item_selection, combo)
+            changed = true
+        end
     end
     imgui.end_disabled()
 

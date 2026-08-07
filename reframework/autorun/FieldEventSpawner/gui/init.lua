@@ -26,9 +26,23 @@ local this = {
 ---@param config_key string
 ---@return boolean
 local function combo_with_disabled(combo, name, config_key)
-    imgui.begin_disabled(combo:is_disabled())
-    local ret = set:combo(name, config_key, combo.values)
-    imgui.end_disabled()
+    ---@type string
+    local label
+    local selection = 1
+
+    if #combo.values <= 1 then
+        label = #combo.values == 1 and combo.values[1] or ""
+    end
+
+    local disabled = combo:is_disabled()
+
+    local ret = util_imgui.fake_combo(function()
+        imgui.begin_disabled(disabled)
+        local changed = set:combo(name, config_key, combo.values)
+        imgui.end_disabled()
+        return changed, -1
+    end, name, label, selection, disabled)
+
     return ret
 end
 

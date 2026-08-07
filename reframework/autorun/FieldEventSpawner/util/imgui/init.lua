@@ -124,6 +124,19 @@ function this.dummy_button2(label, size_object)
     return ret
 end
 
+---@param label string
+---@param size_object Vector2f|Vector3f|Vector4f|number[]?
+---@return boolean
+function this.dummy_button3(label, size_object)
+    imgui.push_style_color(21, 0x00000000)
+    imgui.push_style_color(22, 0x00000000)
+    imgui.push_style_color(23, 0x00000000)
+
+    local ret = imgui.button(label, size_object)
+    imgui.pop_style_color(3)
+    return ret
+end
+
 ---@param str_id string
 ---@param draw_func fun()
 function this.center_h(str_id, draw_func)
@@ -322,6 +335,48 @@ function this.set_win_state(win_state, min_y_size)
 
     win_state.pos_x, win_state.pos_y = pos.x, pos.y
     win_state.size_x, win_state.size_y = size.x, size.y
+end
+
+---@param draw_combo_fn fun(): boolean, integer
+---@param label string
+---@param text string?
+---@param selection integer?
+---@param disabled boolean?
+---@param width number?
+---@return boolean, integer
+function this.fake_combo(draw_combo_fn, label, text, selection, disabled, width)
+    if text and selection then
+        local draw_list = imgui.get_window_draw_list()
+        local pos = imgui.get_cursor_screen_pos()
+
+        width = width or imgui.calc_item_width()
+        local text_h = imgui.calc_text_size(text).y
+        local height = text_h + 6
+        local color_rect = util_misc.mul_alpha(0xFF3F3535, disabled and 0.6 or 1)
+        local color_text = util_misc.mul_alpha(0xFFFFFFFF, disabled and 0.6 or 1)
+
+        draw_list:add_rect_filled(
+            { pos.x, pos.y },
+            { pos.x + width, pos.y + height },
+            color_rect,
+            0,
+            0
+        )
+
+        text = util_misc.split_string(text, "##")[1]
+        draw_list:add_text({ pos.x + 4, pos.y + 3 }, color_text, text)
+
+        this.dummy_button3("##" .. uuid.generate(), { width, height })
+        imgui.same_line()
+
+        local pos = imgui.get_cursor_pos()
+        pos.x = pos.x - 4
+        imgui.set_cursor_pos(pos)
+        imgui.text(util_misc.split_string(label, "##")[1])
+        return false, selection
+    end
+
+    return draw_combo_fn()
 end
 
 return this
