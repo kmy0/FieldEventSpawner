@@ -157,6 +157,17 @@ function this:get_role_array(stage, em_param)
 end
 
 ---@param stage app.FieldDef.STAGE
+---@param em_param string
+---@return app.EnvironmentType.ENVIRONMENT[]?
+function this:get_environ(stage, em_param)
+    local map = self.map[stage]
+    if not map then
+        return
+    end
+    return map.env_by_param[em_param]
+end
+
+---@param stage app.FieldDef.STAGE
 ---@param environ app.EnvironmentType.ENVIRONMENT?
 ---@param em_param string
 ---@param em_param_mod string

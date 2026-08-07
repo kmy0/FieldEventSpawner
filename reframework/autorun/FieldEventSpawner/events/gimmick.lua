@@ -1,6 +1,9 @@
 ---@class (exact) GimmickEventFactory : AreaEventFactory
 ---@field event_data GimmickData
 
+---@class (exact) GimmickEventFactoryOptionalArgs : AreaEventFactoryOptionalArgs
+---@field ignore_environ_type boolean?
+
 --[[ app.cExFieldEvent_GimmickEvent
     _FreeValue0 = app.FieldDef.STAGE_Fixed
     _FreeValue1 = app.ExDef.GIMMICK_EVENT_Fixed
@@ -46,16 +49,15 @@ setmetatable(this, { __index = factory })
 ---@param gimmick_data GimmickData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param spawn_delay integer
----@param ignore_environ_type boolean
----@param area integer?
+---@param opts GimmickEventFactoryOptionalArgs?
 ---@return GimmickEventFactory
-function this:new(gimmick_data, stage, time, spawn_delay, ignore_environ_type, area)
-    local o = factory.new(self, gimmick_data, stage, time, spawn_delay, area)
+function this:new(gimmick_data, stage, time, opts)
+    opts = opts or {}
+    local o = factory.new(self, gimmick_data, stage, time, opts)
     setmetatable(o, self)
     o._area_array = gimmick_data:get_area_array(
         stage,
-        not ignore_environ_type and mod.get_environ(stage) or nil
+        not opts.ignore_environ_type and mod.get_environ(stage) or nil
     )
     ---@cast o GimmickEventFactory
     return o

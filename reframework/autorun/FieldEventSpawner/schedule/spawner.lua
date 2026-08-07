@@ -3,163 +3,76 @@ local event = require("FieldEventSpawner.events.init")
 local this = {}
 
 ---@param monster_data MonsterData
----@param monster_role app.EnemyDef.ROLE_ID
----@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
----@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param spawn_delay integer
----@param is_village_boost boolean
----@param is_yummy boolean
----@param area integer?
----@param spoffer integer?
----@param rewards GuiRewardData[]?
----@param difficulty System.Guid[]?
----@param environ app.EnvironmentType.ENVIRONMENT[]?
----@param size integer?
----@param option_tag integer?
+---@param monster_role app.EnemyDef.ROLE_ID
+---@param pop_em_type  app.ExDef.POP_EM_TYPE_Fixed
+---@param legendary_id app.EnemyDef.LEGENDARY_ID
+---@param opts MonsterEventFactoryOptionalArgs?
 ---@return SpawnResult
-function this.monster(
-    monster_data,
-    monster_role,
-    pop_em_type,
-    legendary_id,
-    stage,
-    time,
-    spawn_delay,
-    is_village_boost,
-    is_yummy,
-    area,
-    spoffer,
-    rewards,
-    difficulty,
-    environ,
-    size,
-    option_tag
-)
-    local fac = event.monster:new(
-        monster_data,
-        monster_role,
-        pop_em_type,
-        legendary_id,
-        stage,
-        time,
-        spawn_delay,
-        is_village_boost,
-        is_yummy,
-        area,
-        spoffer,
-        rewards,
-        difficulty,
-        environ,
-        size,
-        option_tag
-    )
+function this.monster(monster_data, stage, time, monster_role, pop_em_type, legendary_id, opts)
+    local fac =
+        event.monster:new(monster_data, stage, time, monster_role, pop_em_type, legendary_id, opts)
     return fac:spawn()
 end
 
 ---@param monster_data MonsterData
----@param monster_role app.EnemyDef.ROLE_ID
----@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param is_yummy boolean
+---@param monster_role app.EnemyDef.ROLE_ID
+---@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param battlefield_state BattlefieldState
----@param area integer?
----@param rewards GuiRewardData[]?
----@param difficulty System.Guid[]?
----@param environ app.EnvironmentType.ENVIRONMENT[]?
----@param size integer?
----@param option_tag integer?
+---@param opts BattlefieldEventFactoryOptionalArgs?
 ---@return SpawnResult
 function this.battlefield(
     monster_data,
-    monster_role,
-    legendary_id,
     stage,
     time,
-    is_yummy,
+    monster_role,
+    legendary_id,
     battlefield_state,
-    area,
-    rewards,
-    difficulty,
-    environ,
-    size,
-    option_tag
+    opts
 )
     local fac = event.battlefield:new(
         monster_data,
-        monster_role,
-        legendary_id,
         stage,
         time,
-        is_yummy,
+        monster_role,
+        legendary_id,
         battlefield_state,
-        area,
-        rewards,
-        difficulty,
-        environ,
-        size,
-        option_tag
+        opts
     )
     return fac:spawn()
 end
 
 ---@param monster_data MonsterData
+---@param stage app.FieldDef.STAGE
+---@param time integer
 ---@param monster_role app.EnemyDef.ROLE_ID
 ---@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
----@param stage app.FieldDef.STAGE
----@param time integer
----@param spawn_delay integer
----@param is_village_boost boolean
----@param is_yummy boolean
 ---@param swarm_count integer
----@param area integer?
----@param rewards GuiRewardData[]?
----@param difficulty System.Guid[]?
----@param environ app.EnvironmentType.ENVIRONMENT[]?
----@param size integer?
----@param spoffer_swarm boolean?
----@param option_tag integer?
+---@param opts SwarmEventFactoryOptionalArgs?
 ---@return SpawnResult
 function this.swarm(
     monster_data,
+    stage,
+    time,
     monster_role,
     pop_em_type,
     legendary_id,
-    stage,
-    time,
-    spawn_delay,
-    is_village_boost,
-    is_yummy,
     swarm_count,
-    area,
-    rewards,
-    difficulty,
-    environ,
-    size,
-    spoffer_swarm,
-    option_tag
+    opts
 )
     local fac = event.swarm:new(
         monster_data,
+        stage,
+        time,
         monster_role,
         pop_em_type,
         legendary_id,
-        stage,
-        time,
-        spawn_delay,
-        is_village_boost,
-        is_yummy,
         swarm_count,
-        area,
-        rewards,
-        difficulty,
-        environ,
-        size,
-        spoffer_swarm,
-        option_tag
+        opts
     )
     return fac:spawn()
 end
@@ -167,24 +80,20 @@ end
 ---@param gimmick_data GimmickData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param spawn_delay integer
----@param ignore_environ_type boolean
----@param area integer?
+---@param opts GimmickEventFactoryOptionalArgs?
 ---@return SpawnResult
-function this.gimmick(gimmick_data, stage, time, spawn_delay, ignore_environ_type, area)
-    local fac = event.gimmick:new(gimmick_data, stage, time, spawn_delay, ignore_environ_type, area)
+function this.gimmick(gimmick_data, stage, time, opts)
+    local fac = event.gimmick:new(gimmick_data, stage, time, opts)
     return fac:spawn()
 end
 
 ---@param animal_data AnimalData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param spawn_delay integer
----@param ignore_environ_type boolean
----@param area integer?
+---@param opts AnimalEventFactoryOptionalArgs?
 ---@return SpawnResult
-function this.animal(animal_data, stage, time, spawn_delay, ignore_environ_type, area)
-    local fac = event.animal:new(animal_data, stage, time, spawn_delay, ignore_environ_type, area)
+function this.animal(animal_data, stage, time, opts)
+    local fac = event.animal:new(animal_data, stage, time, opts)
     return fac:spawn()
 end
 

@@ -312,6 +312,39 @@ function this.get_current_event()
     return events[state.combo.event:get()]
 end
 
+---@return System.Guid?
+function this.get_difficulty()
+    local spoffer_unique_index = state.combo.spoffer:get()
+    local ret = state.combo.em_difficulty_rank:get()
+
+    if spoffer_unique_index and not ret then
+        ret = this.get_valid_spoffer_difficulties()
+    end
+
+    return ret
+end
+
+---@return app.EnemyDef.LEGENDARY_ID
+function this.get_legendary_id()
+    local legendary = gui.map.em_param_mod_to_legendary[state.combo.em_param_mod:get()]
+    return e.get("app.EnemyDef.LEGENDARY_ID")[legendary]
+end
+
+---@return app.ExDef.POP_EM_TYPE_Fixed
+function this.get_pop_em_type()
+    local em_param = state.combo.em_param:get()
+    local pop_em_type = gui.map.em_param_to_pop_em[em_param]
+    return e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]
+end
+
+---@return BattlefieldState
+function this.get_battlefield_state()
+    local event = this.get_current_event() --[[@as MonsterData]]
+    return helpers.is_invalid_em2(event, this.get_difficulty(), state.combo.em_role:get())
+            and mod.enum.battlefield_state["battlefield_slay"]
+        or mod.enum.battlefield_state[state.combo.em_param:get()]
+end
+
 function this.spawn()
     local combo = state.combo
     local config_mod = config.current.mod
@@ -320,103 +353,83 @@ function this.spawn()
 
     if event_type == "monster" then
         ---@cast event MonsterData
-        local em_param = combo.em_param:get()
-        local role_id = combo.em_role:get()
-        local legendary = gui.map.em_param_mod_to_legendary[combo.em_param_mod:get()]
-        local legendary_id = e.get("app.EnemyDef.LEGENDARY_ID")[legendary]
-        local pop_em_type = gui.map.em_param_to_pop_em[em_param]
-        local rewards = this.get_user_rewards()
-        local environ = config_mod.is_ignore_environ
-                and event.map[
-                    mod.state.stage --[[@as app.FieldDef.STAGE]]
-                ].env_by_param[em_param]
-            or nil
-        local spoffer = combo.spoffer:get()
-        local difficulty = combo.em_difficulty_rank:get() and { combo.em_difficulty_rank:get() } --[==[@as System.Guid[]?]==]
-        local option_tag = combo.em_option_tag:get()
-
-        if spoffer and not difficulty then
-            difficulty = this.get_valid_spoffer_difficulties()
-        end
 
         if config_mod.swarm_count > 0 then
             return spawner.swarm(
                 event,
-                role_id,
-                e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type],
-                legendary_id,
                 mod.state.stage,
                 config_mod.time,
-                this.get_spawn_delay(),
-                this.get_is_village_boost(),
-                this.get_is_yummy(),
+                combo.em_role:get(),
+                this.get_pop_em_type(),
+                this.get_legendary_id(),
                 config_mod.swarm_count,
-                combo.area:get(),
-                rewards,
-                difficulty,
-                environ,
-                this.get_em_size(),
-                this.get_is_spoffer_swarm(),
-                option_tag
+                {
+                    spawn_delay = this.get_spawn_delay(),
+                    is_village_boost = this.get_is_village_boost(),
+                    is_yummy = this.get_is_yummy(),
+                    area = combo.area:get(),
+                    rewards = this.get_user_rewards(),
+                    difficulty = this.get_difficulty(),
+                    environ = event:get_environ(mod.state.stage, combo.em_param:get()),
+                    size = this.get_em_size(),
+                    spoffer_swarm = this.get_is_spoffer_swarm(),
+                    option_tag = combo.em_option_tag:get(),
+                }
             )
         elseif this.is_battlefield_monster_current_stage() then
             return spawner.battlefield(
                 event,
-                role_id,
-                legendary_id,
                 mod.state.stage,
                 config_mod.time,
-                this.get_is_yummy(),
-                helpers.is_invalid_em2(event, difficulty and difficulty[1], role_id)
-                        and mod.enum.battlefield_state["battlefield_slay"]
-                    or mod.enum.battlefield_state[em_param],
-                combo.area:get(),
-                rewards,
-                difficulty,
-                environ,
-                this.get_em_size(),
-                option_tag
+                combo.em_role:get(),
+                this.get_legendary_id(),
+                this.get_battlefield_state(),
+                {
+                    is_yummy = this.get_is_yummy(),
+                    area = combo.area:get(),
+                    rewards = this.get_user_rewards(),
+                    difficulty = this.get_difficulty(),
+                    environ = event:get_environ(mod.state.stage, combo.em_param:get()),
+                    size = this.get_em_size(),
+                    option_tag = combo.em_option_tag:get(),
+                }
             )
         else
             return spawner.monster(
                 event,
-                role_id,
-                e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type],
-                legendary_id,
                 mod.state.stage,
                 config_mod.time,
-                this.get_spawn_delay(),
-                this.get_is_village_boost(),
-                this.get_is_yummy(),
-                combo.area:get(),
-                spoffer,
-                rewards,
-                difficulty,
-                environ,
-                this.get_em_size(),
-                option_tag
+                combo.em_role:get(),
+                this.get_pop_em_type(),
+                this.get_legendary_id(),
+                {
+                    spawn_delay = this.get_spawn_delay(),
+                    is_village_boost = this.get_is_village_boost(),
+                    is_yummy = this.get_is_yummy(),
+                    area = combo.area:get(),
+                    spoffer_unique_index = combo.spoffer:get(),
+                    rewards = this.get_user_rewards(),
+                    difficulty = this.get_difficulty(),
+                    environ = event:get_environ(mod.state.stage, combo.em_param:get()),
+                    size = this.get_em_size(),
+                    option_tag = combo.em_option_tag:get(),
+                }
             )
         end
     elseif event_type == "gimmick" then
         ---@cast event GimmickData
-        return spawner.gimmick(
-            event,
-            mod.state.stage,
-            config_mod.time,
-            this.get_spawn_delay(),
-            config_mod.is_ignore_environ,
-            combo.area:get()
-        )
+        return spawner.gimmick(event, mod.state.stage, config_mod.time, {
+            spawn_delay = this.get_spawn_delay(),
+            ignore_environ_type = config_mod.is_ignore_environ,
+            area = combo.area:get(),
+        })
     elseif event_type == "animal" then
         ---@cast event AnimalData
-        return spawner.animal(
-            event,
-            mod.state.stage,
-            config_mod.time,
-            this.get_spawn_delay(),
-            config_mod.is_ignore_environ,
-            combo.area:get()
-        )
+        return spawner.animal(event, mod.state.stage, config_mod.time, {
+            spawn_delay = this.get_spawn_delay(),
+            ignore_environ_type = config_mod.is_ignore_environ,
+            area = combo.area:get(),
+        })
     end
 end
 

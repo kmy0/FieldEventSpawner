@@ -1,6 +1,9 @@
 ---@class (exact) BattlefieldEventFactory : MonsterEventFactory
 ---@field battlefield_state BattlefieldState
 
+---@class (exact) BattlefieldEventFactoryOptionalArgs : MonsterEventFactoryOptionalArgs
+---@field spoffer_unique_index nil
+
 --[[
     app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -52,52 +55,24 @@ this.__index = this
 setmetatable(this, { __index = monster_factory })
 
 ---@param monster_data MonsterData
----@param monster_role app.EnemyDef.ROLE_ID
----@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param is_yummy boolean
+---@param monster_role app.EnemyDef.ROLE_ID
+---@param legendary_id app.EnemyDef.LEGENDARY_ID
 ---@param battlefield_state BattlefieldState
----@param area integer?
----@param rewards GuiRewardData[]?
----@param difficulty System.Guid[]?
----@param environ app.EnvironmentType.ENVIRONMENT[]?
----@param size integer?
----@param option_tag integer?
+---@param opts BattlefieldEventFactoryOptionalArgs?
 ---@return BattlefieldEventFactory
-function this:new(
-    monster_data,
-    monster_role,
-    legendary_id,
-    stage,
-    time,
-    is_yummy,
-    battlefield_state,
-    area,
-    rewards,
-    difficulty,
-    environ,
-    size,
-    option_tag
-)
+function this:new(monster_data, stage, time, monster_role, legendary_id, battlefield_state, opts)
+    opts = opts or {}
     local o = monster_factory.new(
         self,
         monster_data,
+        stage,
+        time,
         monster_role,
         e.get("app.ExDef.POP_EM_TYPE_Fixed").BATTLEFIELD,
         legendary_id,
-        stage,
-        time,
-        0,
-        false,
-        is_yummy,
-        area,
-        nil,
-        rewards,
-        difficulty,
-        environ,
-        size,
-        option_tag
+        opts
     )
     setmetatable(o, self)
     ---@cast o BattlefieldEventFactory
@@ -106,7 +81,7 @@ function this:new(
 
     o._area_array = monster_data:get_area_array(
         stage,
-        not environ and mod.get_environ(stage) or nil,
+        not opts.environ and mod.get_environ(stage) or nil,
         o:_get_em_param()
     )
     return o
@@ -126,7 +101,7 @@ function this:build()
     end
     ---@cast em_pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield
 
-    local difficulty_guid, option_value
+    local option_value
     local is_repel = self.battlefield_state == mod.enum.battlefield_state.battlefield_repel
     local environ_type = self.environ and self.environ[math.random(#self.environ)]
         or mod.get_environ(self.stage)
@@ -139,21 +114,19 @@ function this:build()
         option_value = 0
     end
 
-    if self.difficulty then
-        difficulty_guid = self.difficulty[math.random(#self.difficulty)]
-    else
+    if not self.difficulty then
         if is_repel then
-            difficulty_guid = em_pop_param:lotDifficultyID_PopBelonging(self.legendary_id)
+            self.difficulty = em_pop_param:lotDifficultyID_PopBelonging(self.legendary_id)
         else
-            difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+            self.difficulty = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
         end
     end
 
-    if not difficulty_guid then
+    if not self.difficulty then
         return mod.enum.spawn_result.NO_DIFFICULTY
     end
 
-    local reward_data = self:_get_reward_data(difficulty_guid)
+    local reward_data = self:_get_reward_data(self.difficulty)
 
     if not reward_data then
         return mod.enum.spawn_result.NO_REWARDS
@@ -163,7 +136,7 @@ function this:build()
     local event_data = sched.util.create_event_data()
     event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
     event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
-    event_data._FreeValue1 = util_game.hash_guid(difficulty_guid)
+    event_data._FreeValue1 = util_game.hash_guid(self.difficulty)
     event_data._FreeValue2 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
@@ -173,7 +146,7 @@ function this:build()
     event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = area
     event_data._FreeMiniValue4 = stage_param
-            and 0x10 * self:_get_option_tag(option_value, difficulty_guid)
+            and 0x10 * self:_get_option_tag(option_value, self.difficulty)
         or 0
     event_data._FreeMiniValue5 = self.time
     event_data._FreeMiniValue6 = 255
@@ -188,7 +161,7 @@ function this:build()
                 em_pop_param,
                 event_data._ExecMinute - 1,
                 event_data._UniqueIndex,
-                difficulty_guid
+                self.difficulty
             ),
             self:_get_monster_name(),
             area,

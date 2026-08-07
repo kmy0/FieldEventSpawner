@@ -1,6 +1,9 @@
 ---@class (exact) AnimalEventFactory : AreaEventFactory
 ---@field event_data AnimalData
 
+---@class (exact) AnimalEventFactoryOptionalArgs : AreaEventFactoryOptionalArgs
+---@field ignore_environ_type boolean?
+
 --[[ app.cExFieldEvent_AnimalEvent
     _FreeValue0 = app.FieldDef.STAGE_Fixed
     _FreeValue1 = app.ExDef.ANIMAL_EVENT_Fixed
@@ -32,15 +35,16 @@ setmetatable(this, { __index = factory })
 ---@param animal_data AnimalData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param spawn_delay integer
----@param ignore_environ_type boolean
----@param area integer?
+---@param opts AnimalEventFactoryOptionalArgs?
 ---@return AnimalEventFactory
-function this:new(animal_data, stage, time, spawn_delay, ignore_environ_type, area)
-    local o = factory.new(self, animal_data, stage, time, spawn_delay, area)
+function this:new(animal_data, stage, time, opts)
+    opts = opts or {}
+    local o = factory.new(self, animal_data, stage, time, opts)
     setmetatable(o, self)
-    o._area_array =
-        animal_data:get_area_array(stage, not ignore_environ_type and mod.get_environ(stage) or nil)
+    o._area_array = animal_data:get_area_array(
+        stage,
+        not opts.ignore_environ_type and mod.get_environ(stage) or nil
+    )
     ---@cast o AnimalEventFactory
     return o
 end

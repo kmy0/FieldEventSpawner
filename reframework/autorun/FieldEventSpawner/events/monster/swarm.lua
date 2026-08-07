@@ -7,6 +7,10 @@
 ---@field area integer
 ---@field has_boss boolean
 
+---@class (exact) SwarmEventFactoryOptionalArgs: MonsterEventFactoryOptionalArgs
+---@field spoffer_unique_index nil
+---@field spoffer_swarm boolean?
+
 local config = require("FieldEventSpawner.config.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local mod = require("FieldEventSpawner.data.mod")
@@ -22,60 +26,35 @@ this.__index = this
 setmetatable(this, { __index = monster_factory })
 
 ---@param monster_data MonsterData
+---@param stage app.FieldDef.STAGE
+---@param time integer
 ---@param monster_role app.EnemyDef.ROLE_ID
 ---@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
----@param stage app.FieldDef.STAGE
----@param time integer
----@param spawn_delay integer
----@param is_village_boost boolean
----@param is_yummy boolean
 ---@param swarm_count integer
----@param area integer?
----@param rewards GuiRewardData[]?
----@param difficulty System.Guid[]?
----@param environ app.EnvironmentType.ENVIRONMENT[]?
----@param size integer?
----@param spoffer_swarm boolean?
----@param option_tag integer?
+---@param opts SwarmEventFactoryOptionalArgs?
 ---@return SwarmEventFactory
 function this:new(
     monster_data,
+    stage,
+    time,
     monster_role,
     pop_em_type,
     legendary_id,
-    stage,
-    time,
-    spawn_delay,
-    is_village_boost,
-    is_yummy,
     swarm_count,
-    area,
-    rewards,
-    difficulty,
-    environ,
-    size,
-    spoffer_swarm,
-    option_tag
+    opts
 )
+    opts = opts or {}
+    opts.spoffer_unique_index = opts.spoffer_swarm and 0 or nil
     local o = monster_factory.new(
         self,
         monster_data,
+        stage,
+        time,
         monster_role,
         pop_em_type,
         legendary_id,
-        stage,
-        time,
-        spawn_delay,
-        is_village_boost,
-        is_yummy,
-        area,
-        spoffer_swarm and 0 or nil,
-        rewards,
-        difficulty,
-        environ,
-        size,
-        option_tag
+        opts
     )
     setmetatable(o, self)
     ---@cast o SwarmEventFactory
@@ -107,7 +86,7 @@ function this:build()
     leader_data.cache_base.children = {}
     local member_data, member_rewards
     for i = 1, self.swarm_count do
-        if self.spoffer and self.legendary_id > 0 and i == self.swarm_count then
+        if self.spoffer_unique_index and self.legendary_id > 0 and i == self.swarm_count then
             -- game refuses to spawn spoffer when all monsters are tempered
             self.legendary_id = e.get("app.EnemyDef.LEGENDARY_ID").NONE
         end
@@ -172,17 +151,17 @@ function this:_build_member(swarm_data)
         return mod.enum.spawn_result.NO_EM_PARAM
     end
 
-    local difficulty_guid, reward_data
+    local reward_data
     if swarm_data.has_boss then
-        difficulty_guid = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
-        reward_data = self:_get_game_reward_data(difficulty_guid)
+        self.difficulty = em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
+        reward_data = self:_get_game_reward_data(self.difficulty)
     else
-        difficulty_guid = self.difficulty and self.difficulty[math.random(#self.difficulty)]
+        self.difficulty = self.difficulty
             or em_pop_param:lotDifficultyID(self.legendary_id, 0, true)
-        reward_data = self:_get_reward_data(difficulty_guid)
+        reward_data = self:_get_reward_data(self.difficulty)
     end
 
-    if not difficulty_guid then
+    if not self.difficulty then
         return mod.enum.spawn_result.NO_DIFFICULTY
     end
 
@@ -193,7 +172,7 @@ function this:_build_member(swarm_data)
     local event_data = sched.util.create_event_data()
     event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
     event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
-    event_data._FreeValue1 = util_game.hash_guid(difficulty_guid)
+    event_data._FreeValue1 = util_game.hash_guid(self.difficulty)
     event_data._FreeValue2 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue3 = swarm_data.route_hash
     event_data._FreeValue4 = reward_data.reward_id1

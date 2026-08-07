@@ -9,6 +9,10 @@
 ---@field protected _schedule_timeline app.cExFieldDirector.cScheduleTimeline
 ---@field build fun(): SpawnResult, SpawnEvent?
 
+---@class (exact) AreaEventFactoryOptionalArgs
+---@field area integer?
+---@field spawn_delay integer?
+
 local mod = require("FieldEventSpawner.data.mod")
 local sched = require("FieldEventSpawner.schedule.init")
 local util_game = require("FieldEventSpawner.util.game.init")
@@ -22,16 +26,16 @@ this.__index = this
 ---@param event_data AreaEventData
 ---@param stage app.FieldDef.STAGE
 ---@param time integer
----@param spawn_delay integer
----@param area integer?
+---@param opts AreaEventFactoryOptionalArgs?
 ---@return AreaEventFactory
-function this:new(event_data, stage, time, spawn_delay, area)
+function this:new(event_data, stage, time, opts)
+    opts = opts or {}
     local o = {
         event_data = event_data,
         stage = stage,
-        area = area,
+        area = opts.area,
         time = time,
-        spawn_delay = spawn_delay,
+        spawn_delay = opts.spawn_delay or 0,
     }
     setmetatable(o, self)
     ---@cast o AnimalEventFactory

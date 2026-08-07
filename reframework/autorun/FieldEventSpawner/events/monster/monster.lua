@@ -3,15 +3,25 @@
 ---@field pop_em_type app.ExDef.POP_EM_TYPE_Fixed
 ---@field monster_role app.EnemyDef.ROLE_ID
 ---@field legendary_id app.EnemyDef.LEGENDARY_ID
----@field is_village_boost boolean
----@field is_yummy boolean
----@field spoffer integer?
+---@field is_village_boost boolean?
+---@field is_yummy boolean?
+---@field spoffer_unique_index integer?
 ---@field rewards GuiRewardData[]?
----@field difficulty System.Guid[]?
+---@field difficulty System.Guid?
 ---@field environ app.EnvironmentType.ENVIRONMENT[]?
 ---@field size integer?
 ---@field is_invalid boolean
 ---@field option_tag integer?
+
+---@class (exact) MonsterEventFactoryOptionalArgs : AreaEventFactoryOptionalArgs
+---@field spoffer_unique_index integer?
+---@field rewards GuiRewardData[]?
+---@field difficulty System.Guid?
+---@field environ app.EnvironmentType.ENVIRONMENT[]?
+---@field size integer?
+---@field option_tag integer?
+---@field is_village_boost boolean?
+---@field is_yummy boolean?
 
 --[[ app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -62,62 +72,37 @@ this.__index = this
 setmetatable(this, { __index = factory })
 
 ---@param monster_data MonsterData
+---@param stage app.FieldDef.STAGE
+---@param time integer
 ---@param monster_role app.EnemyDef.ROLE_ID
 ---@param pop_em_type  app.ExDef.POP_EM_TYPE_Fixed
 ---@param legendary_id app.EnemyDef.LEGENDARY_ID
----@param stage app.FieldDef.STAGE
----@param time integer
----@param spawn_delay integer
----@param is_village_boost boolean
----@param is_yummy boolean
----@param area integer?
----@param spoffer integer?
----@param rewards GuiRewardData[]?
----@param difficulty System.Guid[]?
----@param environ app.EnvironmentType.ENVIRONMENT[]?
----@param size integer?
----@param option_tag integer?
+---@param opts MonsterEventFactoryOptionalArgs?
 ---@return MonsterEventFactory
-function this:new(
-    monster_data,
-    monster_role,
-    pop_em_type,
-    legendary_id,
-    stage,
-    time,
-    spawn_delay,
-    is_village_boost,
-    is_yummy,
-    area,
-    spoffer,
-    rewards,
-    difficulty,
-    environ,
-    size,
-    option_tag
-)
-    local o = factory.new(self, monster_data, stage, time, spawn_delay, area)
+function this:new(monster_data, stage, time, monster_role, pop_em_type, legendary_id, opts)
+    opts = opts or {}
+    local o = factory.new(self, monster_data, stage, time, opts)
     setmetatable(o, self)
     ---@cast o MonsterEventFactory
 
     o.monster_role = monster_role
     o.legendary_id = legendary_id
-    o.is_village_boost = is_village_boost
-    o.is_yummy = is_yummy
-    o.spoffer = spoffer
+    o.is_village_boost = opts.is_village_boost
+    o.is_yummy = opts.is_yummy
+    o.spoffer_unique_index = opts.spoffer_unique_index
     o.pop_em_type = pop_em_type
-    o.rewards = rewards
-    o.difficulty = difficulty
-    o.environ = environ
-    o.size = size
-    o.option_tag = option_tag
-    o.is_invalid = difficulty
-            and helpers.is_invalid_em2(monster_data, difficulty[1], o.monster_role)
+    o.rewards = opts.rewards
+    o.difficulty = opts.difficulty
+    o.environ = opts.environ
+    o.size = opts.size
+    o.option_tag = opts.option_tag
+    o.is_invalid = opts.difficulty
+            and helpers.is_invalid_em2(monster_data, opts.difficulty, o.monster_role)
         or false
 
     o._area_array = monster_data:get_area_array(
         stage,
-        not environ and mod.get_environ(stage) or nil,
+        not opts.environ and mod.get_environ(stage) or nil,
         o:_get_em_param()
     )
     return o
@@ -140,27 +125,25 @@ function this:build()
         return mod.enum.spawn_result.NO_AREA
     end
 
-    local difficulty_guid
-    if self.difficulty then
-        difficulty_guid = self.difficulty[math.random(#self.difficulty)]
-    else
+    if not self.difficulty then
         local em_pop_param = self:_get_em_pop_param()
         if not em_pop_param then
             return mod.enum.spawn_result.NO_EM_PARAM
         end
 
-        difficulty_guid = self:_get_difficulty(em_pop_param)
+        self.difficulty = self:_get_difficulty(em_pop_param)
     end
 
-    if not difficulty_guid then
+    if not self.difficulty then
         return mod.enum.spawn_result.NO_DIFFICULTY
     end
 
-    local spoffer_rewards = (self.rewards and self.spoffer) and self:_get_edited_reward_data()
+    local spoffer_rewards = (self.rewards and self.spoffer_unique_index)
+            and self:_get_edited_reward_data()
         or nil
-    local reward_data = self:_get_reward_data(difficulty_guid)
+    local reward_data = self:_get_reward_data(self.difficulty)
 
-    if not reward_data or (self.rewards and self.spoffer and not spoffer_rewards) then
+    if not reward_data or (self.rewards and self.spoffer_unique_index and not spoffer_rewards) then
         return mod.enum.spawn_result.NO_REWARDS
     end
 
@@ -168,18 +151,19 @@ function this:build()
     local event_data = sched.util.create_event_data()
     event_data._EventType = e.get("app.EX_FIELD_EVENT_TYPE").POP_EM
     event_data._FreeValue0 = e.to_fixed("app.EnemyDef.ID_Fixed", self.event_data.id)
-    event_data._FreeValue1 = util_game.hash_guid(difficulty_guid)
+    event_data._FreeValue1 = util_game.hash_guid(self.difficulty)
     event_data._FreeValue2 = e.to_fixed("app.FieldDef.STAGE_Fixed", self.stage)
     event_data._FreeValue3 = util_game.hash_guid(route_guid)
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
     --FIXME: after TU2 game auto xors (0x80 * self.legendary_id) for tempered monsters that can be also swarm
-    event_data._FreeMiniValue0 = ((self.is_village_boost and not self.spoffer) and 0x5C or 0x1C)
-        | ((self.is_yummy or reward_data.reward_id2 ~= -1) and 1 or 0)
+    event_data._FreeMiniValue0 = (
+        (self.is_village_boost and not self.spoffer_unique_index) and 0x5C or 0x1C
+    ) | ((self.is_yummy or reward_data.reward_id2 ~= -1) and 1 or 0)
     event_data._FreeMiniValue1 = environ_type | (0x10 * self.pop_em_type)
     event_data._FreeMiniValue2 = self.monster_role | (0x10 * self.legendary_id)
     event_data._FreeMiniValue3 = area
-    event_data._FreeMiniValue4 = self:_get_group_id(other_monsters, environ_type, difficulty_guid)
+    event_data._FreeMiniValue4 = self:_get_group_id(other_monsters, environ_type, self.difficulty)
     event_data._FreeMiniValue5 = self.time
     event_data._FreeMiniValue6 = 255
     event_data._ExecMinute = self._schedule_timeline:get_AdvancedGameMinute() + self.spawn_delay
@@ -190,8 +174,8 @@ function this:build()
         area,
         self.event_data.id,
         self.area,
-        self.spoffer and self.is_village_boost or false,
-        self.spoffer,
+        self.spoffer_unique_index and self.is_village_boost or false,
+        self.spoffer_unique_index,
         nil,
         nil,
         sched.spawn_event.make_subevent(reward_data.reward_array),
@@ -282,7 +266,7 @@ end
 ---@return EditedRewardData?
 function this:_get_reward_data(difficulty_guid)
     local ret
-    if self.rewards and not self.spoffer then
+    if self.rewards and not self.spoffer_unique_index then
         ret = self:_get_edited_reward_data()
     else
         local reward_data = self:_get_game_reward_data(difficulty_guid)
