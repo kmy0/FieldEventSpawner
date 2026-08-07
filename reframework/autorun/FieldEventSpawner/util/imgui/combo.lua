@@ -117,7 +117,7 @@ end
 ---@param current_index integer?
 function this:translate(current_index)
     if not self._translate_fn then
-        return
+        return current_index
     end
 
     self.values = {}
