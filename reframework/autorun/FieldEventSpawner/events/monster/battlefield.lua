@@ -63,6 +63,7 @@ setmetatable(this, { __index = monster_factory })
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
+---@param option_tag integer?
 ---@return BattlefieldEventFactory
 function this:new(
     monster_data,
@@ -76,7 +77,8 @@ function this:new(
     rewards,
     difficulty,
     environ,
-    size
+    size,
+    option_tag
 )
     local o = monster_factory.new(
         self,
@@ -94,7 +96,8 @@ function this:new(
         rewards,
         difficulty,
         environ,
-        size
+        size,
+        option_tag
     )
     setmetatable(o, self)
     ---@cast o BattlefieldEventFactory

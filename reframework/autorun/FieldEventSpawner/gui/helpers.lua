@@ -168,10 +168,22 @@ end
 ---@param current_index integer?
 ---@param disabled_keys any[]?
 ---@param is_init boolean?
+---@param insert_dummy boolean? by default, true
 ---@return integer?
-function this.swap_with_disabled(combo, key_to_value, current_index, disabled_keys, is_init)
+function this.swap_with_disabled(
+    combo,
+    key_to_value,
+    current_index,
+    disabled_keys,
+    is_init,
+    insert_dummy
+)
     key_to_value = util_table.deep_copy(key_to_value)
-    key_to_value[-1] = -1
+    insert_dummy = insert_dummy == nil and true or false
+    if insert_dummy then
+        key_to_value[-1] = -1
+    end
+
     local ret
     if is_init then
         ret = combo:swap_init(key_to_value, current_index, disabled_keys)
@@ -321,6 +333,7 @@ function this.spawn()
             or nil
         local spoffer = combo.spoffer:get()
         local difficulty = combo.em_difficulty_rank:get() and { combo.em_difficulty_rank:get() } --[==[@as System.Guid[]?]==]
+        local option_tag = combo.em_option_tag:get()
 
         if spoffer and not difficulty then
             difficulty = this.get_valid_spoffer_difficulties()
@@ -343,7 +356,8 @@ function this.spawn()
                 difficulty,
                 environ,
                 this.get_em_size(),
-                this.get_is_spoffer_swarm()
+                this.get_is_spoffer_swarm(),
+                option_tag
             )
         elseif this.is_battlefield_monster_current_stage() then
             return spawner.battlefield(
@@ -360,7 +374,8 @@ function this.spawn()
                 rewards,
                 difficulty,
                 environ,
-                this.get_em_size()
+                this.get_em_size(),
+                option_tag
             )
         else
             return spawner.monster(
@@ -378,7 +393,8 @@ function this.spawn()
                 rewards,
                 difficulty,
                 environ,
-                this.get_em_size()
+                this.get_em_size(),
+                option_tag
             )
         end
     elseif event_type == "gimmick" then

@@ -37,6 +37,7 @@ setmetatable(this, { __index = monster_factory })
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
 ---@param spoffer_swarm boolean?
+---@param option_tag integer?
 ---@return SwarmEventFactory
 function this:new(
     monster_data,
@@ -54,7 +55,8 @@ function this:new(
     difficulty,
     environ,
     size,
-    spoffer_swarm
+    spoffer_swarm,
+    option_tag
 )
     local o = monster_factory.new(
         self,
@@ -72,7 +74,8 @@ function this:new(
         rewards,
         difficulty,
         environ,
-        size
+        size,
+        option_tag
     )
     setmetatable(o, self)
     ---@cast o SwarmEventFactory

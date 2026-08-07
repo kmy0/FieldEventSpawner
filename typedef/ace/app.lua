@@ -265,6 +265,7 @@
 ---@field get_RoleID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.ROLE_ID
 ---@field get_LegendaryID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.LEGENDARY_ID
 ---@field get_StayMinute_Real fun(self: app.cExFieldEvent_PopEnemy): System.Byte
+---@field set_OptionTagValue  fun(self: app.cExFieldEvent_PopEnemy, val: System.Int64)
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE

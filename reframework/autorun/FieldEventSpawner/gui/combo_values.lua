@@ -14,6 +14,7 @@
 ---@field environ app.EnvironmentType.ENVIRONMENT
 ---@field area integer
 ---@field em_role app.EnemyDef.ROLE_ID
+---@field em_option_tag integer
 
 ---@class (exact) ChangedData
 ---@field event boolean
@@ -51,6 +52,7 @@ local this = {
         environ = -1,
         area = -1,
         em_role = -1,
+        em_option_tag = -1,
     },
     initialized = false,
 }
@@ -84,6 +86,7 @@ end
 ---@param changed ChangedData
 ---@param config_mod ModSettings
 ---@param disabled_keys any[]?
+---@param insert_dummy boolean? by default, true
 ---@return boolean dirty
 local function sync_combo_with_disabled(
     dirty,
@@ -93,7 +96,8 @@ local function sync_combo_with_disabled(
     current_data,
     changed,
     config_mod,
-    disabled_keys
+    disabled_keys,
+    insert_dummy
 )
     if dirty then
         config_mod[field] = helpers.swap_with_disabled(
@@ -101,7 +105,8 @@ local function sync_combo_with_disabled(
             key_to_value,
             config_mod[field],
             disabled_keys,
-            not this.initialized
+            not this.initialized,
+            insert_dummy
         )
         current_data[field] = combo:get()
         changed[field] = true
@@ -153,6 +158,27 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
 
     local em_param_struct = event and event:get_param_struct(current_data.stage, environ) or {}
 
+    if this.initialized and event and event.id ~= config_mod.em_option_em then
+        config_mod.em_option_tags = {}
+        config_mod.em_option_em = event.id
+        config:save()
+    end
+
+    dirty = sync_combo_with_disabled(
+        dirty,
+        combo.em_option_tag,
+        event
+                and util_table.map_table(event.option_tag, function(o)
+                    return tostring(o)
+                end)
+            or {},
+        "em_option_tag",
+        current_data,
+        changed,
+        config_mod,
+        event and util_table.keys(config_mod.em_option_tags) or {},
+        false
+    )
     dirty = sync_combo(
         dirty,
         combo.em_param,
@@ -296,6 +322,7 @@ function this.update()
         environ = mod.state.environ or -1,
         area = combo.area:get() or -1,
         em_role = combo.em_role:get() or -1,
+        em_option_tag = combo.em_option_tag:get() or -1,
     }
     ---@type ChangedData
     ---@diagnostic disable-next-line: missing-fields

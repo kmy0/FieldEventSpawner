@@ -10,6 +10,7 @@ local data_helpers =
 local helpers = require("FieldEventSpawner.data.ace.event.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
+local types = require("FieldEventSpawner.util.ref.types")
 local util_game = require("FieldEventSpawner.util.game.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
@@ -484,6 +485,25 @@ local function get_size_data()
     return ret
 end
 
+local function get_option_tag(em_id_name)
+    local ret = {}
+    local letters, digits = em_id_name:match("^(%a+)(%d+)")
+    if not letters then
+        return ret
+    end
+
+    local tdef_name = string.format(
+        "app.%sDef.OPTION_TAGBit",
+        letters:sub(1, 1):upper() .. letters:sub(2):lower() .. digits
+    )
+    local tdef = types.get(tdef_name)
+    if not tdef then
+        return ret
+    end
+
+    return util_table.deep_copy(e.get(tdef_name).enum_to_field)
+end
+
 ---@param monster_data MonsterData[]
 ---@return string, string
 function this.get_lower_upper_difficulties(monster_data)
@@ -608,6 +628,7 @@ function this.spoof_monster(monster_data, to_spoof, to_copy, maps)
     spoof_data.name_english = game_lang.get_message_local(name_guid, 1)
     spoof_data.name_local = game_lang.get_message_local(name_guid, lang, true)
     spoof_data.spoofed_id = to_copy
+    spoof_data.option_tag = get_option_tag(e.get("app.EnemyDef.ID")[to_spoof])
 
     for _, stage in pairs(maps) do
         make_all_params_invalid(spoof_data, stage)
@@ -719,7 +740,7 @@ function this.get_data(ex_field_param)
     ---@type MonsterData[]
     local ret = {}
 
-    for _, em_id in e.iter("app.EnemyDef.ID") do
+    for em_id_name, em_id in e.iter("app.EnemyDef.ID") do
         if not m.isEmValid(em_id) or not m.isBossID(em_id) or not size_data[em_id] then
             goto continue
         end
@@ -731,7 +752,8 @@ function this.get_data(ex_field_param)
             game_lang.get_message_local(name_guid, lang, true),
             type,
             size_data[em_id].crown,
-            ex_em_global_param:isExclusiveEm(em_id)
+            ex_em_global_param:isExclusiveEm(em_id),
+            get_option_tag(em_id_name)
         )
 
         local area_move_info_by_em = ex_em_global_param:getAreaMoveInfo(em_id)

@@ -70,6 +70,16 @@ function this.add(stage, event)
     end
 
     schedule_timeline:importSchedule(schedule, false)
+
+    if
+        e.get("app.EX_FIELD_EVENT_TYPE")[cached_event.event_type] == "POP_EM"
+        and event.args.option_tag
+    then
+        local pop_em = schedule_timeline:findKeyFromUniqueIndex(event.args.unique_index)
+        ---@cast pop_em app.cExFieldEvent_PopEnemy
+        pop_em:set_OptionTagValue(event.args.option_tag)
+    end
+
     field_director:requestSortKeyList(stage, true)
 end
 

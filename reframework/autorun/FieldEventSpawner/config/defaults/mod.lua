@@ -38,6 +38,9 @@
 ---@field em_difficulty integer
 ---@field em_difficulty_rank integer
 ---@field em_role integer
+---@field em_option_tag integer
+---@field em_option_tags table<string, integer>
+---@field em_option_em integer
 ---
 ---@field em_size integer
 ---@field time integer
@@ -89,6 +92,9 @@ return {
         em_difficulty = 1,
         em_difficulty_rank = 1,
         em_role = 1,
+        em_option_tag = 1,
+        em_option_tags = {},
+        em_option_em = -1,
         --
         time = 30,
         swarm_count = 2,

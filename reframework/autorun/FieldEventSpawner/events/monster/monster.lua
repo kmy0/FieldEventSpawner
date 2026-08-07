@@ -11,6 +11,7 @@
 ---@field environ app.EnvironmentType.ENVIRONMENT[]?
 ---@field size integer?
 ---@field is_invalid boolean
+---@field option_tag integer?
 
 --[[ app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -75,6 +76,7 @@ setmetatable(this, { __index = factory })
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
+---@param option_tag integer?
 ---@return MonsterEventFactory
 function this:new(
     monster_data,
@@ -91,7 +93,8 @@ function this:new(
     rewards,
     difficulty,
     environ,
-    size
+    size,
+    option_tag
 )
     local o = factory.new(self, monster_data, stage, time, spawn_delay, area)
     setmetatable(o, self)
@@ -107,6 +110,7 @@ function this:new(
     o.difficulty = difficulty
     o.environ = environ
     o.size = size
+    o.option_tag = option_tag
     o.is_invalid = difficulty
             and helpers.is_invalid_em2(monster_data, difficulty[1], o.monster_role)
         or false
@@ -192,7 +196,9 @@ function this:build()
         nil,
         sched.spawn_event.make_subevent(reward_data.reward_array),
         spoffer_rewards,
-        self.size
+        self.size,
+        nil,
+        self.option_tag
     )
     return mod.enum.spawn_result.OK, ret
 end

@@ -8,6 +8,7 @@
 ---@field size integer?
 ---@field spoffer_swarm boolean?
 ---@field battlefield_slay boolean?
+---@field option_tag integer?
 
 ---@class (exact) ScheduledEvent
 ---@field event_data app.cExFieldScheduleExportData.cEventData
@@ -64,6 +65,7 @@ end
 ---@param spoffer_rewards EditedRewardData?
 ---@param size integer?
 ---@param battlefield_slay boolean?
+---@param option_tag integer?
 ---@return MonsterSpawnEvent
 function this.make_monster(
     event_data,
@@ -78,7 +80,8 @@ function this.make_monster(
     sub_events,
     spoffer_rewards,
     size,
-    battlefield_slay
+    battlefield_slay,
+    option_tag
 )
     local ret = this.ctor(event_data, name, area, collision_flag, children, sub_events)
     ---@cast ret MonsterSpawnEvent
@@ -90,6 +93,7 @@ function this.make_monster(
         spoffer_rewards = spoffer_rewards,
         size = size,
         battlefield_slay = battlefield_slay,
+        option_tag = option_tag,
     }
     return ret
 end

@@ -55,6 +55,7 @@
 ---@field map table<app.FieldDef.STAGE, MonsterMapData>
 ---@field crown MonsterCrown
 ---@field is_exclusive boolean
+---@field option_tag table<integer, string>
 
 local area_event_base = require("FieldEventSpawner.data.def.area_event_base")
 local helpers = require("FieldEventSpawner.data.ace.event.helpers")
@@ -75,8 +76,9 @@ setmetatable(this, { __index = area_event_base })
 ---@param type app.EX_FIELD_EVENT_TYPE
 ---@param crown MonsterCrown
 ---@param is_exclusive boolean
+---@param option_tag table<integer, string>
 ---@return MonsterData
-function this:new(id, name_english, name_local, type, crown, is_exclusive)
+function this:new(id, name_english, name_local, type, crown, is_exclusive, option_tag)
     local o = area_event_base.new(self, name_english, name_local, type)
     setmetatable(o, self)
     ---@cast o MonsterData
@@ -84,6 +86,7 @@ function this:new(id, name_english, name_local, type, crown, is_exclusive)
     o.crown = crown
     o.is_exclusive = is_exclusive
     o.map = {}
+    o.option_tag = option_tag
     o.__type = "__MonsterData"
     return o
 end

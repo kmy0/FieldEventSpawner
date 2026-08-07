@@ -17,6 +17,7 @@ local this = {}
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
+---@param option_tag integer?
 ---@return SpawnResult
 function this.monster(
     monster_data,
@@ -33,7 +34,8 @@ function this.monster(
     rewards,
     difficulty,
     environ,
-    size
+    size,
+    option_tag
 )
     local fac = event.monster:new(
         monster_data,
@@ -50,7 +52,8 @@ function this.monster(
         rewards,
         difficulty,
         environ,
-        size
+        size,
+        option_tag
     )
     return fac:spawn()
 end
@@ -67,6 +70,7 @@ end
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
+---@param option_tag integer?
 ---@return SpawnResult
 function this.battlefield(
     monster_data,
@@ -80,7 +84,8 @@ function this.battlefield(
     rewards,
     difficulty,
     environ,
-    size
+    size,
+    option_tag
 )
     local fac = event.battlefield:new(
         monster_data,
@@ -94,7 +99,8 @@ function this.battlefield(
         rewards,
         difficulty,
         environ,
-        size
+        size,
+        option_tag
     )
     return fac:spawn()
 end
@@ -109,12 +115,13 @@ end
 ---@param is_village_boost boolean
 ---@param is_yummy boolean
 ---@param swarm_count integer
----@param area integer?,
+---@param area integer?
 ---@param rewards GuiRewardData[]?
 ---@param difficulty System.Guid[]?
 ---@param environ app.EnvironmentType.ENVIRONMENT[]?
 ---@param size integer?
 ---@param spoffer_swarm boolean?
+---@param option_tag integer?
 ---@return SpawnResult
 function this.swarm(
     monster_data,
@@ -132,7 +139,8 @@ function this.swarm(
     difficulty,
     environ,
     size,
-    spoffer_swarm
+    spoffer_swarm,
+    option_tag
 )
     local fac = event.swarm:new(
         monster_data,
@@ -150,7 +158,8 @@ function this.swarm(
         difficulty,
         environ,
         size,
-        spoffer_swarm
+        spoffer_swarm,
+        option_tag
     )
     return fac:spawn()
 end

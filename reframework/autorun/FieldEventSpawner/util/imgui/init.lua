@@ -3,7 +3,9 @@ local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 local uuid = require("FieldEventSpawner.util.misc.uuid")
 
-local this = {}
+local this = {
+    combo_chips = require("FieldEventSpawner.util.imgui.combo_chips").combo_chips,
+}
 ---@type table<string, number>
 local child_window_sizes = {}
 

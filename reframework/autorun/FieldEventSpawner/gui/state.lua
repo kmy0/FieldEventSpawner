@@ -12,6 +12,7 @@
 ---@field em_param_mod Combo
 ---@field em_difficulty Combo
 ---@field em_difficulty_rank Combo
+---@field em_option_tag Combo
 ---@field spoffer Combo
 ---@field quest_rewards Combo
 ---@field item_rewards Combo
@@ -139,6 +140,21 @@ this.combo.em_role = combo:new(nil, {
         end
 
         return self:get_key(config.current.mod.em_role)
+    end,
+})
+this.combo.em_option_tag = combo:new(nil, {
+    sort_fn = sort_by_key,
+    getter_fn = function()
+        local ret = 0
+        for bit, _ in pairs(config.current.mod.em_option_tags) do
+            ret = ret | tonumber(bit)
+        end
+
+        if ret == 0 then
+            return
+        end
+
+        return ret
     end,
 })
 this.combo.em_param_mod = combo:new(nil, {

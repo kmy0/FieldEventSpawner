@@ -101,4 +101,33 @@ function this:input_text(name, config_key, flags)
     return self:generic_config(name, config_key, imgui.input_text, flags)
 end
 
+---@param label string
+---@param config_key string
+---@param item_selection table<string, integer>
+---@param combo Combo
+---@param button_label string
+---@param action_buttons ComboChipActionButton[]?
+---@param tooltip_fn fun()?
+---@return boolean
+function this:combo_chips(
+    label,
+    config_key,
+    item_selection,
+    combo,
+    button_label,
+    action_buttons,
+    tooltip_fn
+)
+    return self:generic_config(
+        label,
+        config_key,
+        util_imgui.combo_chips,
+        item_selection,
+        combo,
+        button_label,
+        action_buttons,
+        tooltip_fn
+    )
+end
+
 return this

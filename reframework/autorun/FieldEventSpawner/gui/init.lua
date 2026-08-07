@@ -164,14 +164,14 @@ function this.draw()
     )
     combo_with_disabled(state.combo.event, util_gui.tr("mod.combo_event"), "mod.event")
 
-    if state.combo.area:is_disabled() then
+    if state.combo.area:is_disabled() and config_mod.area ~= 1 then
         config:set("mod.area", 1)
     end
     combo_with_disabled(state.combo.area, util_gui.tr("mod.combo_area"), "mod.area")
 
     set:slider_int(util_gui.tr("mod.slider_time"), "mod.time", 0, 60)
 
-    if helpers.is_spawn_delay_disabled() then
+    if helpers.is_spawn_delay_disabled() and config_mod.spawn_delay ~= 0 then
         config:set("mod.spawn_delay", 0)
     end
 
@@ -209,11 +209,22 @@ function this.draw()
             "mod.em_difficulty_rank"
         )
         util_imgui.tooltip(config.lang:tr("mod.tooltip_quest_rank"), true)
+        set:combo_chips(
+            util_gui.tr("mod.combo_em_option_tag"),
+            "mod.em_option_tag",
+            config_mod.em_option_tags,
+            state.combo.em_option_tag,
+            util_gui.tr("mod.button_add_option_tag"),
+            nil,
+            function()
+                util_imgui.tooltip(config.lang:tr("mod.tooltip_combo_em_option_tag"), true)
+            end
+        )
 
         util_imgui.separator_text(config.lang:tr("mod.tooltip_category_misc"))
 
         local disabled = helpers.is_em_size_disabled()
-        if disabled then
+        if disabled and config_mod.em_size ~= -1 then
             config:set("mod.em_size", -1)
         end
 
@@ -230,7 +241,7 @@ function this.draw()
         util_imgui.tooltip(get_monster_crown_text(), true)
 
         disabled = helpers.is_swarm_count_disabled()
-        if disabled then
+        if disabled and config_mod.swarm_count ~= 0 then
             config:set("mod.swarm_count", 0)
         end
 
@@ -252,7 +263,7 @@ function this.draw()
 
         util_imgui.separator_text(config.lang:tr("mod.tooltip_category_spoffer"))
 
-        if state.combo.spoffer:is_disabled() then
+        if state.combo.spoffer:is_disabled() and config_mod.spoffer ~= 1 then
             config:set("mod.spoffer", 1)
         end
 
