@@ -129,10 +129,10 @@ end
 
 ---@param em_args MonsterSpawnEventArgs
 function this.set_em_args(em_args)
-    if em_args.spoffer then
+    if em_args.spoffer_unique_index then
         actions.force_spoffer = {
             pop_index_first = em_args.unique_index,
-            pop_index_second = em_args.spoffer,
+            pop_index_second = em_args.spoffer_unique_index,
             rewards = em_args.spoffer_rewards,
         }
     end
@@ -144,7 +144,7 @@ function this.set_em_args(em_args)
         }
     end
 
-    if em_args.village_boost then
+    if em_args.is_spoffer_village_boost then
         actions.force_village_boost = true
     end
 

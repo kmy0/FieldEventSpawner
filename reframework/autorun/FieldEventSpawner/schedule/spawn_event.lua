@@ -1,13 +1,13 @@
 ---@class (exact) MonsterSpawnEventArgs
 ---@field id app.EnemyDef.ID
 ---@field area integer?
----@field village_boost boolean?
+---@field is_spoffer_village_boost boolean?
 ---@field unique_index integer?
----@field spoffer integer?
+---@field spoffer_unique_index integer?
 ---@field spoffer_rewards EditedRewardData?
 ---@field size integer?
 ---@field spoffer_swarm boolean?
----@field battlefield_slay boolean?
+---@field is_battlefield_slay boolean?
 ---@field option_tag integer?
 
 ---@class (exact) ScheduledEvent
@@ -20,6 +20,25 @@
 ---@class (exact) MonsterSpawnEvent : SpawnEvent
 ---@field args MonsterSpawnEventArgs
 
+---@class (exact) SpawnEventOptionalArgs
+---@field collision_flag EventCollisionFlag?
+---@field children CachedEventChild[]?
+---@field sub_events ScheduledEvent[]?
+
+---@class (exact) SpawnMonsterEventOptionalArgs : SpawnEventOptionalArgs
+---@field area integer?
+---@field is_spoffer_village_boost boolean?
+---@field spoffer_unique_index integer?
+---@field spoffer_rewards EditedRewardData?
+---@field size integer?
+---@field is_battlefield_slay boolean?
+---@field option_tag integer?
+
+---@class (exact) SpawnChildEventOptionalArgs
+---@field area integer?
+---@field collision_flag EventCollisionFlag?
+---@field event_data app.cExFieldScheduleExportData.cEventData?
+
 local ace = require("FieldEventSpawner.data.ace.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local mod = require("FieldEventSpawner.data.mod")
@@ -29,11 +48,10 @@ local this = {}
 ---@param event_data app.cExFieldScheduleExportData.cEventData
 ---@param name string
 ---@param area integer
----@param collision_flag EventCollisionFlag?
----@param children CachedEventChild[]?
----@param sub_events ScheduledEvent[]?
+---@param opts SpawnEventOptionalArgs?
 ---@return SpawnEvent
-function this.ctor(event_data, name, area, collision_flag, children, sub_events)
+function this.make_event(event_data, name, area, opts)
+    opts = opts or {}
     ---@type SpawnEvent
     return {
         event_data = event_data,
@@ -45,10 +63,10 @@ function this.ctor(event_data, name, area, collision_flag, children, sub_events)
             id = event_data:get_field(
                 ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
             ),
-            collision_flag = collision_flag and collision_flag or 0,
-            children = children,
+            collision_flag = opts.collision_flag and opts.collision_flag or 0,
+            children = opts.children,
         },
-        sub_events = sub_events,
+        sub_events = opts.sub_events,
     }
 end
 
@@ -56,44 +74,21 @@ end
 ---@param name string
 ---@param area integer
 ---@param id app.EnemyDef.ID
----@param force_area integer?
----@param village_boost boolean?
----@param spoffer integer?
----@param collision_flag EventCollisionFlag?
----@param children CachedEventChild[]?
----@param sub_events ScheduledEvent[]?
----@param spoffer_rewards EditedRewardData?
----@param size integer?
----@param battlefield_slay boolean?
----@param option_tag integer?
+---@param opts SpawnMonsterEventOptionalArgs?
 ---@return MonsterSpawnEvent
-function this.make_monster(
-    event_data,
-    name,
-    area,
-    id,
-    force_area,
-    village_boost,
-    spoffer,
-    collision_flag,
-    children,
-    sub_events,
-    spoffer_rewards,
-    size,
-    battlefield_slay,
-    option_tag
-)
-    local ret = this.ctor(event_data, name, area, collision_flag, children, sub_events)
+function this.make_monster(event_data, name, area, id, opts)
+    opts = opts or {}
+    local ret = this.make_event(event_data, name, area, opts)
     ---@cast ret MonsterSpawnEvent
     ret.args = {
         id = id,
-        area = force_area,
-        spoffer = spoffer,
-        village_boost = village_boost,
-        spoffer_rewards = spoffer_rewards,
-        size = size,
-        battlefield_slay = battlefield_slay,
-        option_tag = option_tag,
+        area = opts.area,
+        spoffer_unique_index = opts.spoffer_unique_index,
+        is_spoffer_village_boost = opts.is_spoffer_village_boost,
+        spoffer_rewards = opts.spoffer_rewards,
+        size = opts.size,
+        is_battlefield_slay = opts.is_battlefield_slay,
+        option_tag = opts.option_tag,
     }
     return ret
 end
@@ -120,24 +115,23 @@ function this.make_subevent(event_data)
 end
 
 ---@param unique_index integer
----@param event_data app.cExFieldScheduleExportData.cEventData?
----@param area integer?
----@param collision_flag EventCollisionFlag?
+---@param opts SpawnChildEventOptionalArgs?
 ---@return CachedEventChild
-function this.make_child(unique_index, event_data, area, collision_flag)
+function this.make_child(unique_index, opts)
+    opts = opts or {}
     ---@type CachedEventChild
     local ret = {
         type = mod.enum.cached_event_type.CHILD,
         unique_index = unique_index,
     }
-    if event_data then
+    if opts.event_data then
         ret.base = {
-            id = event_data:get_field(
-                ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[event_data._EventType]]
+            id = opts.event_data:get_field(
+                ace.map.ex_event_to_id_field[e.get("app.EX_FIELD_EVENT_TYPE")[opts.event_data._EventType]]
             ),
-            event_type = event_data._EventType,
-            area = area and area or 0,
-            collision_flag = collision_flag and collision_flag or 0,
+            event_type = opts.event_data._EventType,
+            area = opts.area and opts.area or 0,
+            collision_flag = opts.collision_flag and opts.collision_flag or 0,
         }
     end
     return ret

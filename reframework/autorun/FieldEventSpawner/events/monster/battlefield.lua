@@ -166,22 +166,21 @@ function this:build()
             self:_get_monster_name(),
             area,
             self.event_data.id,
-            self.area,
-            nil,
-            nil,
-            mod.enum.event_collision_flag.EVENT_TYPE,
             {
-                sched.spawn_event.make_child(
-                    event_data._UniqueIndex,
-                    event_data,
-                    area,
-                    mod.enum.event_collision_flag.ID
-                ),
-            },
-            sub_events,
-            nil,
-            self.size,
-            self.battlefield_state == mod.enum.battlefield_state.battlefield_slay
+                area = self.area,
+                collision_flag = mod.enum.event_collision_flag.EVENT_TYPE,
+                children = {
+                    sched.spawn_event.make_child(event_data._UniqueIndex, {
+                        event_data = event_data,
+                        area = area,
+                        collision_flag = mod.enum.event_collision_flag.ID,
+                    }),
+                },
+                sub_events = sub_events,
+                size = self.size,
+                is_battlefield_slay = self.battlefield_state
+                    == mod.enum.battlefield_state.battlefield_slay,
+            }
         )
 end
 

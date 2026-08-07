@@ -173,16 +173,15 @@ function this:build()
         self:_get_monster_name(),
         area,
         self.event_data.id,
-        self.area,
-        self.spoffer_unique_index and self.is_village_boost or false,
-        self.spoffer_unique_index,
-        nil,
-        nil,
-        sched.spawn_event.make_subevent(reward_data.reward_array),
-        spoffer_rewards,
-        self.size,
-        nil,
-        self.option_tag
+        {
+            area = self.area,
+            is_spoffer_village_boost = self.spoffer_unique_index and self.is_village_boost or false,
+            spoffer_unique_index = self.spoffer_unique_index,
+            sub_events = sched.spawn_event.make_subevent(reward_data.reward_array),
+            spoffer_rewards = spoffer_rewards,
+            size = self.size,
+            option_tag = self.option_tag,
+        }
     )
     return mod.enum.spawn_result.OK, ret
 end

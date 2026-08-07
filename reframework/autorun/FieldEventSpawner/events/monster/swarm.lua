@@ -102,8 +102,7 @@ function this:build()
             leader_data.cache_base.children,
             sched.spawn_event.make_child(
                 member_data.event_data._UniqueIndex,
-                member_data.event_data,
-                swarm_data.area
+                { event_data = member_data.event_data, area = swarm_data.area }
             )
         )
         table.insert(leader_data.sub_events, member_data)
@@ -130,9 +129,9 @@ function this:_build_leader(out)
         out.groupid = event.event_data._FreeMiniValue4
         out.route_hash = event.event_data._FreeValue3
 
-        if event.args.spoffer then
+        if event.args.spoffer_unique_index then
             event.args.spoffer_swarm = true
-            event.args.spoffer = nil
+            event.args.spoffer_unique_index = nil
         end
     end
     return res, event
