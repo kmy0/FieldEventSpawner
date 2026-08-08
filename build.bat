@@ -8,4 +8,5 @@ md bin\reframework\plugins
 robocopy reframework bin\reframework /mir
 robocopy deps\fes_util\bin bin\reframework\plugins fes_util.dll
 tar -a -cf FieldEventSpawner.zip -C bin reframework
-tar -a -cf AllMonstersAllMaps.zip natives
+tar -a -cf AllMonstersAllMaps.zip -C optional natives
+tar -a -cf FixInvalidMonsters.zip -C optional reframework
