@@ -423,9 +423,7 @@ end
 
 function this.force_pop_many_spawn_pre(args)
     if flags.spawn then
-        local storage = thread.get_hook_storage() --[[@as table]]
-        storage["out"] = args[3]
-        storage["in"] = args[4]
+        util_ref.thread_store(args)
     end
 end
 
@@ -434,9 +432,9 @@ end
 -- not sure if its by design or an oversight
 function this.force_pop_many_spawn_post(_)
     if flags.spawn then
-        local storage = thread.get_hook_storage() --[[@as table]]
-        local out_pop_em = sdk.to_managed_object(util_ref.deref_ptr(storage["out"])) --[[@as app.cExFieldEvent_PopEnemy?]]
-        local in_pop_em = sdk.to_managed_object(storage["in"]) --[[@as app.cExFieldEvent_PopEnemy]]
+        local args = util_ref.thread_get()
+        local out_pop_em = sdk.to_managed_object(util_ref.deref_ptr(args[3])) --[[@as app.cExFieldEvent_PopEnemy?]]
+        local in_pop_em = sdk.to_managed_object(args[4]) --[[@as app.cExFieldEvent_PopEnemy]]
 
         if out_pop_em then
             out_pop_em:call(
@@ -464,9 +462,7 @@ end
 
 function this.stop_em_combat_pre(args)
     if not util_table.empty(actions.force_area.ongoing) then
-        local storage = thread.get_hook_storage() --[[@as table]]
-        storage["ctx_holder1"] = args[3]
-        storage["ctx_holder2"] = args[6]
+        util_ref.thread_store(args)
     end
 end
 
@@ -478,9 +474,9 @@ function this.stop_em_combat_post(_)
             end
         end
 
-        local storage = thread.get_hook_storage() --[[@as table]]
-        local ctx_holder1 = sdk.to_managed_object(storage["ctx_holder1"]) --[[@as app.cEnemyContextHolder?]]
-        local ctx_holder2 = sdk.to_managed_object(storage["ctx_holder2"]) --[[@as app.cEnemyContextHolder?]]
+        local args = util_ref.thread_get()
+        local ctx_holder1 = sdk.to_managed_object(args[3]) --[[@as app.cEnemyContextHolder?]]
+        local ctx_holder2 = sdk.to_managed_object(args[6]) --[[@as app.cEnemyContextHolder?]]
         if not util_table.empty(actions.force_area.ongoing) and ctx_holder1 and ctx_holder2 then
             local _, schedule_timeline = mod.get_field_director()
             local ctx1 = ctx_holder1:get_Em()
