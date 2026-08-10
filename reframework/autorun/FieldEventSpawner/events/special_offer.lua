@@ -22,7 +22,9 @@
 
 local e = require("FieldEventSpawner.util.game.enum")
 local m = require("FieldEventSpawner.util.ref.methods")
+local mod = require("FieldEventSpawner.data.mod")
 local sched_util = require("FieldEventSpawner.schedule.util")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 
 local this = {}
 
@@ -65,11 +67,20 @@ local function set_em_reward(spoffer_info, edited_reward_data, index)
     reward_array:set_Item(index, new_reward)
 end
 
----@param spoffer_info app.cExSpOfferFactory.SpOfferInfo
 ---@param edited_reward_data EditedRewardData
-function this.swap_rewards(spoffer_info, edited_reward_data)
-    set_em_reward(spoffer_info, edited_reward_data, 0)
-    set_em_reward(spoffer_info, edited_reward_data, 1)
+---@param index integer? by_default, 0
+function this.swap_rewards(edited_reward_data, index)
+    index = index or 0
+    local field_director = mod.get_field_director()
+    local spoffer_factory = field_director._SpOfferFactory
+    local spoffer_by_stage = spoffer_factory._CurrentSpOfferInfo
+    local spoffer_array = spoffer_by_stage:get_SpOfferList()
+
+    util_misc.try(function()
+        local spoffer_info = spoffer_array:get_Item(index)
+        set_em_reward(spoffer_info, edited_reward_data, 0)
+        set_em_reward(spoffer_info, edited_reward_data, 1)
+    end)
 end
 
 return this

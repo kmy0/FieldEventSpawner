@@ -274,46 +274,34 @@ function this.create_spoffer_pre(args)
     flags.spoffer = true
 
     if flags.spawn and actions.force_spoffer then
-        local spoffer_stage = sdk.to_managed_object(args[3])
-        ---@cast spoffer_stage app.cExSpOfferFactory.cSpOfferByStage
-        thread.get_hook_storage()["spoffer_stage"] = spoffer_stage
+        local spoffer_stage = sdk.to_managed_object(args[3]) --[[@as app.cExSpOfferFactory.cSpOfferByStage]]
         local spoffer_array = spoffer_stage:get_SpOfferList()
         spoffer_array:Clear()
     end
 end
 
 function this.create_spoffer_post(_)
-    if flags.spawn and actions.force_spoffer and actions.force_spoffer.rewards then
-        local spoffer_stage = thread.get_hook_storage()["spoffer_stage"]
-        local spoffer_array = spoffer_stage:get_SpOfferList() --[[@as System.Array<app.cExSpOfferFactory.SpOfferInfo>]]
+    if flags.spawn and actions.force_spoffer then
+        if actions.force_spoffer.rewards then
+            special_offer.swap_rewards(actions.force_spoffer.rewards)
+        end
 
-        if spoffer_array:get_Count() == 1 then
-            local spoffer_info = spoffer_array:get_Item(0)
-            ---@cast spoffer_info app.cExSpOfferFactory.SpOfferInfo
-            special_offer.swap_rewards(spoffer_info, actions.force_spoffer.rewards)
+        if config.current.mod.display_cheat_errors then
+            helpers.check_ex_quest_spoffer()
         end
     end
 
     flags.spoffer = false
 end
 
-function this.create_spoffer_swarm_pre(args)
-    if flags.spawn and actions.force_spoffer_swarm then
-        local spoffer_stage = sdk.to_managed_object(args[3])
-        ---@cast spoffer_stage app.cExSpOfferFactory.cSpOfferByStage
-        thread.get_hook_storage()["spoffer_stage"] = spoffer_stage
-    end
-end
-
 function this.create_spoffer_swarm_post(_)
-    if flags.spawn and actions.force_spoffer_swarm and actions.force_spoffer_swarm.rewards then
-        local spoffer_stage = thread.get_hook_storage()["spoffer_stage"]
-        local spoffer_array = spoffer_stage:get_SpOfferList() --[[@as System.Array<app.cExSpOfferFactory.SpOfferInfo>]]
+    if flags.spawn and actions.force_spoffer_swarm then
+        if actions.force_spoffer_swarm.rewards then
+            special_offer.swap_rewards(actions.force_spoffer_swarm.rewards)
+        end
 
-        if spoffer_array:get_Count() == 1 then
-            local spoffer_info = spoffer_array:get_Item(0)
-            ---@cast spoffer_info app.cExSpOfferFactory.SpOfferInfo
-            special_offer.swap_rewards(spoffer_info, actions.force_spoffer_swarm.rewards)
+        if config.current.mod.display_cheat_errors then
+            helpers.check_ex_quest_spoffer_swarm()
         end
     end
 end

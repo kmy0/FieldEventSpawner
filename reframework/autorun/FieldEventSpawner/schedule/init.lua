@@ -1,6 +1,8 @@
 local ace = require("FieldEventSpawner.data.ace.init")
+local config = require("FieldEventSpawner.config.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local event_removal = require("FieldEventSpawner.schedule.event_removal")
+local helpers = require("FieldEventSpawner.data.helpers")
 local mod = require("FieldEventSpawner.data.mod")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -71,13 +73,17 @@ function this.add(stage, event)
 
     schedule_timeline:importSchedule(schedule, false)
 
-    if
-        e.get("app.EX_FIELD_EVENT_TYPE")[cached_event.event_type] == "POP_EM"
-        and event.args.option_tag
-    then
+    if e.get("app.EX_FIELD_EVENT_TYPE")[cached_event.event_type] == "POP_EM" then
         local pop_em = schedule_timeline:findKeyFromUniqueIndex(event.args.unique_index)
         ---@cast pop_em app.cExFieldEvent_PopEnemy
-        pop_em:set_OptionTagValue(event.args.option_tag)
+
+        if event.args.option_tag then
+            pop_em:set_OptionTagValue(event.args.option_tag)
+        end
+
+        if config.current.mod.display_cheat_errors then
+            helpers.check_ex_quest_pop_em(pop_em)
+        end
     end
 
     field_director:requestSortKeyList(stage, true)

@@ -3,6 +3,7 @@ local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local util_misc = require("FieldEventSpawner.util.misc.init")
+local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 ---@module "FieldEventSpawner.data.mod"
 local mod = util_misc.lazy_require("FieldEventSpawner.data.mod")
@@ -113,6 +114,70 @@ function this.is_invalid_em2(em, difficulty, role)
     end
 
     return em:is_difficulty_invalid(difficulty, mod.state.stage, role)
+end
+
+---@param quest_data app.cKeepQuestData
+---@return boolean, app.QuestCheckUtil.INCORRECT_STATUS
+function this.check_ex_quest(quest_data)
+    local system_int32 = util_ref.value_type("System.Int32")
+    local ret = m.checkExQuest(system_int32:address(), quest_data)
+    return ret, system_int32.m_value
+end
+
+---@param pop_em app.cExFieldEvent_PopEnemy
+---@return boolean, app.QuestCheckUtil.INCORRECT_STATUS
+function this.check_ex_quest_pop_em(pop_em)
+    local ret, bit = false, 0
+    util_misc.try(function()
+        local quest_data = m.createActiveQuestData_Instant(pop_em, mod.state.stage)
+        local keep_quest_data = quest_data:get_KeepQuestData()
+        ret, bit = this.check_ex_quest(keep_quest_data)
+    end)
+
+    return ret, bit
+end
+
+---@param index integer? by default, 0
+---@return boolean, app.QuestCheckUtil.INCORRECT_STATUS
+function this.check_ex_quest_spoffer(index)
+    index = index or 0
+    local field_director = mod.get_field_director()
+    local spoffer_factory = field_director._SpOfferFactory
+    local spoffer_view_array = spoffer_factory:getSpOfferInfoList(-1, true, mod.state.stage)
+
+    local ret, bit = false, 0
+    util_misc.try(function()
+        local spoffer_view = spoffer_view_array:get_Item(index)
+        local quest_data = spoffer_factory:createSpOfferActiveQuestData(spoffer_view)
+        local keep_quest_data = quest_data:get_KeepQuestData()
+        ret, bit = this.check_ex_quest(keep_quest_data)
+    end)
+
+    return ret, bit
+end
+
+---@param index integer? by default, 0
+---@return boolean, app.QuestCheckUtil.INCORRECT_STATUS
+function this.check_ex_quest_spoffer_swarm(index)
+    index = index or 0
+    local field_director = mod.get_field_director()
+    local spoffer_factory = field_director._SpOfferFactory
+    local spoffer_by_stage = spoffer_factory._CurrentSpOfferInfo
+    local spoffer_array = spoffer_by_stage:get_SpOfferList()
+    local spoffer_more_factory = spoffer_factory._MoreTargetSpOfferFactory
+    local spoffer_view_array = spoffer_factory:getSpOfferInfoList(-1, true, mod.state.stage)
+
+    local ret, bit = false, 0
+    util_misc.try(function()
+        local spoffer_info = spoffer_array:get_Item(index)
+        local spoffer_view = spoffer_view_array:get_Item(index)
+        local quest_data =
+            spoffer_more_factory:createSpOfferActiveQuestData(spoffer_info, spoffer_view)
+        local keep_quest_data = quest_data:get_KeepQuestData()
+        ret, bit = this.check_ex_quest(keep_quest_data)
+    end)
+
+    return ret, bit
 end
 
 return this

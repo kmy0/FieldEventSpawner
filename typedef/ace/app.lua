@@ -19,6 +19,11 @@
 ---@class app.cExFieldEvent_SpecialOffer : app.cExFieldEvent_SpecialOfferBase
 ---@class app.cEmParamGuid_RandomSize_RandomSizeTbl : app.cEmParamGuidBase
 ---@class app.cExFieldEvent_SpecialOfferBase : app.cExFieldEventBase
+---@class app.savedata.cItemWork : ace.cSaveDataParam
+---@class app.cKeepQuestData : via.clr.ManagedObject
+---@class app.cExFieldEvent_SpecialOfferBase : app.cExFieldEventBase
+---@class app.cExSpOfferInfo_forView : via.clr.ManagedObject
+---@class app.cExFieldEvent_EmReward : app.cExFieldEventBase
 
 ---@class app.GUIManager : ace.GUIManagerBase
 ---@field getSystemLanguageToApp fun(self: app.GUIManager) : via.Language
@@ -183,13 +188,9 @@
 ---@field get_RemainGameMinute fun(self: app.cExFieldDirector.cScheduleTimeline): System.Int32
 ---@field get_AdvancedRealSec fun(self: app.cExFieldDirector.cScheduleTimeline): System.Single
 
----@class app.QuestDef.EM_REWARD_RANK : System.Enum
----@class ace.cSaveDataBase : via.clr.ManagedObject
----@class ace.cSaveDataParam : ace.cSaveDataBase
----@class app.savedata.cItemWork : ace.cSaveDataParam
----@class app.cExFieldEvent_EmReward : app.cExFieldEventBase
 ---@class app.cExFieldDirector : via.clr.ManagedObject
 ---@field _ScheduleTimeline app.cExFieldDirector.cScheduleTimeline
+---@field _SpOfferFactory app.cExSpOfferFactory
 ---@field update_SortKeyList fun(self: app.cExFieldDirector)
 -- bool doesnt seem to do anything?
 ---@field requestSortKeyList fun(self: app.cExFieldDirector, stage: app.FieldDef.STAGE, bool: System.Boolean)
@@ -210,6 +211,15 @@
 ---@field getEnvStartInfoList fun(self: app.cExFieldDirector, out: System.Array<app.cExFieldDirector.ENV_START_INFO>, remain_game_min: System.Int32, advanced_game_min: System.Int32, advanced_real_sec: System.Single, stage: app.FieldDef.STAGE)
 ---@field get_IsRunBackGround fun(self: app.cExFieldDirector): System.Boolean
 ---@field get_LoadedStage fun(self: app.cExFieldDirector): System.Boolean
+
+---@class app.cExSpOfferFactory : via.clr.ManagedObject
+---@field _CurrentSpOfferInfo app.cExSpOfferFactory.cSpOfferByStage
+---@field _MoreTargetSpOfferFactory app.cExFieldEvent_SpOfferMore
+---@field getSpOfferInfoList fun(self: app.cExSpOfferFactory, em_id: app.EnemyDef.ID, skip_spoffer_lot: boolean, stage: app.FieldDef.STAGE): System.Array<app.cExSpOfferInfo_forView>
+---@field createSpOfferActiveQuestData fun(self: app.cExSpOfferFactory, spoffer_view: app.cExSpOfferFactory.SpOfferInfo): app.cActiveQuestData
+
+---@class app.cExFieldEvent_SpOfferMore : app.cExFieldEvent_SpecialOfferBase
+---@field createSpOfferActiveQuestData fun(self: app.cExFieldEvent_SpOfferMore, spoffer_info: app.cExSpOfferFactory.SpOfferInfo, spoffer_view: app.cExSpOfferFactory.SpOfferInfo): app.cActiveQuestData
 
 ---@class app.cExFieldDirector.ENV_START_INFO : System.ValueType
 ---@field get_EnvType fun(self: app.cExFieldDirector.ENV_START_INFO): app.EnvironmentType.ENVIRONMENT
@@ -453,3 +463,6 @@
 ---@field get_DifficultyRankId fun(self: app.user_data.EnemyLayoutDataBossZako.cMainTarget): System.Guid
 ---@field get_FixedEmID fun(self: app.user_data.EnemyLayoutDataBossZako.cMainTarget): app.EnemyDef.ID_Fixed
 ---@field get_LegendaryID fun(self: app.user_data.EnemyLayoutDataBossZako.cMainTarget): app.EnemyDef.LEGENDARY_ID
+
+---@class app.cActiveQuestData : via.clr.ManagedObject
+---@field get_KeepQuestData fun(self: app.cActiveQuestData): app.cKeepQuestData

@@ -31,3 +31,4 @@
 ---@class app.EnemyDef.ID_Fixed : System.Enum
 ---@class app.QuestCheckUtil.INCORRECT_STATUS : System.Enum
 ---@class app.MissionIDList.ID : System.Enum
+---@class app.QuestDef.EM_REWARD_RANK : System.Enum

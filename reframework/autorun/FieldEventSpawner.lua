@@ -37,6 +37,12 @@ m.getEnemyName = m.wrap(
 ) --[[@as fun(em_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID): System.Guid]]
 m.getStageNameGuid =
     m.wrap(m.get("app.GUIUtilApp.MapUtil.getStageFullName(app.FieldDef.STAGE, System.Guid)")) --[[@as fun(stage: app.FieldDef.STAGE, guid_ptr: integer): System.Boolean]]
+m.checkExQuest = m.wrap(m.get("app.QuestCheckUtil.checkExQuest(System.Int32, app.cKeepQuestData)")) --[[@as fun(out_bit: System.Int32, quest_data: app.cKeepQuestData): System.Boolean]]
+m.createActiveQuestData_Instant = m.wrap(
+    m.get(
+        "app.QuestUtil.createActiveQuestData_Instant(app.cExFieldEvent_PopEnemy, app.FieldDef.STAGE)"
+    )
+) --[[@as fun(pop_em: app.cExFieldEvent_PopEnemy, stage: app.FieldDef.STAGE): app.cActiveQuestData]]
 
 m.hook(
     "app.QuestCheckUtil.checkExQuest(System.Int32, app.cKeepQuestData)",
@@ -143,7 +149,7 @@ m.hook(
 )
 m.hook(
     "app.cExSpOfferFactory.saveSpOffer(app.cExSpOfferFactory.cSpOfferByStage, System.Boolean, app.savedata.cFieldExParam)",
-    sched.hook.create_spoffer_swarm_pre,
+    nil,
     sched.hook.create_spoffer_swarm_post
 )
 m.hook("app.cExFieldDirector.init()", nil, data.ace.load_invalid_difficulties)
