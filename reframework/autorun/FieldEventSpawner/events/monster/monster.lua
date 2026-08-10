@@ -198,13 +198,9 @@ end
 ---@param environ_type app.EnvironmentType.ENVIRONMENT
 ---@return System.Guid, integer[]?
 function this:_get_route_data(other_ems, environ_type)
-    local id = self.event_data.spoofed_id_for_route
-        or self.event_data.spoofed_id
-        or self.event_data.id
-
     local function fetch_route_info(role)
         local array = self._field_director:getRoutePatternList(
-            id,
+            self.event_data:get_em_id_for_route(self.stage),
             role,
             self.legendary_id,
             self.pop_em_type,

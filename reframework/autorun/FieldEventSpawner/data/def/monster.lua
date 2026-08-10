@@ -47,11 +47,11 @@
 ---@field difficulty_unique table<string, boolean> unique_key
 ---@field difficulty_invalid table<app.EnemyDef.ROLE_ID, table<string, boolean>> guid_str
 ---@field role_by_param table<string, app.EnemyDef.ROLE_ID[]>
+---@field spoofed_id_for_route app.EnemyDef.ID?
 
 ---@class (exact) MonsterData : AreaEventData
 ---@field id app.EnemyDef.ID
 ---@field spoofed_id app.EnemyDef.ID?
----@field spoofed_id_for_route app.EnemyDef.ID?
 ---@field map table<app.FieldDef.STAGE, MonsterMapData>
 ---@field crown MonsterCrown
 ---@field is_exclusive boolean
@@ -355,6 +355,18 @@ function this:iter_difficulties(mon_dif)
             end
         end
     end)
+end
+
+---@param stage app.FieldDef.STAGE
+---@return app.EnemyDef.ID
+function this:get_em_id_for_route(stage)
+    local map = self.map[stage]
+
+    if map and map.spoofed_id_for_route then
+        return map.spoofed_id_for_route
+    end
+
+    return self.spoofed_id or self.id
 end
 
 return this

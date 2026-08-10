@@ -673,7 +673,7 @@ function this.spoof_map(monster_data, to_spoof, monsters, battlefield_ok)
         end
 
         em_data:add_map(to_spoof)
-        em_data.spoofed_id_for_route = e.get("app.EnemyDef.ID").EM0160_00_0 -- arkveld
+        em_data.map[to_spoof].spoofed_id_for_route = e.get("app.EnemyDef.ID").EM0160_00_0 -- arkveld
         for _, env in e.iter("app.EnvironmentType.ENVIRONMENT") do
             helpers.add_param_areas(em_data, "invalid", to_spoof, env, areas)
         end
