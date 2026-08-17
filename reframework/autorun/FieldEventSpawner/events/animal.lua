@@ -82,7 +82,12 @@ function this:build()
         | mod.enum.event_collision_flag.AREA
         | mod.enum.event_collision_flag.TIME
     return mod.enum.spawn_result.OK,
-        sched.spawn_event.make_event(event_data, self.event_data.name_local, area, collision_flag)
+        sched.spawn_event.make_event(
+            event_data,
+            self.event_data.name_local,
+            area,
+            { collision_flag = collision_flag }
+        )
 end
 
 return this
