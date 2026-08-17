@@ -458,7 +458,7 @@ function this.init()
         fs.write(config.current_thread_path, current_thread)
     end
 
-    get_enemyappearancestagedata_user_3_map()
+    -- get_enemyappearancestagedata_user_3_map()
 
     this.event.by_stage = make_events_by_stage(
         this.event.by_type.monster,
