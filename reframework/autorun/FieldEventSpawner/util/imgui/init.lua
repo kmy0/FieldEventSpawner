@@ -337,46 +337,53 @@ function this.set_win_state(win_state, min_y_size)
     win_state.size_x, win_state.size_y = size.x, size.y
 end
 
----@param draw_combo_fn fun(): boolean, integer
----@param label string
----@param text string?
----@param selection integer?
----@param disabled boolean?
+---@param text string
+---@param label string?
 ---@param width number?
----@return boolean, integer
-function this.fake_combo(draw_combo_fn, label, text, selection, disabled, width)
-    if text and selection then
-        local draw_list = imgui.get_window_draw_list()
-        local pos = imgui.get_cursor_screen_pos()
+---@param disabled boolean?
+function this.fake_combo(text, label, width, disabled)
+    local draw_list = imgui.get_window_draw_list()
+    local pos = imgui.get_cursor_screen_pos()
 
-        width = width or imgui.calc_item_width()
-        local text_h = imgui.calc_text_size(text).y
-        local height = text_h + 6
-        local color_rect = util_misc.mul_alpha(0xFF3F3535, disabled and 0.6 or 1)
-        local color_text = util_misc.mul_alpha(0xFFFFFFFF, disabled and 0.6 or 1)
+    width = width or imgui.calc_item_width()
+    local text_h = imgui.calc_text_size(text).y
+    local height = text_h + 6
+    local color_rect = util_misc.mul_alpha(0xFF3F3535, disabled and 0.6 or 1)
+    local color_text = util_misc.mul_alpha(0xFFFFFFFF, disabled and 0.6 or 1)
 
-        draw_list:add_rect_filled(
-            { pos.x, pos.y },
-            { pos.x + width, pos.y + height },
-            color_rect,
-            0,
-            0
-        )
+    draw_list:add_rect_filled({ pos.x, pos.y }, { pos.x + width, pos.y + height }, color_rect, 0, 0)
 
-        text = util_misc.split_string(text, "##")[1]
-        draw_list:add_text({ pos.x + 4, pos.y + 3 }, color_text, text)
+    text = util_misc.split_string(text, "##")[1]
+    draw_list:add_text({ pos.x + 4, pos.y + 3 }, color_text, text)
 
-        this.dummy_button3("##" .. uuid.generate(), { width, height })
-        imgui.same_line()
+    this.dummy_button3("##" .. uuid.generate(), { width, height })
 
-        local pos = imgui.get_cursor_pos()
-        pos.x = pos.x - 4
-        imgui.set_cursor_pos(pos)
-        imgui.text(util_misc.split_string(label, "##")[1])
-        return false, selection
+    if label then
+        this.set_label(label, -1)
     end
+end
 
-    return draw_combo_fn()
+---@param button_label string
+---@return number
+function this.get_something_with_button_width(button_label)
+    local FRAME_PADDING_X = 4.0
+    local ITEM_SPACING_X = 8.0
+
+    local total_width = imgui.calc_item_width()
+    local button_width = imgui.calc_text_size(util_misc.split_string(button_label, "##")[1]).x
+        + FRAME_PADDING_X * 2
+    return total_width - button_width - ITEM_SPACING_X
+end
+
+---@param label string
+---@param offset number?
+function this.set_label(label, offset)
+    offset = offset or 0
+    imgui.same_line()
+    local pos = imgui.get_cursor_pos()
+    pos.x = pos.x - 3 + offset
+    imgui.set_cursor_pos(pos)
+    imgui.text(util_misc.split_string(label, "##")[1])
 end
 
 return this

@@ -102,52 +102,38 @@ function this.combo_chips(
     local id
 
     label, id = table.unpack(util_misc.split_string(label, "##"))
-    local total_width = imgui.calc_item_width()
-    local button_width = imgui.calc_text_size(util_misc.split_string(button_label, "##")[1]).x
-        + FRAME_PADDING_X * 2
-    local combo_width = total_width - button_width - ITEM_SPACING_X
+    local combo_width = util_imgui.get_something_with_button_width(button_label)
     local disabled = util_table.empty(combo.values)
-    local text_value
-
-    if #combo.values <= 1 then
-        text_value = #combo.values == 1 and combo.values[1] or ""
-    end
 
     imgui.begin_disabled(disabled)
-    changed, selection = util_imgui.fake_combo(function()
+
+    if #combo.values <= 1 then
+        util_imgui.fake_combo(
+            #combo.values == 1 and combo.values[1] or "",
+            nil,
+            combo_width,
+            disabled
+        )
+    else
         imgui.set_next_item_width(combo_width)
         ---@diagnostic disable-next-line: cast-local-type
         changed, selection = imgui.combo("##" .. id, selection, combo.values)
-        imgui.same_line()
-        if imgui.button(button_label) then
-            this.select_item(selection, item_selection, combo)
-            changed = true
-        end
-
-        return changed, selection
-    end, "", text_value, selection, disabled, combo_width)
-
-    if text_value then
-        imgui.same_line()
-        local pos = imgui.get_cursor_pos()
-        pos.x = pos.x - 4
-        imgui.set_cursor_pos(pos)
-
-        if imgui.button(button_label) then
-            this.select_item(selection, item_selection, combo)
-            changed = true
-        end
     end
+    ---@cast selection integer
+
+    imgui.same_line()
+    if imgui.button(button_label) then
+        this.select_item(selection, item_selection, combo)
+        changed = true
+    end
+
     imgui.end_disabled()
 
     imgui.same_line()
     local max_x = imgui.get_cursor_pos().x
 
     if label then
-        local pos = imgui.get_cursor_pos()
-        pos.x = pos.x - SOME_X
-        imgui.set_cursor_pos(pos)
-        imgui.text(label)
+        util_imgui.set_label(label)
     end
 
     if tooltip_fn then
