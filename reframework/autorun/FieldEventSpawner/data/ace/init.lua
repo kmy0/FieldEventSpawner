@@ -421,6 +421,7 @@ function this.init()
             e.new("ace.GimmickDef.BASE_STATE")
             e.new("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE")
             e.new("app.QuestCheckUtil.INCORRECT_STATUS")
+            e.new("app.EnemyDef.ID")
         end)
     then
         return false

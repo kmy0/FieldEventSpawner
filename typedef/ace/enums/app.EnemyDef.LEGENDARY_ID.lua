@@ -1,0 +1,12 @@
+---@meta
+
+---@class (exact) Enum.app.EnemyDef.LEGENDARY_ID : Enum<app.EnemyDef.LEGENDARY_ID>
+---@field NONE app.EnemyDef.LEGENDARY_ID
+---@field NORMAL app.EnemyDef.LEGENDARY_ID
+---@field KING app.EnemyDef.LEGENDARY_ID
+---@field ["NONE"] app.EnemyDef.LEGENDARY_ID
+---@field ["NORMAL"] app.EnemyDef.LEGENDARY_ID
+---@field ["KING"] app.EnemyDef.LEGENDARY_ID
+---@field [0] "NONE"
+---@field [1] "NORMAL"
+---@field [2] "KING"

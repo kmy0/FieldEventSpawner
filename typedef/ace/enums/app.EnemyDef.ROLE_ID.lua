@@ -1,0 +1,21 @@
+---@meta
+
+---@class (exact) Enum.app.EnemyDef.ROLE_ID : Enum<app.EnemyDef.ROLE_ID>
+---@field NORMAL app.EnemyDef.ROLE_ID
+---@field BOSS app.EnemyDef.ROLE_ID
+---@field CHILED app.EnemyDef.ROLE_ID
+---@field FRENZY app.EnemyDef.ROLE_ID
+---@field COCOON app.EnemyDef.ROLE_ID
+---@field ROLE_COLLAB_01 app.EnemyDef.ROLE_ID
+---@field ["NORMAL"] app.EnemyDef.ROLE_ID
+---@field ["BOSS"] app.EnemyDef.ROLE_ID
+---@field ["CHILED"] app.EnemyDef.ROLE_ID
+---@field ["FRENZY"] app.EnemyDef.ROLE_ID
+---@field ["COCOON"] app.EnemyDef.ROLE_ID
+---@field ["ROLE_COLLAB_01"] app.EnemyDef.ROLE_ID
+---@field [0] "NORMAL"
+---@field [1] "BOSS"
+---@field [2] "CHILED"
+---@field [3] "FRENZY"
+---@field [4] "COCOON"
+---@field [5] "ROLE_COLLAB_01"

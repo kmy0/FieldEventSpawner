@@ -1,0 +1,15 @@
+---@meta
+
+---@class (exact) Enum.app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE : Enum<app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE>
+---@field NONE app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field ASSIST_NPC app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field RARE_TOKUSAN app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field ANCIENT_COIN app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field ["NONE"] app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field ["ASSIST_NPC"] app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field ["RARE_TOKUSAN"] app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field ["ANCIENT_COIN"] app.cExFieldEvent_GimmickEvent.GIMMICK_EVENT_TYPE
+---@field [0] "NONE"
+---@field [1] "ASSIST_NPC"
+---@field [2] "RARE_TOKUSAN"
+---@field [3] "ANCIENT_COIN"

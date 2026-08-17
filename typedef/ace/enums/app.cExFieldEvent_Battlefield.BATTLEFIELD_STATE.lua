@@ -1,0 +1,15 @@
+---@meta
+
+---@class (exact) Enum.app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE : Enum<app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE>
+---@field POP_BELONGING app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field WAIT_EXIT app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field ACCEPTABLE_QUEST app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field END app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field ["POP_BELONGING"] app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field ["WAIT_EXIT"] app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field ["ACCEPTABLE_QUEST"] app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field ["END"] app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE
+---@field [0] "POP_BELONGING"
+---@field [1] "WAIT_EXIT"
+---@field [2] "ACCEPTABLE_QUEST"
+---@field [3] "END"

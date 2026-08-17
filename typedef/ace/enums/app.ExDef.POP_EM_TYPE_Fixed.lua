@@ -1,0 +1,42 @@
+---@meta
+
+---@class (exact) Enum.app.ExDef.POP_EM_TYPE_Fixed : Enum<app.ExDef.POP_EM_TYPE_Fixed>
+---@field NORMAL app.ExDef.POP_EM_TYPE_Fixed
+---@field NUSHI app.ExDef.POP_EM_TYPE_Fixed
+---@field SWARM app.ExDef.POP_EM_TYPE_Fixed
+---@field POP_MANY app.ExDef.POP_EM_TYPE_Fixed
+---@field POP_MANY_2 app.ExDef.POP_EM_TYPE_Fixed
+---@field FRENZY app.ExDef.POP_EM_TYPE_Fixed
+---@field LEGENDARY app.ExDef.POP_EM_TYPE_Fixed
+---@field OVERRIDE app.ExDef.POP_EM_TYPE_Fixed
+---@field OVERRIDE_SWARM app.ExDef.POP_EM_TYPE_Fixed
+---@field BATTLEFIELD app.ExDef.POP_EM_TYPE_Fixed
+---@field BF_POP_BELONGING app.ExDef.POP_EM_TYPE_Fixed
+---@field COCOON app.ExDef.POP_EM_TYPE_Fixed
+---@field ASSUME_POPPED app.ExDef.POP_EM_TYPE_Fixed
+---@field ["NORMAL"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["NUSHI"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["SWARM"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["POP_MANY"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["POP_MANY_2"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["FRENZY"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["LEGENDARY"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["OVERRIDE"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["OVERRIDE_SWARM"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["BATTLEFIELD"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["BF_POP_BELONGING"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["COCOON"] app.ExDef.POP_EM_TYPE_Fixed
+---@field ["ASSUME_POPPED"] app.ExDef.POP_EM_TYPE_Fixed
+---@field [1] "NORMAL"
+---@field [2] "NUSHI"
+---@field [3] "SWARM"
+---@field [4] "POP_MANY"
+---@field [5] "POP_MANY_2"
+---@field [6] "FRENZY"
+---@field [7] "LEGENDARY"
+---@field [8] "OVERRIDE"
+---@field [9] "OVERRIDE_SWARM"
+---@field [10] "BATTLEFIELD"
+---@field [11] "BF_POP_BELONGING"
+---@field [12] "COCOON"
+---@field [13] "ASSUME_POPPED"

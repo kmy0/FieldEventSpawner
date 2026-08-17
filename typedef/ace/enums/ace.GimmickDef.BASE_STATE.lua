@@ -1,0 +1,15 @@
+---@meta
+
+---@class (exact) Enum.ace.GimmickDef.BASE_STATE : Enum<ace.GimmickDef.BASE_STATE>
+---@field ENABLE ace.GimmickDef.BASE_STATE
+---@field TO_DISABLE ace.GimmickDef.BASE_STATE
+---@field DISABLE ace.GimmickDef.BASE_STATE
+---@field TO_ENABLE ace.GimmickDef.BASE_STATE
+---@field ["ENABLE"] ace.GimmickDef.BASE_STATE
+---@field ["TO_DISABLE"] ace.GimmickDef.BASE_STATE
+---@field ["DISABLE"] ace.GimmickDef.BASE_STATE
+---@field ["TO_ENABLE"] ace.GimmickDef.BASE_STATE
+---@field [0] "ENABLE"
+---@field [1] "TO_DISABLE"
+---@field [2] "DISABLE"
+---@field [3] "TO_ENABLE"

@@ -1,0 +1,30 @@
+---@meta
+
+---@class (exact) Enum.app.EX_FIELD_EVENT_TYPE : Enum<app.EX_FIELD_EVENT_TYPE>
+---@field POP_EM app.EX_FIELD_EVENT_TYPE
+---@field EM_REWARD app.EX_FIELD_EVENT_TYPE
+---@field GIMMICK_EVENT app.EX_FIELD_EVENT_TYPE
+---@field ANIMAL_EVENT app.EX_FIELD_EVENT_TYPE
+---@field BATTLEFIELD app.EX_FIELD_EVENT_TYPE
+---@field SP_OFFER app.EX_FIELD_EVENT_TYPE
+---@field SP_OFFER_MORE app.EX_FIELD_EVENT_TYPE
+---@field SP_OFFER_MORE_TARGET app.EX_FIELD_EVENT_TYPE
+---@field SONG_SETLIST app.EX_FIELD_EVENT_TYPE
+---@field ["POP_EM"] app.EX_FIELD_EVENT_TYPE
+---@field ["EM_REWARD"] app.EX_FIELD_EVENT_TYPE
+---@field ["GIMMICK_EVENT"] app.EX_FIELD_EVENT_TYPE
+---@field ["ANIMAL_EVENT"] app.EX_FIELD_EVENT_TYPE
+---@field ["BATTLEFIELD"] app.EX_FIELD_EVENT_TYPE
+---@field ["SP_OFFER"] app.EX_FIELD_EVENT_TYPE
+---@field ["SP_OFFER_MORE"] app.EX_FIELD_EVENT_TYPE
+---@field ["SP_OFFER_MORE_TARGET"] app.EX_FIELD_EVENT_TYPE
+---@field ["SONG_SETLIST"] app.EX_FIELD_EVENT_TYPE
+---@field [10] "POP_EM"
+---@field [15] "EM_REWARD"
+---@field [20] "GIMMICK_EVENT"
+---@field [30] "ANIMAL_EVENT"
+---@field [40] "BATTLEFIELD"
+---@field [50] "SP_OFFER"
+---@field [51] "SP_OFFER_MORE"
+---@field [52] "SP_OFFER_MORE_TARGET"
+---@field [60] "SONG_SETLIST"

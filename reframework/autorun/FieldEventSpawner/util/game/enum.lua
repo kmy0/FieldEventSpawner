@@ -1,6 +1,12 @@
 ---@class EnumUtil
 ---@field enums table<string, Enum>
 
+---@generic T
+---@class Enum<T> : {[string]: T}, {[T]: string}
+---@field field_to_enum table<string, T>
+---@field enum_to_field table<T, string>
+---@field ok boolean
+
 local util_game = require("FieldEventSpawner.util.game.util")
 local util_table = require("FieldEventSpawner.util.misc.table")
 local logger = require("FieldEventSpawner.util.misc.logger").g
@@ -12,11 +18,7 @@ local this = {
     enums = {},
 }
 
----@generic T
----@class Enum<T> : {[string]: T}, {[integer]: string}
----@field field_to_enum table<string, integer>
----@field enum_to_field table<integer, string>
----@field ok boolean
+---@class Enum
 local Enum = {}
 ---@diagnostic disable-next-line: inject-field
 Enum.__index = function(self, key)
@@ -30,6 +32,7 @@ Enum.__index = function(self, key)
         return rawget(self, "enum_to_field")[key]
     end
 end
+---@diagnostic disable-next-line: inject-field
 Enum.__pairs = function(self)
     return pairs(rawget(self, "field_to_enum"))
 end
@@ -82,6 +85,11 @@ function Enum:new(enum_type, predicate, duplicate_ok)
 
             o.enum_to_field[value] = key
         end
+
+        ---@diagnostic disable-next-line: undefined-field
+        if _G.__DUMP_ENUM then
+            o:dump(enum_type)
+        end
     end
 
     setmetatable(o, self)
@@ -101,6 +109,35 @@ function Enum:add(key, enum)
 
     self.field_to_enum[key] = enum
     self.enum_to_field[enum] = key
+end
+
+---@param enum_type string
+function Enum:dump(enum_type)
+    local lines = {
+        "---@meta",
+        "",
+        string.format("---@class (exact) Enum.%s : Enum<%s>", enum_type, enum_type),
+    }
+
+    local keys = util_table.keys(self.enum_to_field) --[==[@as integer[]]==]
+    table.sort(keys)
+
+    for _, k in ipairs(keys) do
+        table.insert(lines, string.format("---@field %s %s", self[k], enum_type))
+    end
+
+    for _, k in ipairs(keys) do
+        table.insert(lines, string.format('---@field ["%s"] %s', self[k], enum_type))
+    end
+
+    for _, k in ipairs(keys) do
+        table.insert(lines, string.format('---@field [%s] "%s"', k, self[k]))
+    end
+
+    local f = io.open(string.format("ENUM_DUMP/%s.lua", enum_type), "w+") --[[@as file*]]
+    f:write(table.concat(lines, "\n"))
+    f:write("\n")
+    f:close()
 end
 
 ---@generic T
@@ -133,7 +170,7 @@ end
 ---@param enum_type `T`
 ---@return fun(): string, T
 function this.iter(enum_type)
-    local enum = this.get(enum_type)
+    local enum = this.get(enum_type) --[[@as Enum<any>]]
     local iter, state, key = pairs(enum)
     return function()
         local value
@@ -146,7 +183,7 @@ end
 ---@return fun(): string, integer
 function this.iter_many(enum_types)
     local type_index = 1
-    local current_enum = this.get(enum_types[type_index])
+    local current_enum = this.get(enum_types[type_index]) --[[@as Enum<any>]]
     local iter, state, key = pairs(current_enum)
 
     return function()
@@ -161,7 +198,7 @@ function this.iter_many(enum_types)
 
             type_index = type_index + 1
             if type_index <= #enum_types then
-                current_enum = this.get(enum_types[type_index])
+                current_enum = this.get(enum_types[type_index]) --[[@as Enum<any>]]
                 iter, state, key = pairs(current_enum)
             end
             ---@diagnostic disable-next-line: missing-return
@@ -170,8 +207,8 @@ function this.iter_many(enum_types)
 end
 
 ---@generic T
----@param enum_type `T`
----@return Enum<T>
+---@param enum_type Enum.`T`
+---@return T
 function this.get(enum_type)
     if not this.enums[enum_type] then
         ---@diagnostic disable-next-line: assign-type-mismatch
@@ -183,6 +220,13 @@ end
 
 ---@generic T
 ---@param enum_type `T`
+---@return Enum<T>
+function this.get_noexact(enum_type)
+    return this.get(enum_type)
+end
+
+---@generic T
+---@param enum_type Enum.`T`
 ---@param predicate (fun(key: string, value: integer): boolean)?
 ---@param duplicate_ok boolean?
 ---@return Enum<T>

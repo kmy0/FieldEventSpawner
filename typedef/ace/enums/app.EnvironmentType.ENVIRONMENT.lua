@@ -1,0 +1,12 @@
+---@meta
+
+---@class (exact) Enum.app.EnvironmentType.ENVIRONMENT : Enum<app.EnvironmentType.ENVIRONMENT>
+---@field RUIN app.EnvironmentType.ENVIRONMENT
+---@field ABNORMAL app.EnvironmentType.ENVIRONMENT
+---@field FERTILITY app.EnvironmentType.ENVIRONMENT
+---@field ["RUIN"] app.EnvironmentType.ENVIRONMENT
+---@field ["ABNORMAL"] app.EnvironmentType.ENVIRONMENT
+---@field ["FERTILITY"] app.EnvironmentType.ENVIRONMENT
+---@field [0] "RUIN"
+---@field [1] "ABNORMAL"
+---@field [2] "FERTILITY"
