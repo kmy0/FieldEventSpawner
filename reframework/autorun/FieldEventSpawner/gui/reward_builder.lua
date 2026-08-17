@@ -17,26 +17,17 @@ local this = {
         flags = 0,
         condition = 1 << 1,
     },
-    table = {
-        name = "reward_info",
-        flags = 1 << 8 | 1 << 7 | 1 << 10 | 1 << 13 | 1 << 25,
-    },
 }
 
 local function draw_reward_table()
     local confg_reward = config.current.mod.reward_config
+    local flags = imgui.TableFlags.BordersInnerV | imgui.TableFlags.SizingFixedFit --[[@as ImGuiTableFlags]]
 
-    if
-        imgui.begin_table(
-            this.table.name,
-            3,
-            this.table.flags --[[@as ImGuiTableFlags]],
-            Vector2f.new(0, 10 * 28)
-        )
-    then
-        imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_reward"), 1 << 3)
-        imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_count"))
+    if imgui.begin_table("reward_info", 4, flags) then
+        imgui.table_setup_column("##1")
         imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_remove_button"))
+        imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_count"))
+        imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_reward"), 1 << 3)
 
         imgui.table_headers_row()
         local rewards = confg_reward.array
@@ -46,10 +37,16 @@ local function draw_reward_table()
             local changed = false
             imgui.table_next_row()
             imgui.table_set_column_index(0)
-            imgui.text(reward.name)
-            imgui.table_set_column_index(1)
-            ---@diagnostic disable-next-line: param-type-mismatch
+            imgui.text(row .. ".")
 
+            imgui.table_set_column_index(1)
+            if not imgui.button(util_gui.tr("mod.button_remove_reward", tostring(row))) then
+                table.insert(filtered, reward)
+            end
+
+            imgui.table_set_column_index(2)
+            imgui.set_next_item_width(config.lang.font_size * 4)
+            ---@diagnostic disable-next-line: param-type-mismatch
             changed, reward.count = imgui.drag_int("##" .. row, reward.count, 1, 1, 255)
             if reward.count > 255 then
                 reward.count = 255
@@ -61,10 +58,8 @@ local function draw_reward_table()
                 config:save()
             end
 
-            imgui.table_set_column_index(2)
-            if not imgui.button(util_gui.tr("mod.button_remove_reward", tostring(row))) then
-                table.insert(filtered, reward)
-            end
+            imgui.table_set_column_index(3)
+            imgui.text(reward.name)
         end
 
         confg_reward.array = filtered
@@ -110,11 +105,21 @@ function this.draw()
         "mod.reward_config.reward",
         state.combo.item_rewards.values
     )
-    set:slider_int(util_gui.tr("mod.slider_reward_count"), "mod.reward_config.count", 1, 255)
+
+    imgui.set_next_item_width(
+        util_imgui.get_something_with_button_width(util_gui.tr("mod.button_add_reward"))
+    )
+    set:slider_int(
+        "##" .. util_gui.tr("mod.slider_reward_count"),
+        "mod.reward_config.count",
+        1,
+        255
+    )
 
     imgui.begin_disabled(
         #config_mod.reward_config.array >= 10 or not state.combo.item_rewards:get()
     )
+    imgui.same_line()
     if imgui.button(util_gui.tr("mod.button_add_reward")) then
         local key = state.combo.item_rewards:get()
         local item_data = ace.item.by_key[key]
@@ -130,6 +135,8 @@ function this.draw()
         config:save()
     end
     imgui.end_disabled()
+
+    util_imgui.set_label(util_gui.tr("mod.slider_reward_count"))
 
     draw_reward_table()
 
