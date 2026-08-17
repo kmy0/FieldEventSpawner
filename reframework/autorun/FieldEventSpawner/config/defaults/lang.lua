@@ -10,6 +10,7 @@ return {
         text_hp = "HP",
         text_parts_vital = "Parts Vital",
         text_all_monsters = "All Monsters",
+        text_diamond = "◆",
     },
     menu = {
         config = {
@@ -114,6 +115,8 @@ return {
         table_event_headers = {
             header_event = "Event",
             header_area = "Area",
+            header_date = "Date",
+            header_opt = "Info",
             header_remove_button = "",
         },
         button_remove_event = "Remove",

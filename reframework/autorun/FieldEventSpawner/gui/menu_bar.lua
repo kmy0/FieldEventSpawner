@@ -127,16 +127,13 @@ end
 
 local function draw_my_events_menu()
     local events = sched.event_cache.get_stage_table(mod.state.stage)
-    local step_x = 300 / config.lang.default_font_size
     local step_y = 4 * 46 / config.lang.default_font_size
+    local flags = imgui.TableFlags.BordersInner
+        | imgui.TableFlags.SizingFixedFit
+        | imgui.TableFlags.ScrollY --[[@as ImGuiTableFlags]]
 
     if
-        imgui.begin_table(
-            "events_info",
-            3,
-            1 << 7 | 1 << 13 | 1 << 25 --[[@as ImGuiTableFlags]],
-            Vector2f.new(step_x * config.lang.font_size, step_y * config.lang.font_size)
-        )
+        imgui.begin_table("events_info", 5, flags, Vector2f.new(-1, step_y * config.lang.font_size))
     then
         local sorted = util_table.values(events)
         ---@cast sorted CachedEvent[]
@@ -146,9 +143,12 @@ local function draw_my_events_menu()
             end
             return a.exec_time > b.exec_time
         end)
-        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_event"), 1 << 3)
-        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_area"))
+
         imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_remove_button"))
+        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_event"))
+        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_area"))
+        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_date"))
+        imgui.table_setup_column(util_gui.tr("mod.table_event_headers.header_opt"))
 
         imgui.table_headers_row()
 
@@ -156,11 +156,6 @@ local function draw_my_events_menu()
             local event = sorted[row]
             imgui.table_next_row()
             imgui.table_set_column_index(0)
-            imgui.text(event.name)
-            imgui.table_set_column_index(1)
-            ---@diagnostic disable-next-line: param-type-mismatch
-            imgui.text(event.area)
-            imgui.table_set_column_index(2)
             if imgui.button(util_gui.tr("mod.button_remove_event", tostring(row))) then
                 local config_mod = config.current.mod
 
@@ -171,6 +166,19 @@ local function draw_my_events_menu()
 
                 sched.remove(mod.state.stage, event.unique_index)
             end
+
+            imgui.table_set_column_index(1)
+            imgui.text(event.name)
+
+            imgui.table_set_column_index(2)
+            ---@diagnostic disable-next-line: param-type-mismatch
+            imgui.text(event.area)
+
+            imgui.table_set_column_index(3)
+            imgui.text(os.date("%Y-%m-%d %H:%M:%S", event.timestamp or 0)--[[@as string]])
+
+            imgui.table_set_column_index(4)
+            imgui.text(event.opt)
         end
         imgui.end_table()
     end

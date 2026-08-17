@@ -37,7 +37,6 @@ function this.add(stage, event)
     ---@cast cached_event CachedEvent
     cached_event.exec_time = event.event_data._ExecMinute
     cached_event.unique_index = event.event_data._UniqueIndex
-    this.event_cache.add(stage, cached_event)
 
     local removed = false
     if cached_event.collision_flag ~= mod.enum.event_collision_flag.NONE then
@@ -84,8 +83,12 @@ function this.add(stage, event)
         if config.current.mod.display_cheat_errors then
             helpers.check_ex_quest_pop_em(pop_em)
         end
+
+        local diff_guid = pop_em:get_DifficultyID()
+        cached_event.opt = helpers.get_difficulty_rate_string_with_grade(diff_guid)
     end
 
+    this.event_cache.add(stage, cached_event)
     field_director:requestSortKeyList(stage, true)
 end
 

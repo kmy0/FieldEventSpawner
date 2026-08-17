@@ -1,4 +1,5 @@
 local ace = require("FieldEventSpawner.data.ace.init")
+local config = require("FieldEventSpawner.config.init")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
@@ -65,6 +66,42 @@ function this.get_difficulty_rate(guid)
     local em_setting = enemyman:get_Setting()
     local diff2 = em_setting:get_Difficulty2()
     return diff2:getDifficultyRate(guid)
+end
+
+---@param guid System.Guid
+---@return string
+function this.get_difficulty_rate_string(guid)
+    local rate = this.get_difficulty_rate(guid)
+    return string.format(
+        "%s%s   |   %sx %s,  %sx %s,  %sx %s",
+        m.getRewardRankFromDifficulty(guid),
+        config.lang:tr("misc.text_star"),
+        util_misc.round(rate:get_Health(), 2),
+        config.lang:tr("misc.text_hp"),
+        util_misc.round(rate:get_Attack(), 2),
+        config.lang:tr("misc.text_attack"),
+        util_misc.round(rate:get_PartsVital(), 2),
+        config.lang:tr("misc.text_parts_vital")
+    )
+end
+
+---@param guid System.Guid
+---@return string
+function this.get_difficulty_rate_string_with_grade(guid)
+    local rate = this.get_difficulty_rate(guid)
+    return string.format(
+        "%s%s%s%s   |   %sx %s,  %sx %s,  %sx %s",
+        rate:get_RewardGrade(),
+        config.lang:tr("misc.text_diamond"),
+        m.getRewardRankFromDifficulty(guid),
+        config.lang:tr("misc.text_star"),
+        util_misc.round(rate:get_Health(), 2),
+        config.lang:tr("misc.text_hp"),
+        util_misc.round(rate:get_Attack(), 2),
+        config.lang:tr("misc.text_attack"),
+        util_misc.round(rate:get_PartsVital(), 2),
+        config.lang:tr("misc.text_parts_vital")
+    )
 end
 
 ---@param pop_em app.cExFieldEvent_PopEnemy

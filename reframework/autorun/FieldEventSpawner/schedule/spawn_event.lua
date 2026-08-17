@@ -65,6 +65,7 @@ function this.make_event(event_data, name, area, opts)
             ),
             collision_flag = opts.collision_flag and opts.collision_flag or 0,
             children = opts.children,
+            timestamp = os.time(),
         },
         sub_events = opts.sub_events,
     }
@@ -132,6 +133,7 @@ function this.make_child(unique_index, opts)
             event_type = opts.event_data._EventType,
             area = opts.area and opts.area or 0,
             collision_flag = opts.collision_flag and opts.collision_flag or 0,
+            timestamp = os.time(),
         }
     end
     return ret

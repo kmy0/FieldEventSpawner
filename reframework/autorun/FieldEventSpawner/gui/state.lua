@@ -24,7 +24,6 @@ local helpers = require("FieldEventSpawner.data.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
 local util_game = require("FieldEventSpawner.util.game.init")
-local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local gui = data.gui
@@ -244,17 +243,9 @@ this.combo.em_difficulty_rank = combo:new(nil, {
             return value
         end
 
-        local rate = helpers.get_difficulty_rate(key)
         return string.format(
-            "%s%s   |   %sx %s,  %sx %s,  %sx %s##%s",
-            m.getRewardRankFromDifficulty(key),
-            config.lang:tr("misc.text_star"),
-            util_misc.round(rate:get_Health(), 2),
-            config.lang:tr("misc.text_hp"),
-            util_misc.round(rate:get_Attack(), 2),
-            config.lang:tr("misc.text_attack"),
-            util_misc.round(rate:get_PartsVital(), 2),
-            config.lang:tr("misc.text_parts_vital"),
+            "%s##%s",
+            helpers.get_difficulty_rate_string(key),
             util_game.format_guid(key)
         )
     end,

@@ -8,6 +8,8 @@
 ---@field id integer
 ---@field event_type app.EX_FIELD_EVENT_TYPE
 ---@field collision_flag EventCollisionFlag
+---@field timestamp integer
+---@field opt string?
 
 ---@class (exact) CachedEventChild
 ---@field type CachedEventType
