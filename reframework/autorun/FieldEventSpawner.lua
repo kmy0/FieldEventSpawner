@@ -1,6 +1,7 @@
 local config = require("FieldEventSpawner.config.init")
 local config_menu = require("FieldEventSpawner.gui.init")
 local data = require("FieldEventSpawner.data.init")
+local init_chain = require("FieldEventSpawner.config.init_chain")
 local sched = require("FieldEventSpawner.schedule.init")
 local util = require("FieldEventSpawner.util.init")
 local logger = util.misc.logger.g
@@ -8,14 +9,8 @@ local logger = util.misc.logger.g
 ---@class MethodUtil
 local m = util.ref.methods
 
-local init = util.misc.init_chain:new(
-    "MAIN",
-    config.init,
-    data.init,
-    sched.init,
-    data.mod.init,
-    config_menu.init
-)
+local init =
+    init_chain:new("MAIN", config.init, data.init, sched.init, data.mod.init, config_menu.init)
 
 m.getEnemyNameGuid = m.wrap(m.get("app.EnemyDef.EnemyName(app.EnemyDef.ID)")) --[[@as fun(em_id: app.EnemyDef.ID): System.Guid]]
 m.getRewardRankFromDifficulty =
@@ -219,6 +214,10 @@ re.on_draw_ui(function()
     else
         imgui.same_line()
         imgui.text_colored("Init failed!", data.gui.colors.bad)
+        local errors = logger:get_last_error()
+        if errors then
+            util.imgui.tooltip_exclamation(errors)
+        end
     end
 end)
 
