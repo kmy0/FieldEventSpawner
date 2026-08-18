@@ -145,6 +145,19 @@ function this:format_errors()
     return table.concat(errors, "\n")
 end
 
+---@return string?
+function this:get_last_error()
+    if util_table.empty(self.error_cache) then
+        return
+    end
+
+    local errors = util_table.sort(util_table.keys(self.error_cache), function(a, b)
+        return self.error_cache[a] < self.error_cache[b]
+    end)
+
+    return errors[#errors]
+end
+
 function this.get_mod_root()
     local ret = "Unknown"
     util_misc.try(function()
