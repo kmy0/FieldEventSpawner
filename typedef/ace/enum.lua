@@ -2,7 +2,6 @@
 
 ---@class via.Language : System.Enum
 
----@class app.NpcDef.ID : System.Enum
 ---@class app.EnemyDef.ID : System.Enum
 ---@class app.FieldDef.STAGE_Fixed : System.Enum
 ---@class app.QuestDef.EM_REWARD_RANK_Fixed : System.Enum

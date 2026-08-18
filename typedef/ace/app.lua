@@ -24,15 +24,6 @@
 ---@class app.cExSpOfferInfo_forView : via.clr.ManagedObject
 ---@class app.cExFieldEvent_EmReward : app.cExFieldEventBase
 
----@class app.GUIManager : ace.GUIManagerBase
----@field getSystemLanguageToApp fun(self: app.GUIManager) : via.Language
-
----@class app.cNpcContext : app.cGameContext
----@field NpcID app.NpcDef.ID
-
----@class app.PlayerManager : ace.GAElement
----@field getMasterPlayer fun(self: app.PlayerManager): app.cPlayerManageInfo
-
 -- some pop_param inheritance things are wrong, not sure if this mess can be translated properly to luals
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base : app.cParamByEnvBase
 ---@field get_RandomWeight fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base): System.Byte
@@ -43,13 +34,9 @@
 ---@field get_BossLegendaryProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Byte
 ---@field _BossDifficultyParams System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 
----@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
----@field get_BossProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary): System.Byte
-
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base : via.clr.ManagedObject
 ---@field _DifficultyParams System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
 ---@field _ParamsByEnv app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base
----@field checkSuitableDifficulty fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base, guid: System.Guid): System.Boolean
 ---@field lotDifficultyID fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base, legendary_id: app.EnemyDef.LEGENDARY_ID, bias: System.Int32, suitable_only: System.Boolean): System.Guid
 ---@field get_LegendaryProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base): System.Byte
 
@@ -74,14 +61,8 @@
 ---@field get_AreaID_Fixed fun(self: app.user_data.ExFieldParam_LayoutData.cRareTokusanParam): app.FieldDef.AREA_ID_Fixed
 ---@field get_ParamsByEnv fun(self: app.user_data.ExFieldParam_LayoutData.cRareTokusanParam): app.cParamsByEnv<app.user_data.ExFieldParam_LayoutData.cRareTokusanParam>
 
----@class app.user_data.ExFieldParam_LayoutData.cAncientCoinParam : via.clr.ManagedObject
----@field get_AreaNo fun(self: app.user_data.ExFieldParam_LayoutData.cAncientCoinParam): System.Byte
----@field isContainEnvType fun(self: app.user_data.ExFieldParam_LayoutData.cAncientCoinParam, environ: app.EnvironmentType.ENVIRONMENT): System.Boolean
----@field get_AreaID_Fixed fun(self: app.user_data.ExFieldParam_LayoutData.cAncientCoinParam): System.Byte
-
 ---@class app.user_data.ExFieldParam_LayoutData : via.UserData
 ---@field _RareTokusanParams System.Array<app.user_data.ExFieldParam_LayoutData.cRareTokusanParam>
----@field _AncientCoinParams System.Array<app.user_data.ExFieldParam_LayoutData.cAncientCoinParam>
 ---@field getEmPopParamByHR fun(self: app.user_data.ExFieldParam_LayoutData, hunter_rank: System.Int32, pop_em_type: app.ExDef.POP_EM_TYPE_Fixed): app.user_data.ExFieldParam_LayoutData.cEmPopParamByHR_Base
 ---@field getPopParamByEmID fun(self: app.user_data.ExFieldParam_LayoutData, enemy_id: app.EnemyDef.ID, params: System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base>): app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
 ---@field get_EnvEventLayoutByArea fun(self: app.user_data.ExFieldParam_LayoutData): System.Array<app.user_data.ExFieldParam_LayoutData.cEnvEventLayoutByArea>
@@ -101,8 +82,6 @@
 ---@class app.user_data.ExFieldParam_EnemyData : via.UserData
 ---@field getExEmGlobalParam fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, quest_rank: app.QuestDef.RANK, reward_rank: app.QuestDef.EM_REWARD_RANK): app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam
 ---@field getAreaMoveInfo fun(self: app.user_data.ExFieldParam_EnemyData, monster_id: app.EnemyDef.ID): app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfoByEm
----@field get_StayMinute fun(self: app.user_data.ExFieldParam_EnemyData): System.Byte
----@field get_ExEnemies fun(self: app.user_data.ExFieldParam_EnemyData): System.Array<app.user_data.ExFieldParam_EnemyData.cExEmGlobalParam>
 ---@field isExclusiveEm fun(self: app.user_data.ExFieldParam_EnemyData, em_id: app.EnemyDef.ID): System.Boolean
 
 ---@class app.user_data.ExFieldParam.cAssistNpcGimmick : via.clr.ManagedObject
@@ -115,7 +94,6 @@
 ---@class app.user_data.ExFieldParam.cAssistNpcParam : via.clr.ManagedObject
 ---@field _AssistNpcGimmicks System.Array<app.user_data.ExFieldParam.cAssistNpcGimmick>
 ---@field get_InstanceGuid fun(self: app.user_data.ExFieldParam.cAssistNpcParam): System.Guid
----@field lotIntervalMinute fun(self: app.user_data.ExFieldParam.cAssistNpcParam): System.Byte
 
 ---@class app.user_data.ExFieldParam : via.UserData
 ---@field _FieldLayouts System.Array<app.user_data.ExFieldParam_LayoutData>
@@ -150,7 +128,6 @@
 
 ---@class app.EnvironmentManager : ace.GAElement
 ---@field _ExFieldDirector app.cExFieldDirector
----@field get_ExCurrentStage fun(self: app.EnvironmentManager): app.FieldDef.STAGE
 ---@field getEnvActiveLayer fun(self: app.EnvironmentManager, stage: app.FieldDef.STAGE): app.EnvironmentManager.FIELD_DATA_LAYER
 ---@field getEnvironmentType fun(self: app.EnvironmentManager, stage: app.FieldDef.STAGE, option: System.UInt32): app.EnvironmentType.ENVIRONMENT
 -- no idea what those bools are, seems to be always called with false, true, turue, false when creating ex events
@@ -177,21 +154,15 @@
 
 ---@class app.cExFieldDirector.cScheduleTimeline : via.clr.ManagedObject
 ---@field _KeyList System.Array<app.cExFieldEventBase>
----@field _CurrentIndex System.Int32
 ---@field get_KeyList fun(self: app.cExFieldDirector.cScheduleTimeline): System.Array<app.cExFieldEventBase>
 ---@field get_AdvancedGameMinute fun(self: app.cExFieldDirector.cScheduleTimeline): System.Int32
----@field newSerialEventUniqueIndex fun(self: app.cExFieldDirector.cScheduleTimeline): System.Int32
----@field addKeyRange fun(self: app.cExFieldDirector.cScheduleTimeline, event_list: System.Array<app.cExFieldEventBase>)
 ---@field newEventUniqueIndex fun(self: app.cExFieldDirector.cScheduleTimeline, stage: app.FieldDef.STAGE): System.Int32
 ---@field findKeyFromUniqueIndex fun(self: app.cExFieldDirector.cScheduleTimeline, index: System.Int32): app.cExFieldEventBase
 ---@field importSchedule fun(self: app.cExFieldDirector.cScheduleTimeline, schedule: app.cExFieldScheduleExportData, dont_reset_current_index: System.Boolean)
----@field get_RemainGameMinute fun(self: app.cExFieldDirector.cScheduleTimeline): System.Int32
----@field get_AdvancedRealSec fun(self: app.cExFieldDirector.cScheduleTimeline): System.Single
 
 ---@class app.cExFieldDirector : via.clr.ManagedObject
 ---@field _ScheduleTimeline app.cExFieldDirector.cScheduleTimeline
 ---@field _SpOfferFactory app.cExSpOfferFactory
----@field update_SortKeyList fun(self: app.cExFieldDirector)
 -- bool doesnt seem to do anything?
 ---@field requestSortKeyList fun(self: app.cExFieldDirector, stage: app.FieldDef.STAGE, bool: System.Boolean)
 -- last arg: if size of the System.LimitedArray returned by app.user_data.ExFieldParam_EmAreaMove.cAreaMoveInfoByEm.getAreaMoveInfoList(app.FieldDef.STAGE, app.user_data.EmParamAreaMove.cPatternData.FOR_EX_ATTR)
@@ -207,8 +178,6 @@
 ---@field clearExEventByStage fun(self: app.cExFieldDirector, stage: app.FieldDef.STAGE)
 ---@field rebuildExEventByStage fun(self: app.cExFieldDirector, stage: app.FieldDef.STAGE, future_only: System.Boolean)
 ---@field get_IsRun fun(self: app.cExFieldDirector): System.Boolean
----@field destroyAllExEm fun(self: app.cExFieldDirector)
----@field getEnvStartInfoList fun(self: app.cExFieldDirector, out: System.Array<app.cExFieldDirector.ENV_START_INFO>, remain_game_min: System.Int32, advanced_game_min: System.Int32, advanced_real_sec: System.Single, stage: app.FieldDef.STAGE)
 ---@field get_IsRunBackGround fun(self: app.cExFieldDirector): System.Boolean
 ---@field get_LoadedStage fun(self: app.cExFieldDirector): System.Boolean
 
@@ -220,9 +189,6 @@
 
 ---@class app.cExFieldEvent_SpOfferMore : app.cExFieldEvent_SpecialOfferBase
 ---@field createSpOfferActiveQuestData fun(self: app.cExFieldEvent_SpOfferMore, spoffer_info: app.cExSpOfferFactory.SpOfferInfo, spoffer_view: app.cExSpOfferFactory.SpOfferInfo): app.cActiveQuestData
-
----@class app.cExFieldDirector.ENV_START_INFO : System.ValueType
----@field get_EnvType fun(self: app.cExFieldDirector.ENV_START_INFO): app.EnvironmentType.ENVIRONMENT
 
 ---@class app.cExFieldEventBase : app.cExEvent
 ---@field _ExecMinute System.Int32
@@ -246,11 +212,9 @@
 ---@field get_AreaNo fun(self: app.cExFieldEventBase): System.Byte
 ---@field endProc fun(self: app.cExFieldEventBase)
 ---@field exportData fun(self: app.cExFieldEventBase): app.cExFieldScheduleExportData.cEventData
----@field get_FreeMiniValue2 fun(self: app.cExFieldEventBase): System.Byte
 ---@field get_FreeMiniValue6 fun(self: app.cExFieldEventBase): System.Byte
 ---@field toEndFromExternal fun(self: app.cExFieldEventBase)
 ---@field get_Executed fun(self: app.cExFieldEventBase): System.Boolean
----@field get_ExecMinute fun(self: app.cExFieldEventBase): System.Int32
 
 ---@class app.cExFieldEvent_GimmickEvent : app.cExFieldEvent_EnvEventBase
 ---@field get_IsAssistNpc fun(self: app.cExFieldEvent_GimmickEvent): System.Boolean
@@ -260,12 +224,7 @@
 ---@field forcedExit fun(self: app.cExFieldEvent_PopEnemy)
 ---@field get_IsRequestedExit fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_EmID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.ID
----@field get_GroupIDNo fun(self: app.cExFieldEvent_PopEnemy): System.Int32
----@field get_IsSwarm fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
----@field get_IsNushi fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
----@field get_IsLegendary fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_IsBattlefieldEm fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
----@field get_PopEmType fun(self: app.cExFieldEvent_PopEnemy): app.ExDef.POP_EM_TYPE_Fixed
 ---@field get_EnableSpOfferTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field get_EnableKeepQuestTarget fun(self: app.cExFieldEvent_PopEnemy): System.Boolean
 ---@field findEm fun(self: app.cExFieldEvent_PopEnemy): app.cEnemyContextHolder
@@ -274,7 +233,6 @@
 ---@field get_DifficultyID fun(self: app.cExFieldEvent_PopEnemy): System.Guid
 ---@field get_RoleID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.ROLE_ID
 ---@field get_LegendaryID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.LEGENDARY_ID
----@field get_StayMinute_Real fun(self: app.cExFieldEvent_PopEnemy): System.Byte
 ---@field set_OptionTagValue  fun(self: app.cExFieldEvent_PopEnemy, val: System.Int64)
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
@@ -295,21 +253,15 @@
 ---@field _FreeMiniValue6 System.Byte
 ---@field get_EventType fun(self: app.cExFieldScheduleExportData.cEventData): app.EX_FIELD_EVENT_TYPE
 
----@class app.cExFieldDirector.cSpawnableEmParam : via.clr.ManagedObject
----@field get_EmID fun(self: app.cExFieldDirector.cSpawnableEmParam): app.EnemyDef.ID
----@field get_StayMinute_Real fun(self: app.cExFieldDirector.cSpawnableEmParam): System.Int32
-
 ---@class app.user_data.ExFieldParam_LayoutData.cAnimalEventParam : app.user_data.ExFieldParam_LayoutData.cEnvEventParamBase
 ---@field get_AnimalEvent fun(self: app.user_data.ExFieldParam_LayoutData.cAnimalEventParam): app.ExDef.ANIMAL_EVENT
 
 ---@class app.GameFlowManager : ace.GAElement
 ---@field get_CurrentGameScene fun(self: app.GameFlowManager): app.cFieldSceneParam.SCENE_TYPE
----@field get_NextGameStateType fun(self: app.GameFlowManager): app.cFieldSceneParam.SCENE_TYPE?
 ---@field get_IsPlayableScene fun(self: app.GameFlowManager): System.Boolean
 
 ---@class app.MasterFieldManager : ace.GAElement
 ---@field get_CurrentStage fun(self: app.MasterFieldManager): app.FieldDef.STAGE
----@field isLoadedCurrentStage fun(self: app.MasterFieldManager): System.Boolean
 
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam : via.clr.ManagedObject
 ---@field get_AreaNo fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam): System.Byte
@@ -327,7 +279,6 @@
 ---@field get_QuestStage fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Byte
 ---@field get_OptionTagValue fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Int64
 ---@field lotDifficultyID_PopBelonging fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield, legendary_id: app.EnemyDef.LEGENDARY_ID): System.Guid
----@field getLotPopBelongingStageParam fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield.cPopBelongingStageParam
 ---@field get_OptionTagValue_AfterPopBelongingStage fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Int64
 ---@field get_PopBelongingStageProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Battlefield): System.Byte
 
@@ -388,7 +339,6 @@
 
 ---@class app.user_data.EmParamRandomSize : via.UserData
 ---@field _EnemyRandomSizeTblArray System.Array<app.user_data.EmParamRandomSize.cEnemyTableData>
----@field getRandomSizeTblData fun(self: app.user_data.EmParamRandomSize, guid: System.Guid): app.user_data.EmParamRandomSize.cRandomSizeData
 ---@field getRandomSizeTblData_Boss fun(self: app.user_data.EmParamRandomSize, em_id_fixed: app.EnemyDef.ID_Fixed, legendary_id: app.EnemyDef.LEGENDARY_ID, reward_rank: app.QuestDef.EM_REWARD_RANK, index: System.Int32): app.user_data.EmParamRandomSize.cRandomSizeData
 
 ---@class app.user_data.EmParamRandomSize.cRandomSizeData : via.clr.ManagedObject
@@ -406,7 +356,6 @@
 ---@class app.user_data.EmParamRandomSize.cSizeTableData : via.clr.ManagedObject
 ---@field get_RewardRank_L fun(self: app.user_data.EmParamRandomSize.cSizeTableData): app.QuestDef.EM_REWARD_RANK_Fixed
 ---@field get_RewardRank_U fun(self: app.user_data.EmParamRandomSize.cSizeTableData): app.QuestDef.EM_REWARD_RANK_Fixed
----@field getSizeTableId fun(self: app.user_data.EmParamRandomSize.cSizeTableData, id: System.Int32): app.cEmParamGuid_RandomSize_RandomSizeTbl
 
 ---@class app.cEmParamGuidBase : via.clr.ManagedObject
 ---@field Value System.Guid
@@ -436,7 +385,6 @@
 ---@field Area app.cEmModuleArea
 
 ---@class app.cEmModuleArea : app.cEmModuleBase
----@field get_CurrentAreaNo fun(self: app.cEmModuleArea): System.Int32
 ---@field get_IsTargetArrival fun(self: app.cEmModuleArea): System.Boolean
 
 ---@class app.cContextCreateArg_Enemy : app.cContextCreateArg

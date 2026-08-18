@@ -1,6 +1,5 @@
 ---@meta
 
----@class ace.GUIManagerBase : ace.GAElement
 ---@class ace.GAElementBase : via.Behavior
 ---@class ace.GAElement<T> : ace.GAElementBase
 ---@class ace.GimmickBaseCore : via.Behavior
