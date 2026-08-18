@@ -12,6 +12,7 @@
 ---@field size integer?
 ---@field is_invalid boolean
 ---@field option_tag integer?
+---@field is_reward_max boolean?
 
 ---@class (exact) MonsterEventFactoryOptionalArgs : AreaEventFactoryOptionalArgs
 ---@field spoffer_unique_index integer?
@@ -22,6 +23,7 @@
 ---@field option_tag integer?
 ---@field is_village_boost boolean?
 ---@field is_yummy boolean?
+---@field is_reward_max boolean?
 
 --[[ app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -56,6 +58,7 @@ local e = require("FieldEventSpawner.util.game.enum")
 local factory = require("FieldEventSpawner.events.area_event_factory")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local helpers = require("FieldEventSpawner.data.helpers")
+local hook = require("FieldEventSpawner.schedule.hook")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
 local reward_factory = require("FieldEventSpawner.events.reward")
@@ -96,6 +99,7 @@ function this:new(monster_data, stage, time, monster_role, pop_em_type, legendar
     o.environ = opts.environ
     o.size = opts.size
     o.option_tag = opts.option_tag
+    o.is_reward_max = opts.is_reward_max
     o.is_invalid = opts.difficulty
             and helpers.is_invalid_em2(monster_data, opts.difficulty, o.monster_role)
         or false
@@ -106,6 +110,12 @@ function this:new(monster_data, stage, time, monster_role, pop_em_type, legendar
         o:_get_em_param()
     )
     return o
+end
+
+---@return SpawnResult
+function this:spawn()
+    hook.set_reward_max_flag(self.is_reward_max)
+    return factory.spawn(self)
 end
 
 ---@return SpawnResult, MonsterSpawnEvent?

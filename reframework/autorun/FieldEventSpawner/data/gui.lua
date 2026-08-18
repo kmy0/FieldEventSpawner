@@ -15,7 +15,7 @@ local this = {
             "gimmick",
             "animal",
         },
-        rewards = { "disabled", "user_defined" },
+        rewards = { "disabled", "user_defined", "random_max" },
         em_param = {
             "legendary",
             "frenzy",

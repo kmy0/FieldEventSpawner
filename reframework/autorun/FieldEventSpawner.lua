@@ -164,6 +164,41 @@ m.hook(
     nil,
     sched.hook.is_enable_execute_instant_post
 )
+m.hook(
+    "app.ExQuestRewardUtil.lotSkillGemReward(app.user_data.ExQuestRewardSetting, ace.cLimitedArray`1<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>, app.QuestDef.EM_REWARD_RANK, System.Boolean, System.Boolean)",
+    sched.hook.reward_max_get_args_pre,
+    sched.hook.reward_max_skillgem_post
+)
+m.hook(
+    "app.ExQuestRewardUtil.lotAmuletReward(app.user_data.ExQuestRewardSetting, ace.cLimitedArray`1<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>, app.QuestDef.EM_REWARD_RANK, System.Boolean, System.Boolean)",
+    sched.hook.reward_max_get_args_pre,
+    sched.hook.reward_max_amulet_post
+)
+m.hook(
+    "app.ExQuestRewardUtil.lotArtianReward(app.user_data.ExQuestRewardSetting, ace.cLimitedArray`1<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>, app.QuestDef.EM_REWARD_RANK, System.Boolean, System.Boolean)",
+    sched.hook.reward_max_get_args_pre,
+    sched.hook.reward_max_artian_post
+)
+m.hook(
+    "app.ExQuestRewardUtil.lotExEmReward(System.Collections.Generic.List`1<app.savedata.cItemWork>, System.Collections.Generic.List`1<System.Boolean>, System.Boolean, app.user_data.ExQuestRewardSetting, app.ExQuestRewardUtil.EM_INFO_FOR_REWARD, System.Boolean, System.Boolean, app.QuestDef.EM_REWARD_RANK)",
+    sched.hook.reward_max_get_args_pre,
+    sched.hook.reward_ax_emreward_post
+)
+m.hook(
+    "app.ExQuestRewardUtil.lotLotNumFromGrade(app.user_data.ExQuestRewardSetting, ace.cLimitedArray`1<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>, System.Int32, System.Boolean, System.Boolean, app.QuestDef.EM_REWARD_RANK)",
+    sched.hook.reward_max_get_args_pre,
+    sched.hook.reward_max_slot_post
+)
+m.hook(
+    "app.user_data.ExQuestRewardSetting.cRewardSlotTable.tryGetWeightedRewardSlot(System.Byte)",
+    sched.hook.reward_max_get_args_pre,
+    sched.hook.reward_max_slot_spoffer_swarm_post
+)
+m.hook(
+    "app.user_data.ExQuestRewardSetting.cRewardItemTable.tryGetWeightedRewardItem(ace.cLimitedArray`1<app.savedata.cItemWork>, ace.cLimitedArray`1<System.Boolean>, System.Byte[], ace.cLimitedArray`1<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>, System.Byte)",
+    sched.hook.reward_max_get_args_pre,
+    sched.hook.reward_max_reward_spoffer_swarm_post
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then

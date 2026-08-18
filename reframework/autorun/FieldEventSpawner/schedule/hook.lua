@@ -11,6 +11,7 @@
 ---@field done boolean
 ---@field spoffer boolean
 ---@field ex_instant boolean
+---@field reward_max boolean
 
 ---@class (exact) HookActions
 ---@field repop_gm CachedEvent?
@@ -49,6 +50,7 @@ local this = {
             done = false,
             spoffer = false,
             ex_instant = false,
+            reward_max = false,
         },
         actions = {
             force_area = { ongoing = {} },
@@ -67,6 +69,7 @@ local this = {
 local state = this.state
 local flags = state.flags
 local actions = state.actions
+local reward = ace.reward
 
 ---@param gimmick_fixed app.ExDef.GIMMICK_EVENT_Fixed
 ---@param area integer
@@ -102,6 +105,46 @@ local function destroy_all_em()
     end
 end
 
+---@param retval integer
+---@return {
+--- em_infos: app.ExQuestRewardUtil.EM_INFO_FOR_REWARD[],
+--- is_yummy: boolean,
+--- is_spoffer: boolean,
+--- item: app.savedata.cItemWork,
+--- }?
+local function get_extra_reward_args(retval)
+    local args = util_ref.thread_get()
+    if not args then
+        return
+    end
+
+    local limited_array = sdk.to_managed_object(args[3]) --[[@as ace.cLimitedArray<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>]]
+    local item = sdk.to_managed_object(retval) --[[@as app.savedata.cItemWork]]
+    return {
+        em_infos = util_game.system_array_to_lua(limited_array._Array),
+        is_yummy = util_ref.to_bool(args[7]),
+        is_spoffer = util_ref.to_bool(args[8]),
+        item = item,
+    }
+end
+
+---@param retval integer
+---@param reward_type RewardType
+local function make_num_reward_max_extra(retval, reward_type)
+    local args = get_extra_reward_args(retval)
+    if not args then
+        return
+    end
+
+    reward.item.make_item_num_max(
+        reward_type,
+        args.item,
+        args.em_infos,
+        args.is_yummy,
+        args.is_spoffer
+    )
+end
+
 ---@param val boolean
 function this.set_spawn_flag(val)
     flags.spawn = val
@@ -120,6 +163,11 @@ end
 ---@param val boolean
 function this.set_rebuild_flag(val)
     flags.rebuild = val
+end
+
+---@param val boolean
+function this.set_reward_max_flag(val)
+    flags.reward_max = val
 end
 
 ---@param event CachedEvent
@@ -206,6 +254,7 @@ function this.ex_director_update_post(_)
     if flags.done then
         flags.spawn = false
         flags.done = false
+        flags.reward_max = false
         actions.force_area.once = nil
         actions.force_spoffer = nil
         actions.force_size = nil
@@ -377,7 +426,7 @@ function this.allow_invalid_quests_pre(args)
     local config_mod = config.current.mod
 
     if config_mod.is_allow_invalid_quest then
-        local ptr = sdk.to_int64(args[2])
+        local ptr = util_ref.to_int(args[2])
         fes_util.write_qword(ptr, 0)
 
         return sdk.PreHookResult.SKIP_ORIGINAL
@@ -547,6 +596,98 @@ function this.is_enable_execute_instant_post(_)
         flags.ex_instant = false
         return true
     end
+end
+
+function this.reward_max_get_args_pre(args)
+    if flags.reward_max then
+        util_ref.thread_store(args)
+    end
+end
+
+function this.reward_max_artian_post(retval)
+    make_num_reward_max_extra(retval, reward.item.enum.Artian)
+end
+
+function this.reward_max_amulet_post(retval)
+    make_num_reward_max_extra(retval, reward.item.enum.Amulet)
+end
+
+function this.reward_max_skillgem_post(retval)
+    make_num_reward_max_extra(retval, reward.item.enum.SkillGem)
+end
+
+function this.reward_ax_emreward_post(_)
+    local args = util_ref.thread_get()
+    if not args then
+        return
+    end
+
+    local items = sdk.to_managed_object(util_ref.deref_ptr(args[2])) --[[@as System.Array<app.savedata.cItemWork>]]
+    local em_infos = { sdk.to_valuetype(args[6], "app.ExQuestRewardUtil.EM_INFO_FOR_REWARD") }
+    local is_yummy = util_ref.to_bool(args[7])
+    local is_spoffer = util_ref.to_bool(args[8])
+
+    util_game.do_something(items, function(_, _, item)
+        reward.item.make_item_num_max(
+            reward.item.enum.Monster,
+            item,
+            em_infos,
+            is_yummy,
+            is_spoffer
+        )
+    end)
+end
+
+function this.reward_max_slot_post(_)
+    local args = util_ref.thread_get()
+    if not args then
+        return
+    end
+
+    local limited_array = sdk.to_managed_object(args[3]) --[[@as ace.cLimitedArray<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>]]
+    local em_infos = util_game.system_array_to_lua(limited_array._Array)
+    local is_yummy = util_ref.to_bool(args[5])
+    local is_spoffer = util_ref.to_bool(args[6])
+    local rank = util_ref.to_byte(args[7])
+    local ret = reward.slot.get_slot_num_max(em_infos, rank, is_yummy, is_spoffer)
+
+    if ret > 0 then
+        return ret
+    end
+end
+
+function this.reward_max_slot_spoffer_swarm_post(_)
+    local args = util_ref.thread_get()
+    if not args then
+        return
+    end
+
+    local slot_table = sdk.to_managed_object(args[2]) --[[@as app.user_data.ExQuestRewardSetting.cRewardSlotTable]]
+    local ptr = util_ref.to_int(args[3])
+    local num = reward.slot.get_slot_num_max_spoffer_swarm(slot_table)
+    local ret = util_ref.to_bool(retval)
+
+    if num > 0 then
+        util_misc.try(function()
+            --FIXME: this sometimes throws
+            sdk.to_valuetype(ptr, "System.Byte")
+            fes_util.write_byte(ptr, num)
+            ret = true
+        end)
+    end
+
+    return ret
+end
+
+function this.reward_max_reward_spoffer_swarm_post(_)
+    local args = util_ref.thread_get()
+    if not args then
+        return
+    end
+
+    local reward_table = sdk.to_managed_object(args[2]) --[[@as app.user_data.ExQuestRewardSetting.cRewardItemTable]]
+    local limited_array = sdk.to_managed_object(util_ref.deref_ptr(args[3])) --[[@as ace.cLimitedArray<app.savedata.cItemWork>]]
+    reward.item.make_item_num_max_spoffer_swarm(reward_table, limited_array._Array)
 end
 
 return this

@@ -78,6 +78,11 @@ function this.is_yummy_disabled()
 end
 
 ---@return boolean
+function this.is_reward_max()
+    return state.combo.quest_rewards:get() == "random_max"
+end
+
+---@return boolean
 function this.is_village_boost_disabled()
     return mod.is_in_quest()
         or not mod.is_village_boost_unlocked(mod.state.stage)
@@ -374,6 +379,7 @@ function this.spawn()
                     size = this.get_em_size(),
                     spoffer_swarm = this.get_is_spoffer_swarm(),
                     option_tag = combo.em_option_tag:get(),
+                    is_reward_max = this.is_reward_max(),
                 }
             )
         elseif this.is_battlefield_monster_current_stage() then
@@ -392,6 +398,7 @@ function this.spawn()
                     environ = event:get_environ(mod.state.stage, combo.em_param:get()),
                     size = this.get_em_size(),
                     option_tag = combo.em_option_tag:get(),
+                    is_reward_max = this.is_reward_max(),
                 }
             )
         else
@@ -413,6 +420,7 @@ function this.spawn()
                     environ = event:get_environ(mod.state.stage, combo.em_param:get()),
                     size = this.get_em_size(),
                     option_tag = combo.em_option_tag:get(),
+                    is_reward_max = this.is_reward_max(),
                 }
             )
         end

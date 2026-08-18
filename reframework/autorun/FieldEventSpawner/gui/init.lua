@@ -315,6 +315,7 @@ function this.draw()
             util_gui.tr("mod.combo_rewards"),
             "mod.rewards"
         )
+        util_imgui.tooltip(config.lang:tr("mod.tooltip_combo_rewards"), true)
 
         imgui.begin_disabled(state.combo.quest_rewards:get() ~= "user_defined")
         if imgui.button(util_gui.tr("mod.button_open_rewards_builder")) then

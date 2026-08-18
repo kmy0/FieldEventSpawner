@@ -1,4 +1,5 @@
 local ace = require("FieldEventSpawner.data.ace.init")
+local cache = require("FieldEventSpawner.util.misc.cache")
 local config = require("FieldEventSpawner.config.init")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
@@ -216,5 +217,14 @@ function this.check_ex_quest_spoffer_swarm(index)
 
     return ret, bit
 end
+
+---@return app.user_data.ExQuestRewardSetting
+function this.get_ex_reward_setting()
+    local various_data_manager = s.get("app.VariousDataManager")
+    local various_data_manager_setting = various_data_manager:get_Setting()
+    return various_data_manager_setting:get_ExQuestRewardSetting()
+end
+
+this.get_ex_reward_setting = cache.memoize(this.get_ex_reward_setting)
 
 return this

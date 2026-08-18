@@ -11,3 +11,6 @@
 
 ---@class ace.GimmickBase<T> : ace.GimmickBaseCore
 ---@field changeState fun(self: ace.GimmickBase, state: ace.GimmickDef.BASE_STATE)
+
+---@class ace.cLimitedArray<T> : via.clr.ManagedObject
+---@field _Array System.Array<T>

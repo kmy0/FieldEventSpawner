@@ -3,6 +3,7 @@
 ---@field item ItemDataBy
 ---@field ex_field_param app.user_data.ExFieldParam
 ---@field map AceMap
+---@field reward RewardHelper
 ---@field initialized boolean
 ---@field invalid_difficulties_loaded boolean
 ---@field init fun(): boolean

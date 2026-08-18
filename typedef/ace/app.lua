@@ -19,7 +19,6 @@
 ---@class app.cExFieldEvent_SpecialOffer : app.cExFieldEvent_SpecialOfferBase
 ---@class app.cEmParamGuid_RandomSize_RandomSizeTbl : app.cEmParamGuidBase
 ---@class app.cExFieldEvent_SpecialOfferBase : app.cExFieldEventBase
----@class app.savedata.cItemWork : ace.cSaveDataParam
 ---@class app.cKeepQuestData : via.clr.ManagedObject
 ---@class app.cExFieldEvent_SpecialOfferBase : app.cExFieldEventBase
 ---@class app.cExSpOfferInfo_forView : via.clr.ManagedObject
@@ -140,6 +139,7 @@
 ---@field get_Weight fun(self: app.user_data.ExFieldParam.cSpOfferSecondTargetWeight): System.Byte
 
 ---@class app.user_data.VariousDataManagerSetting : via.UserData
+---@field get_ExQuestRewardSetting fun(self: app.user_data.VariousDataManagerSetting): app.user_data.ExQuestRewardSetting
 ---@field get_ExFieldParam fun(self: app.user_data.VariousDataManagerSetting): app.user_data.ExFieldParam
 
 ---@class app.VariousDataManager : ace.GAElement
@@ -466,3 +466,93 @@
 
 ---@class app.cActiveQuestData : via.clr.ManagedObject
 ---@field get_KeepQuestData fun(self: app.cActiveQuestData): app.cKeepQuestData
+
+---@class app.user_data.ExQuestRewardSetting.ParamByEmBase : via.clr.ManagedObject
+---@field isMatch fun(self: app.user_data.ExQuestRewardSetting.ParamByEmBase, em_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, difficulty_guid: System.Guid, quest_rank: app.QuestDef.EM_REWARD_RANK): System.Boolean
+
+---@class app.user_data.ExQuestRewardSetting.SkillGemRewardParamByEm : app.user_data.ExQuestRewardSetting.ParamByEmBase
+---@field get_IsUseSpOfferTbl fun(self: app.user_data.ExQuestRewardSetting.SkillGemRewardParamByEm): System.Boolean
+---@field _SkillGemRewardTbl app.user_data.ExQuestRewardSetting.cExRewardDataParam[]
+---@field _SkillGemRewardTbl_SpOffer app.user_data.ExQuestRewardSetting.cExRewardDataParam[]
+
+---@class app.user_data.ExQuestRewardSetting.ArtianRewardParamByEm : app.user_data.ExQuestRewardSetting.ParamByEmBase
+---@field get_IsUseSpOfferTbl fun(self: app.user_data.ExQuestRewardSetting.ArtianRewardParamByEm): System.Boolean
+---@field _ArtianRewardTbl app.user_data.ExQuestRewardSetting.cExRewardDataParam[]
+---@field _ArtianRewardTbl_SpOffer app.user_data.ExQuestRewardSetting.cExRewardDataParam[]
+
+---@class app.user_data.ExQuestRewardSetting.AmuletRewardParamByEm : app.user_data.ExQuestRewardSetting.ParamByEmBase
+---@field get_IsUseSpOfferTbl fun(self: app.user_data.ExQuestRewardSetting.AmuletRewardParamByEm): System.Boolean
+---@field _AmuletRewardTbl app.user_data.ExQuestRewardSetting.cExRewardDataParam[]
+---@field _AmuletRewardTbl_SpOffer app.user_data.ExQuestRewardSetting.cExRewardDataParam[]
+
+---@class app.user_data.ExQuestRewardSetting.cExRewardDataParam : via.clr.ManagedObject
+---@field get_Rank fun(self: app.user_data.ExQuestRewardSetting.cExRewardDataParam): app.QuestDef.EM_REWARD_RANK
+---@field get_RewardItem fun(self: app.user_data.ExQuestRewardSetting.cExRewardDataParam): app.ItemDef.ID
+---@field get_Weight_Yummy fun(self: app.user_data.ExQuestRewardSetting.cExRewardDataParam): System.Byte
+---@field get_Weight_Normal fun(self: app.user_data.ExQuestRewardSetting.cExRewardDataParam): System.Byte
+---@field get_Num fun(self: app.user_data.ExQuestRewardSetting.cExRewardDataParam): System.Byte
+
+---@class app.user_data.ExQuestRewardSetting.cExEmRewardDataParam : via.clr.ManagedObject
+---@field getRewardDummyItem fun(self: app.user_data.ExQuestRewardSetting.cExEmRewardDataParam): app.ItemDef.ID
+---@field get_SlotNum fun(self: app.user_data.ExQuestRewardSetting.cExEmRewardDataParam): System.Byte
+---@field get_Weight fun(self: app.user_data.ExQuestRewardSetting.cExEmRewardDataParam):System.Byte
+
+---@class app.user_data.ExQuestRewardSetting.cExRewardDataParamByEm : app.user_data.ExQuestRewardSetting.ParamByEmBase
+---@field _EmRewardTbl app.user_data.ExQuestRewardSetting.cExEmRewardDataParam[]
+---@field _EmRewardTbl_Yummy app.user_data.ExQuestRewardSetting.cExEmRewardDataParam[]
+
+---@class app.user_data.ExQuestRewardSetting.cExRewardDataParamByRank : via.clr.ManagedObject
+---@field get_Rank fun(self: app.user_data.ExQuestRewardSetting.cExRewardDataParamByRank): app.QuestDef.EM_REWARD_RANK
+---@field _EmRewardTbl app.user_data.ExQuestRewardSetting.cExEmRewardDataParam[]
+---@field _EmRewardTbl_Yummy app.user_data.ExQuestRewardSetting.cExEmRewardDataParam[]
+
+---@class app.user_data.ExQuestRewardSetting : via.UserData
+---@field _SkillGemRewardTblByEm app.user_data.ExQuestRewardSetting.SkillGemRewardParamByEm[]
+---@field _ArtianRewardTblByEm app.user_data.ExQuestRewardSetting.ArtianRewardParamByEm[]
+---@field _AmuletmRewardTblByEm app.user_data.ExQuestRewardSetting.AmuletRewardParamByEm[]
+---@field _EmRewardTblByEm app.user_data.ExQuestRewardSetting.cExRewardDataParamByEm[]
+---@field _EmRewardTblByRank app.user_data.ExQuestRewardSetting.cExRewardDataParamByRank[]
+---@field _RewardSlotTbl_Frenzy app.user_data.ExQuestRewardSetting.cExRewardSlotParam[]
+---@field _RewardSlotTblByRank app.user_data.ExQuestRewardSetting.cExRewardSlotParamByRank[]
+
+---@class app.user_data.ExQuestRewardSetting.cExRewardSlotParam : via.clr.ManagedObject
+---@field get_Grade fun(self: app.user_data.ExQuestRewardSetting.cExRewardSlotParam): System.Byte
+---@field get_Weight_Yummy fun(self: app.user_data.ExQuestRewardSetting.cExRewardSlotParam): System.Byte
+---@field get_Weight_Normal fun(self: app.user_data.ExQuestRewardSetting.cExRewardSlotParam): System.Byte
+---@field get_LotNum fun(self: app.user_data.ExQuestRewardSetting.cExRewardSlotParam): System.Byte
+
+---@class app.user_data.ExQuestRewardSetting.cExRewardSlotParamByRank : via.clr.ManagedObject
+---@field get_Rank fun(self: app.user_data.ExQuestRewardSetting.cExRewardSlotParamByRank): app.QuestDef.EM_REWARD_RANK
+---@field _RewardSlotTbl app.user_data.ExQuestRewardSetting.cExRewardSlotParam[]
+---@field _RewardSlotTbl_SpOfferByLowerRank app.user_data.ExQuestRewardSetting.cExRewardSlotParamByRank.cExRewardSlotParam_SpOffer[]
+
+---@class app.user_data.ExQuestRewardSetting.cExRewardSlotParamByRank.cExRewardSlotParam_SpOffer : via.clr.ManagedObject
+---@field get_LowerRank fun(self: app.user_data.ExQuestRewardSetting.cExRewardSlotParamByRank.cExRewardSlotParam_SpOffer): app.QuestDef.EM_REWARD_RANK
+---@field _RewardSlotTbl_SpOffer app.user_data.ExQuestRewardSetting.cExRewardSlotParam[]
+
+---@class app.savedata.cItemWork : ace.cSaveDataParam
+---@field Num System.Int16
+---@field get_ItemId fun(self: app.savedata.cItemWork ): app.ItemDef.ID
+
+---@class app.ExQuestRewardUtil.EM_INFO_FOR_REWARD : System.ValueType
+---@field ["<EmID>k__BackingField"] app.EnemyDef.ID
+---@field ["<RoleID>k__BackingField"] app.EnemyDef.ROLE_ID
+---@field ["<LegendaryID>k__BackingField"] app.EnemyDef.LEGENDARY_ID
+---@field ["<DifficultyRankID>k__BackingField"] System.Guid
+---@field ["<Rank>k__BackingField"] app.QuestDef.EM_REWARD_RANK
+---@field ["<Grade>k__BackingField"] System.Byte
+
+---@class app.user_data.ExQuestRewardSetting.cRewardItemTable : via.clr.ManagedObject
+---@field _RewardItemTbl app.user_data.ExQuestRewardSetting.cRewardItemTable.cRewardItemData[]
+
+---@class app.user_data.ExQuestRewardSetting.cRewardItemTable.cRewardItemData : via.clr.ManagedObject
+---@field get_RewardItem fun(self: app.user_data.ExQuestRewardSetting.cRewardItemTable.cRewardItemData): app.ItemDef.ID
+---@field get_Weight fun(self: app.user_data.ExQuestRewardSetting.cRewardItemTable.cRewardItemData): System.Byte
+---@field get_Num fun(self: app.user_data.ExQuestRewardSetting.cRewardItemTable.cRewardItemData): System.Byte
+
+---@class app.user_data.ExQuestRewardSetting.cRewardSlotTable : via.clr.ManagedObject
+---@field _RewardSlotTbl app.user_data.ExQuestRewardSetting.cRewardSlotTable.cRewardSlotData
+
+---@class app.user_data.ExQuestRewardSetting.cRewardSlotTable.cRewardSlotData : via.clr.ManagedObject
+---@field get_Weight fun(self: app.user_data.ExQuestRewardSetting.cRewardSlotTable.cRewardSlotData): System.Byte
+---@field get_SlotNum fun(self: app.user_data.ExQuestRewardSetting.cRewardSlotTable.cRewardSlotData): System.Byte

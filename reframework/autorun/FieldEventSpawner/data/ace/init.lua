@@ -15,6 +15,7 @@ local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = require("FieldEventSpawner.data.ace.ace")
+this.reward = require("FieldEventSpawner.data.ace.reward.init")
 
 ---@param ... AreaEventData[]
 ---@return table<app.FieldDef.STAGE, table<string, table<string, AreaEventData>>>
