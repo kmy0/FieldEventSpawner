@@ -284,7 +284,7 @@ function this.get_valid_spoffer_difficulties()
     local ret = {}
 
     if not candidates then
-        return ret
+        return
     end
 
     ---@diagnostic disable-next-line: param-type-mismatch
@@ -294,7 +294,7 @@ function this.get_valid_spoffer_difficulties()
         end
     end
 
-    return util_table.unique(ret)
+    return util_table.pick_random_value(ret)
 end
 
 ---@return AreaEventData?
