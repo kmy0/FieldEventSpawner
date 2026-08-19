@@ -438,7 +438,7 @@ function this.allow_invalid_quests_pre(args)
     local config_mod = config.current.mod
 
     if config_mod.is_allow_invalid_quest then
-        local ptr = util_ref.to_int(args[2])
+        local ptr = util_ref.to_address(args[2])
         fes_util.write_qword(ptr, 0)
 
         return sdk.PreHookResult.SKIP_ORIGINAL
@@ -668,27 +668,18 @@ function this.reward_max_slot_post(_)
     end
 end
 
-function this.reward_max_slot_spoffer_swarm_post(_)
+function this.random_max_slot_spoffer_swarm_post(_)
     local args = util_ref.thread_get()
     if not args then
         return
     end
 
     local slot_table = sdk.to_managed_object(args[2]) --[[@as app.user_data.ExQuestRewardSetting.cRewardSlotTable]]
-    local ptr = util_ref.to_int(args[3])
+    local ptr = util_ref.to_address(args[3])
     local num = reward.slot.get_slot_num_max_spoffer_swarm(slot_table)
-    local ret = util_ref.to_bool(retval)
 
-    if num > 0 then
-        util_misc.try(function()
-            --FIXME: this sometimes throws
-            sdk.to_valuetype(ptr, "System.Byte")
-            fes_util.write_byte(ptr, num)
-            ret = true
-        end)
-    end
-
-    return ret
+    fes_util.write_byte(ptr, num)
+    return true
 end
 
 function this.reward_max_reward_spoffer_swarm_post(_)

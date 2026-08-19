@@ -193,4 +193,10 @@ function this.to_int(ptr)
     return sdk.to_int64(ptr) & 0xfffffff
 end
 
+---@param ptr userdata
+---@return integer
+function this.to_address(ptr)
+    return sdk.to_int64(ptr) & 0x7FFFFFFFFFFFFFFF
+end
+
 return this
