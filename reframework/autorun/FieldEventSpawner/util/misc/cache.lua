@@ -74,12 +74,14 @@ function this.memoize(func, predicate, optional_args)
             ---@type any
             local key
             if optional_args.do_hash then
-                key =
-                    ---@diagnostic disable-next-line: param-type-mismatch
-                    hash.hash_args(
-                        optional_args.deep_hash_table,
-                        not optional_args.key_index and ... or select(optional_args.key_index, ...)
-                    )
+                local args
+                if not optional_args.key_index then
+                    args = { ... }
+                else
+                    args = { select(optional_args.key_index, ...) }
+                end
+
+                key = hash.hash_args(optional_args.deep_hash_table, table.unpack(args))
             else
                 if select("#", ...) > 0 then
                     ---@diagnostic disable-next-line: no-unknown
