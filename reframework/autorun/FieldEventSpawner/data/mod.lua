@@ -185,7 +185,7 @@ function this.get_environ(stage)
 end
 
 function this.update_spoffer()
-    if not this.is_spoffer_unlocked(this.state.stage) then
+    if not this.is_spoffer_unlocked(this.state.stage) or not this.initialized then
         util_table.clear(this.state.spoffer)
         return
     end
