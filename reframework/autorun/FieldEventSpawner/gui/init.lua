@@ -250,18 +250,19 @@ function this.draw()
         util_imgui.tooltip(get_monster_crown_text(), true)
 
         disabled = helpers.is_swarm_count_disabled()
-        if disabled and config_mod.swarm_count ~= 0 then
-            config:set("mod.swarm_count", 0)
+        if disabled and config_mod.swarm_count ~= 1 then
+            config:set("mod.swarm_count", 1)
         end
 
         imgui.begin_disabled(disabled)
         set:slider_int(
             util_gui.tr("mod.slider_swarm_count"),
             "mod.swarm_count",
-            0,
-            5,
-            config:get("mod.swarm_count") == 0 and config.lang:tr("misc.text_disabled")
-                or config:get("mod.swarm_count")
+            1,
+            #state.swarm_count_array,
+            state.swarm_count_array[config:get("mod.swarm_count")] < 2
+                    and config.lang:tr("misc.text_disabled")
+                or tostring(state.swarm_count_array[config:get("mod.swarm_count")])
         )
         imgui.end_disabled()
         util_imgui.tooltip(

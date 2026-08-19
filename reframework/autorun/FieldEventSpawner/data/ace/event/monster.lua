@@ -369,6 +369,19 @@ local function add_param_data(monster_data)
                 diff_array = pop_param._BossDifficultyParams
             end
 
+            if param_key == "swarm" or param_key == "alpha" and not md.swarm_pack then
+                ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm
+                local swarm_num = pop_param:get_SwarmNum()
+                local max_spoffer = pop_param:get_SpOfferTargetMax()
+
+                md.swarm_pack = {
+                    min = pop_param:get_SpawnNumMin(),
+                    max = pop_param:get_SpawnNumMax(),
+                }
+                md.swarm_pack.min_spoffer = math.min(md.swarm_pack.min * swarm_num, max_spoffer)
+                md.swarm_pack.max_spoffer = math.min(md.swarm_pack.max * swarm_num, max_spoffer)
+            end
+
             add_params(monster_data, stage, param_key, em_param, pop_param._ParamsByEnv, diff_array)
             ::continue::
         end
