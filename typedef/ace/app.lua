@@ -23,6 +23,7 @@
 ---@class app.cExFieldEvent_SpecialOfferBase : app.cExFieldEventBase
 ---@class app.cExSpOfferInfo_forView : via.clr.ManagedObject
 ---@class app.cExFieldEvent_EmReward : app.cExFieldEventBase
+---@class app.cExFieldEvent_SpOfferMore : app.cExFieldEvent_SpecialOfferBase
 
 -- some pop_param inheritance things are wrong, not sure if this mess can be translated properly to luals
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base : app.cParamByEnvBase
@@ -189,9 +190,7 @@
 
 ---@class app.cExMoreTargetSpOfferFactory : via.clr.ManagedObject
 ---@field requestSwarmSpOffer fun(self: app.cExMoreTargetSpOfferFactory, stage: app.FieldDef.STAGE, pop_em: app.cExFieldEvent_PopEnemy)
-
----@class app.cExFieldEvent_SpOfferMore : app.cExFieldEvent_SpecialOfferBase
----@field createSpOfferActiveQuestData fun(self: app.cExFieldEvent_SpOfferMore, spoffer_info: app.cExSpOfferFactory.SpOfferInfo, spoffer_view: app.cExSpOfferInfo_forView): app.cActiveQuestData
+---@field createSpOfferActiveQuestData fun(self: app.cExMoreTargetSpOfferFactory, spoffer_info: app.cExSpOfferFactory.SpOfferInfo, spoffer_view: app.cExSpOfferInfo_forView): app.cActiveQuestData
 
 ---@class app.cExFieldEventBase : app.cExEvent
 ---@field _ExecMinute System.Int32
