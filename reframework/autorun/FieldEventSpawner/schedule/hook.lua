@@ -390,9 +390,9 @@ function this.force_spoffer_array_post(retval)
         ---@cast pop_em_array System.Array<app.cExFieldEvent_PopEnemy>
         pop_em_array:Clear()
         local pop_em =
-            schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer.pop_index_second)
+            schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer.pop_index_second) --[[@as app.cExFieldEvent_PopEnemy]]
         local main_pop_em =
-            schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer.pop_index_first)
+            schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer.pop_index_first) --[[@as app.cExFieldEvent_PopEnemy]]
         pop_em_array:AddWithResize(main_pop_em)
         pop_em_array:AddWithResize(pop_em)
     end
