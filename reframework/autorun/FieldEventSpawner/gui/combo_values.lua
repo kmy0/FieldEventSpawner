@@ -15,6 +15,7 @@
 ---@field area integer
 ---@field em_role app.EnemyDef.ROLE_ID
 ---@field em_option_tag integer
+---@field spoffer_swarm boolean
 
 ---@class (exact) ChangedData
 ---@field event boolean
@@ -28,6 +29,7 @@
 ---@field environ boolean
 ---@field area boolean
 ---@field em_role boolean
+---@field spoffer_swarm boolean
 
 local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
@@ -53,6 +55,7 @@ local this = {
         area = -1,
         em_role = -1,
         em_option_tag = -1,
+        spoffer_swarm = false,
     },
     initialized = false,
 }
@@ -293,6 +296,37 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
         end
     end
 
+    if dirty then
+        local current_value = state.swarm_count_array[config_mod.swarm_count]
+
+        if current_data.em_param == "swarm" or current_data.em_param == "boss" then
+            state.swarm_count_array = {}
+            local swarm_pack = event and event.map[current_data.stage].swarm_pack
+
+            if swarm_pack then
+                local min = current_data.spoffer_swarm and swarm_pack.min_spoffer or swarm_pack.min
+                local max = current_data.spoffer_swarm and swarm_pack.max_spoffer or swarm_pack.max
+
+                table.insert(state.swarm_count_array, min)
+                if min ~= max then
+                    table.insert(state.swarm_count_array, max)
+                end
+            end
+
+            if
+                (current_data.em_param == "boss" and not current_data.spoffer_swarm)
+                or not swarm_pack
+            then
+                table.insert(state.swarm_count_array, 1, -1)
+            end
+        else
+            state.swarm_count_array = { -1 }
+        end
+
+        local index = util_table.index(state.swarm_count_array, current_value) or 1
+        config_mod.swarm_count = index
+    end
+
     config_mod.spoffer = helpers.swap_with_disabled(
         combo.spoffer,
         util_table.map_array(util_table.values(mod.state.spoffer), function(o)
@@ -323,6 +357,7 @@ function this.update()
         area = combo.area:get() or -1,
         em_role = combo.em_role:get() or -1,
         em_option_tag = combo.em_option_tag:get() or -1,
+        spoffer_swarm = config_mod.is_spoffer_swarm,
     }
     ---@type ChangedData
     ---@diagnostic disable-next-line: missing-fields
@@ -356,6 +391,7 @@ function this.update()
         swap_area_array(event, current_data, changed, environ)
     end
 
+    dirty = dirty or changed.spoffer_swarm
     if current_data.event_type == "monster" then
         ---@cast event MonsterData
         update_monster_fields(event, current_data, changed, dirty, environ)

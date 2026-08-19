@@ -87,7 +87,7 @@ function this.is_village_boost_disabled()
     return mod.is_in_quest()
         or not mod.is_village_boost_unlocked(mod.state.stage)
         or this.is_battlefield_monster()
-        or config.current.mod.swarm_count > 0 and state.combo.em_param:get() ~= "boss"
+        or this.get_swarm_count() > 0 and state.combo.em_param:get() ~= "boss"
 end
 
 ---@return boolean
@@ -97,7 +97,7 @@ function this.is_spoffer_swarm_disabled()
     return mod.is_in_quest()
         or not mod.is_spoffer_unlocked(mod.state.stage)
         or (em_param ~= "swarm" and em_param ~= "boss")
-        or config.current.mod.swarm_count < 2
+        or state.swarm_count_array[config:get("mod.swarm_count")] < 2
         or config.current.mod.spawn_delay > 0
 end
 
@@ -350,6 +350,12 @@ function this.get_battlefield_state()
         or mod.enum.battlefield_state[state.combo.em_param:get()]
 end
 
+---@return integer
+function this.get_swarm_count()
+    local ret = state.swarm_count_array[config.current.mod.swarm_count]
+    return ret - 1
+end
+
 function this.spawn()
     local combo = state.combo
     local config_mod = config.current.mod
@@ -359,7 +365,7 @@ function this.spawn()
     if event_type == "monster" then
         ---@cast event MonsterData
 
-        if config_mod.swarm_count > 0 then
+        if this.get_swarm_count() > 0 then
             return spawner.swarm(
                 event,
                 mod.state.stage,
@@ -367,7 +373,7 @@ function this.spawn()
                 combo.em_role:get(),
                 this.get_pop_em_type(),
                 this.get_legendary_id(),
-                config_mod.swarm_count,
+                this.get_swarm_count(),
                 {
                     spawn_delay = this.get_spawn_delay(),
                     is_village_boost = this.get_is_village_boost(),

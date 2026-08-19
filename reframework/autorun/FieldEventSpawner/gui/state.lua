@@ -2,6 +2,7 @@
 ---@field combo GuiCombo
 ---@field em_size_min integer
 ---@field em_size_max integer
+---@field swarm_count_array integer[]
 
 ---@class (exact) GuiCombo
 ---@field event_type Combo
@@ -24,7 +25,10 @@ local helpers = require("FieldEventSpawner.data.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
 local util_game = require("FieldEventSpawner.util.game.init")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
+---@module "FieldEventSpawner.gui.helpers"
+local gui_helpers = util_misc.lazy_require("FieldEventSpawner.gui.helpers")
 
 local gui = data.gui
 
@@ -32,6 +36,7 @@ local gui = data.gui
 local this = {
     ---@diagnostic disable-next-line: missing-fields
     combo = {},
+    swarm_count_array = { -1 },
     em_size_max = 0,
     em_size_min = 0,
 }
@@ -97,8 +102,6 @@ this.combo.area = combo:new(nil, {
         if is_disabled(self) then
             return true
         end
-
-        local gui_helpers = require("FieldEventSpawner.gui.helpers")
 
         return (
             this.combo.event_type:get() == "monster"
@@ -231,9 +234,7 @@ this.combo.em_difficulty_rank = combo:new(nil, {
             return config.lang:tr("misc.text_random")
         end
 
-        local gui_helpers = require("FieldEventSpawner.gui.helpers")
         local diff_table = gui_helpers.get_monster_difficulties_table()
-
         if not diff_table then
             return value
         end
@@ -263,11 +264,11 @@ this.combo.spoffer = combo:new(nil, {
         if is_disabled(self) then
             return true
         end
-        local helpers = require("FieldEventSpawner.gui.helpers")
+
         return mod.is_in_quest()
             or not mod.is_spoffer_unlocked(mod.state.stage)
-            or helpers.is_battlefield_monster()
-            or config.current.mod.swarm_count > 0
+            or gui_helpers.is_battlefield_monster()
+            or gui_helpers.get_swarm_count() > 0
             or config.current.mod.spawn_delay > 0
     end,
     translate_fn = function(key, value)

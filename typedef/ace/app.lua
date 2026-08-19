@@ -34,6 +34,10 @@
 ---@field lotDifficultyID_Boss fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm, legendary_id: app.EnemyDef.LEGENDARY_ID, suitable_only: System.Boolean): System.Guid
 ---@field get_BossLegendaryProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Byte
 ---@field _BossDifficultyParams System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
+---@field get_SwarmNum fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Byte
+---@field get_SpOfferTargetMax fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Byte
+---@field get_SpawnNumMin fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Byte
+---@field get_SpawnNumMax fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Swarm): System.Byte
 
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base : via.clr.ManagedObject
 ---@field _DifficultyParams System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>

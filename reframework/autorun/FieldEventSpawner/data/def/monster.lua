@@ -48,6 +48,12 @@
 ---@field difficulty_invalid table<app.EnemyDef.ROLE_ID, table<string, boolean>> guid_str
 ---@field role_by_param table<string, app.EnemyDef.ROLE_ID[]>
 ---@field spoofed_id_for_route app.EnemyDef.ID?
+---@field swarm_pack {
+--- min: integer,
+--- max: integer,
+--- min_spoffer: integer,
+--- max_spoffer: integer,
+--- }?
 
 ---@class (exact) MonsterData : AreaEventData
 ---@field id app.EnemyDef.ID
