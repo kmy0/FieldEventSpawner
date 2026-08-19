@@ -183,9 +183,12 @@
 
 ---@class app.cExSpOfferFactory : via.clr.ManagedObject
 ---@field _CurrentSpOfferInfo app.cExSpOfferFactory.cSpOfferByStage
----@field _MoreTargetSpOfferFactory app.cExFieldEvent_SpOfferMore
+---@field _MoreTargetSpOfferFactory app.cExMoreTargetSpOfferFactory
 ---@field getSpOfferInfoList fun(self: app.cExSpOfferFactory, em_id: app.EnemyDef.ID, skip_spoffer_lot: boolean, stage: app.FieldDef.STAGE): System.Array<app.cExSpOfferInfo_forView>
 ---@field createSpOfferActiveQuestData fun(self: app.cExSpOfferFactory, spoffer_view: app.cExSpOfferInfo_forView): app.cActiveQuestData
+
+---@class app.cExMoreTargetSpOfferFactory : via.clr.ManagedObject
+---@field requestSwarmSpOffer fun(self: app.cExMoreTargetSpOfferFactory, stage: app.FieldDef.STAGE, pop_em: app.cExFieldEvent_PopEnemy)
 
 ---@class app.cExFieldEvent_SpOfferMore : app.cExFieldEvent_SpecialOfferBase
 ---@field createSpOfferActiveQuestData fun(self: app.cExFieldEvent_SpOfferMore, spoffer_info: app.cExSpOfferFactory.SpOfferInfo, spoffer_view: app.cExSpOfferInfo_forView): app.cActiveQuestData

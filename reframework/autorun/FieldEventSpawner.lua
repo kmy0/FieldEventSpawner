@@ -194,6 +194,11 @@ m.hook(
     sched.hook.reward_max_get_args_pre,
     sched.hook.reward_max_reward_spoffer_swarm_post
 )
+m.hook(
+    "app.cExFieldDirector.findExecutedPopEms(System.Boolean, System.Boolean)",
+    nil,
+    sched.hook.force_spoffer_swarm_em_post
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then

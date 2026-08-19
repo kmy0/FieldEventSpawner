@@ -77,20 +77,18 @@ function this:build()
     end
     ---@cast leader_data MonsterSpawnEvent
 
+    local event_data = leader_data.event_data
     if self.legendary_id > 0 then
-        local event_data = leader_data.event_data
         --FIXME: TU2 change
         event_data._FreeMiniValue0 = event_data._FreeMiniValue0 | (0x80 * self.legendary_id)
     end
 
+    event_data._UniqueIndex = self._schedule_timeline:newEventUniqueIndex(self.stage)
     leader_data.cache_base.children = {}
-    local member_data, member_rewards
-    for i = 1, self.swarm_count do
-        if self.spoffer_unique_index and self.legendary_id > 0 and i == self.swarm_count then
-            -- game refuses to spawn spoffer when all monsters are tempered
-            self.legendary_id = e.get("app.EnemyDef.LEGENDARY_ID").NONE
-        end
+    leader_data.args.swarm_indexes = { event_data._UniqueIndex }
 
+    local member_data, member_rewards
+    for _ = 1, self.swarm_count do
         res, member_rewards, member_data = self:_build_member(swarm_data)
         if res ~= mod.enum.spawn_result.OK then
             return res
@@ -107,6 +105,7 @@ function this:build()
         )
         table.insert(leader_data.sub_events, member_data)
         leader_data.sub_events = util_table.array_merge(leader_data.sub_events, member_rewards)
+        table.insert(leader_data.args.swarm_indexes, member_data.event_data._UniqueIndex)
     end
 
     leader_data.cache_base.name = string.format(

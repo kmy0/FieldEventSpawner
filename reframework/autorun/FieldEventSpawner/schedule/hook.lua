@@ -19,7 +19,7 @@
 ---@field force_spoffer {pop_index_first: integer, pop_index_second: integer, rewards: EditedRewardData?}?
 ---@field force_area HookForceArea
 ---@field force_village_boost boolean
----@field force_spoffer_swarm {rewards: EditedRewardData?}?
+---@field force_spoffer_swarm {rewards: EditedRewardData?, pop_index: integer[], request: boolean}?
 
 ---@class (excat) HookForceArea
 ---@field once {pop_index: integer, area: integer}?
@@ -203,6 +203,8 @@ function this.set_em_args(em_args)
     if em_args.spoffer_swarm then
         actions.force_spoffer_swarm = {
             rewards = em_args.spoffer_rewards,
+            pop_index = em_args.swarm_indexes,
+            request = true,
         }
     end
 end
@@ -239,6 +241,16 @@ function this.ex_director_update_pre(args)
         -- same story as above
         exanimalman:unloadAllExEventSet()
         flags.clear = false
+    elseif actions.force_spoffer_swarm and actions.force_spoffer_swarm.request then
+        local field_director, schedule_timeline = mod.get_field_director()
+        local pop_em = schedule_timeline:findKeyFromUniqueIndex(
+            util_table.pick_random_value(actions.force_spoffer_swarm.pop_index)
+        ) --[[@as app.cExFieldEvent_PopEnemy]]
+        local spoffer_fac = field_director._SpOfferFactory
+        local spoffer_more_fac = spoffer_fac._MoreTargetSpOfferFactory
+
+        spoffer_more_fac:requestSwarmSpOffer(mod.state.stage, pop_em)
+        actions.force_spoffer_swarm.request = false
     end
 end
 
@@ -688,6 +700,26 @@ function this.reward_max_reward_spoffer_swarm_post(_)
     local reward_table = sdk.to_managed_object(args[2]) --[[@as app.user_data.ExQuestRewardSetting.cRewardItemTable]]
     local limited_array = sdk.to_managed_object(util_ref.deref_ptr(args[3])) --[[@as ace.cLimitedArray<app.savedata.cItemWork>]]
     reward.item.make_item_num_max_spoffer_swarm(reward_table, limited_array._Array)
+end
+
+function this.force_spoffer_swarm_em_post(retval)
+    if flags.spawn and actions.force_spoffer_swarm and actions.force_spoffer_swarm.pop_index then
+        ---@type app.cExFieldEvent_PopEnemy[]
+        local pop_ems = {}
+        local array = sdk.to_managed_object(retval) --[[@as System.Array<app.cExFieldEvent_PopEnemy>]]
+
+        util_game.do_something(array, function(_, _, value)
+            if util_table.contains(actions.force_spoffer_swarm.pop_index, value._UniqueIndex) then
+                table.insert(pop_ems, value)
+            end
+        end)
+
+        array:Clear()
+
+        for _, pop_em in pairs(pop_ems) do
+            array:AddWithResize(pop_em)
+        end
+    end
 end
 
 return this
