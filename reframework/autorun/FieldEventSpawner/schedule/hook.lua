@@ -275,7 +275,7 @@ function this.ex_director_update_post(_)
         actions.force_spoffer_swarm = nil
     end
 
-    if state.em_exit.check:active() then
+    if state.em_exit.check:active() or not mod.initialized then
         return
     end
 
