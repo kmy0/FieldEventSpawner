@@ -3,6 +3,7 @@
 
 local lang_base = require("FieldEventSpawner.util.misc.lang_base")
 local old_map = require("FieldEventSpawner.config.defaults.old_lang_map")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 ---@class Language
@@ -36,7 +37,7 @@ function this:change(lang_file, font_size)
         local config_lang = self.ref.current.mod.lang
         lang_file = self.files[config_lang.file]
         if not lang_file then
-            config_lang.file = self.default_file_name
+            config_lang.file = util_misc.get_file_name(self.default_file_name, false)
             lang_file = self.files[config_lang.file]
         end
     end
