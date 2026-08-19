@@ -25,7 +25,7 @@ function this:new(name, ...)
             if not debug then
                 re.msg(
                     string.format(
-                        'Some other mod is overwriting lua global "debug"! %s wont be able to initialize until the offending mod is fixed/removed.\nCommon offending mods: Mute Some Lines.',
+                        'Some other mod is overwriting lua global "debug"! %s wont be able to initialize until the offending mod is fixed/removed.',
                         config.name
                     )
                 )
