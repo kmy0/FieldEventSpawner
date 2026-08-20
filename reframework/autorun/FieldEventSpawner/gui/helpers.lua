@@ -266,16 +266,21 @@ function this.get_spoffer_disabled_keys()
     if helpers.is_invalid_em2(event, difficulty, role) then
         return util_table.keys(mod.state.spoffer)
     elseif difficulty then
-        return ret
-    end
-
-    for unique_id, candidate in pairs(mod.state.spoffer) do
-        if
-            not util_table.any(difficulties, function(key, _)
-                return helpers.is_spoffer_pair(key, candidate.rank)
-            end)
-        then
-            table.insert(ret, unique_id)
+        local rank = m.getRewardRankFromDifficulty(difficulty)
+        for unique_id, candidate in pairs(mod.state.spoffer) do
+            if not helpers.is_spoffer_pair(rank, candidate.rank) then
+                table.insert(ret, unique_id)
+            end
+        end
+    else
+        for unique_id, candidate in pairs(mod.state.spoffer) do
+            if
+                not util_table.any(difficulties, function(key, _)
+                    return helpers.is_spoffer_pair(key, candidate.rank)
+                end)
+            then
+                table.insert(ret, unique_id)
+            end
         end
     end
 
