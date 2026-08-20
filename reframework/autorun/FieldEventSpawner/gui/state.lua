@@ -275,7 +275,14 @@ this.combo.spoffer = combo:new(nil, {
         if key == -1 then
             return config.lang:tr("misc.text_disabled")
         end
-        return string.format("%s##%s", value, key)
+
+        return string.format(
+            "%s%s %s##%s",
+            mod.state.spoffer[key].rank,
+            config.lang:tr("misc.text_star"),
+            value,
+            key
+        )
     end,
     getter_fn = function(self)
         if self:is_disabled() then
