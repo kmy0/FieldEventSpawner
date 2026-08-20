@@ -91,11 +91,9 @@ end
 function this.get_difficulty_rate_string_with_grade(guid)
     local rate = this.get_difficulty_rate(guid)
     return string.format(
-        "%s%s%s%s   |   %sx %s,  %sx %s,  %sx %s",
-        rate:get_RewardGrade(),
-        config.lang:tr("misc.text_diamond"),
-        m.getRewardRankFromDifficulty(guid),
+        "%s%s   |   %sx %s,  %sx %s,  %sx %s",
         config.lang:tr("misc.text_star"),
+        rate:get_RewardGrade(),
         util_misc.round(rate:get_Health(), 2),
         config.lang:tr("misc.text_hp"),
         util_misc.round(rate:get_Attack(), 2),

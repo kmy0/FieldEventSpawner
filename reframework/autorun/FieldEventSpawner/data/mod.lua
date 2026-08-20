@@ -8,6 +8,8 @@
 ---@field name string
 ---@field exec_min integer
 ---@field rank app.QuestDef.EM_REWARD_RANK
+---@field grade System.Byte
+---@field size System.UInt16
 
 ---@class (exact) State
 ---@field schedule ScheduleState
@@ -215,11 +217,16 @@ function this.update_spoffer()
         local unique_index = pop_em._UniqueIndex
         table.insert(active_pop_ems, unique_index)
         if not this.state.spoffer[unique_index] then
+            local ctx_holder = pop_em:call("findEm()")
+            local ctx = ctx_holder:get_Em()
+
             this.state.spoffer[unique_index] = {
                 unique_index = unique_index,
                 name = helpers.get_monster_name(pop_em),
                 exec_min = pop_em._ExecMinute,
                 rank = pop_em:get_Rank(),
+                grade = pop_em:get_Grade(),
+                size = ctx.ModelRandomSize,
             }
         end
 

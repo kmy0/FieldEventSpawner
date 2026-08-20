@@ -240,6 +240,7 @@
 ---@field get_RoleID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.ROLE_ID
 ---@field get_LegendaryID fun(self: app.cExFieldEvent_PopEnemy): app.EnemyDef.LEGENDARY_ID
 ---@field set_OptionTagValue  fun(self: app.cExFieldEvent_PopEnemy, val: System.Int64)
+---@field get_Grade fun(self: app.cExFieldEvent_PopEnemy): System.Byte
 
 ---@class app.cExFieldScheduleExportData.cEventData : app.cExEvent
 ---@field _EventType app.EX_FIELD_EVENT_TYPE
@@ -389,6 +390,7 @@
 
 ---@class app.cEnemyContext : app.cGameContext
 ---@field Area app.cEmModuleArea
+---@field ModelRandomSize System.UInt16
 
 ---@class app.cEmModuleArea : app.cEmModuleBase
 ---@field get_IsTargetArrival fun(self: app.cEmModuleArea): System.Boolean

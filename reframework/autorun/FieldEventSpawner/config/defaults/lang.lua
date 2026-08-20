@@ -10,7 +10,6 @@ return {
         text_hp = "HP",
         text_parts_vital = "Parts Vital",
         text_all_monsters = "All Monsters",
-        text_diamond = "◆",
     },
     menu = {
         config = {
