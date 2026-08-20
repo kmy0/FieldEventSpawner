@@ -198,9 +198,15 @@ function this:disable_item(key, value)
         local item = table.remove(self.map, index)
         table.insert(self.disabled, item)
         table.remove(self.values, index)
+
+        if index <= #self.values then
+            return index
+        else
+            return math.max(index - 1, 1)
+        end
     end
 
-    return math.max(index - 1, 1)
+    return 1
 end
 
 ---@param key any?
