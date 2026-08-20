@@ -1,4 +1,5 @@
 ---@diagnostic disable
+
 local ok, m = pcall(require, "FieldEventSpawner.util.ref.methods")
 if not ok then
     return
@@ -19,7 +20,8 @@ local function get_stage()
     return fieldman:get_CurrentStage()
 end
 
--- JID DAHAAD
+-- JIN DAHAAD
+-- phase progression
 m.hook("app.cEm0162_00Extend.doUpdateBegin()", function(args)
     if get_stage() == jindahaad_stage then
         return
@@ -40,6 +42,7 @@ m.hook("app.cEm0162_00Extend.doUpdateBegin()", function(args)
         end
     end
 end)
+-- this function prevents damage to jin dahaad when he is moving trough areas, in this case it stopped dmg entirely
 m.hook("app.cEm0162_00Extend.onDamageKeepHealth(System.Single, System.Single)", function(_)
     if get_stage() ~= jindahaad_stage then
         return sdk.PreHookResult.SKIP_ORIGINAL
@@ -47,12 +50,14 @@ m.hook("app.cEm0162_00Extend.onDamageKeepHealth(System.Single, System.Single)", 
 end)
 
 -- GOGMAZIOS
+-- transition to last phase
 m.hook("app.cEm0078_00Extend.doUpdateBegin()", function(args)
     if get_stage() ~= gog_stage then
         local o = sdk.to_managed_object(args[2])
         o._IsFinishAreaMove = true
     end
 end)
+-- npcs are stuck in the walls when gog transitions to last phase
 m.hook(
     "app.NpcPartnerUtil.getEx02Phase(app.cEm0078_00Extend, app.Em0078_00_Def.PHASE)",
     nil,
@@ -62,10 +67,17 @@ m.hook(
         end
     end
 )
+-- geyser positions are missing, so game crashes, they are hardcoded to the stage, not worth dealing with
+m.hook("app.cEm0078_00Extend.opActivateGeyser()", function(args)
+    if get_stage() ~= gog_stage then
+        return sdk.PreHookResult.SKIP_ORIGINAL
+    end
+end)
 
 -- OMEGA
+-- nerscylla does not exist, spawns barrier at players pos and finishes nuke timer
 m.hook("app.cEm0166_00Extend.updateSpAtkCharge()", function(args)
-    if get_stage() == jindahaad_stage then
+    if get_stage() ~= jindahaad_stage then
         return
     end
 
