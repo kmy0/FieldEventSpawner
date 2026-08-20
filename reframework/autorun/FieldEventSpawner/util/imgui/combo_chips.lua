@@ -123,7 +123,7 @@ function this.combo_chips(
 
     imgui.same_line()
     if imgui.button(button_label) then
-        this.select_item(selection, item_selection, combo)
+        selection = this.select_item(selection, item_selection, combo)
         changed = true
     end
 
