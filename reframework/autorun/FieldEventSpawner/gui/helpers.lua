@@ -196,7 +196,6 @@ function this.swap_with_disabled(
         ret = combo:swap(key_to_value, current_index, disabled_keys)
     end
 
-    ret = combo:translate(ret)
     return ret
 end
 
