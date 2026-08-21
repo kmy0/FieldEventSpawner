@@ -40,6 +40,17 @@ m.createActiveQuestData_Instant = m.wrap(
 ) --[[@as fun(pop_em: app.cExFieldEvent_PopEnemy, stage: app.FieldDef.STAGE): app.cActiveQuestData]]
 m.createBossContextSaveParam_Keep =
     m.wrap(m.get("app.savedata.cBoss_ContextSaveParam_KeepQuest.create()")) --[[@as fun(): app.savedata.cBoss_ContextSaveParam_KeepQuest]]
+m.getMissionRewards = m.wrap(
+    m.get(
+        "app.QuestRewardUtil.getRewardItemData(app.MissionIDList.ID, app.cQuestDirector.TIME_RANK, System.Int32)"
+    )
+) --[[@as fun(quest_id: app.MissionIDList.ID, time_rank: app.cQuestDirector.TIME_RANK, bonus_reward_roll_count: System.Int32): System.Array<app.cGUIRewardItems>]]
+m.createQuestTitleMessage = m.wrap(m.get("app.MessageUtil.createMessage(ace.cGUIMessageInfo)")) --[[@as fun(msg: ace.cGUIMessageInfo): System.String]]
+m.getRewardItemDataList = m.wrap(
+    m.get(
+        "app.QuestGeneralRewardUtil.getRewardItemDataList(app.user_data.QuestGeneralRewardData, System.UInt32)"
+    )
+) --[[@as fun(user_data: app.user_data.QuestGeneralRewardData, table_id: System.UInt32): app.QuestGeneralRewardUtil.QuestRewardLotsData]]
 
 m.hook(
     "app.QuestCheckUtil.checkExQuest(System.Int32, app.cKeepQuestData)",

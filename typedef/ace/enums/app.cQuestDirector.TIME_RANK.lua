@@ -1,0 +1,15 @@
+---@meta
+
+---@class (exact) Enum.app.cQuestDirector.TIME_RANK : Enum<app.cQuestDirector.TIME_RANK>
+---@field RANK_NONE app.cQuestDirector.TIME_RANK
+---@field RANK_B app.cQuestDirector.TIME_RANK
+---@field RANK_A app.cQuestDirector.TIME_RANK
+---@field RANK_S app.cQuestDirector.TIME_RANK
+---@field ["RANK_NONE"] app.cQuestDirector.TIME_RANK
+---@field ["RANK_B"] app.cQuestDirector.TIME_RANK
+---@field ["RANK_A"] app.cQuestDirector.TIME_RANK
+---@field ["RANK_S"] app.cQuestDirector.TIME_RANK
+---@field [0] "RANK_NONE"
+---@field [1] "RANK_B"
+---@field [2] "RANK_A"
+---@field [3] "RANK_S"

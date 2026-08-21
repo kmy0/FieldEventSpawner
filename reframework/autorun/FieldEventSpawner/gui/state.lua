@@ -17,6 +17,7 @@
 ---@field spoffer Combo
 ---@field quest_rewards Combo
 ---@field item_rewards Combo
+---@field em_invalid_reward Combo
 
 local combo = require("FieldEventSpawner.util.imgui.combo")
 local config = require("FieldEventSpawner.config.init")
@@ -320,6 +321,29 @@ this.combo.item_rewards = combo:new(nil, {
         return self:get_key(config.current.mod.reward_config.reward)
     end,
 })
+this.combo.em_invalid_reward = combo:new(nil, {
+    sort_fn = function(a, b)
+        local pattern = "^(%d+)" .. config.lang:tr("misc.text_star") .. "%s*(.+)$"
+        local num_a, name_a = a.value:match(pattern)
+        local num_b, name_b = b.value:match(pattern)
+        num_a, num_b = tonumber(num_a), tonumber(num_b)
+
+        if num_a ~= num_b then
+            return num_a < num_b
+        end
+        return name_a < name_b
+    end,
+    is_disabled_fn = function()
+        return gui_helpers.is_invalid_rewards_disabled()
+    end,
+    getter_fn = function(self)
+        if self:is_disabled() then
+            return
+        end
+
+        return self:get_key(config.current.mod.em_invalid_reward)
+    end,
+})
 
 function this.translate_combo()
     for _, c in
@@ -331,7 +355,6 @@ end
 
 function this.init()
     this.combo.event_type:swap(util_table.map_array(gui.combo.event_type))
-    this.combo.quest_rewards:swap(util_table.map_array(gui.combo.rewards))
     this.combo.item_rewards:swap(
         helpers.filter_item_rewards(config.current.mod.reward_config.filter)
     )

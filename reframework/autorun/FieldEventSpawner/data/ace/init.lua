@@ -401,6 +401,13 @@ function this.load_invalid_difficulties()
         )
     end
 
+    if config_mod.add_invalid_rewards then
+        data_monster.add_invalid_rewards(
+            this.event.by_type.monster,
+            config_mod.merge_invalid_rewards
+        )
+    end
+
     this.invalid_difficulties_loaded = true
 end
 
@@ -423,6 +430,8 @@ function this.init()
             e.new("app.cExFieldEvent_Battlefield.BATTLEFIELD_STATE")
             e.new("app.QuestCheckUtil.INCORRECT_STATUS")
             e.new("app.EnemyDef.ID")
+            e.new("app.cQuestDirector.TIME_RANK")
+            e.new("app.ItemDef.LOG_CATEGORY")
         end)
     then
         return false

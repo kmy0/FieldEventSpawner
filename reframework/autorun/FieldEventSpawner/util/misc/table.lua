@@ -181,9 +181,10 @@ function this.merge2_t(protected, ignore_empty, ...)
 end
 
 ---@generic K, V, R
+---@overload fun(t: table<K,  V>, value_getter: fun(o: V): R): R[]
+---@overload fun(t: table<K,  V>): V[]
 ---@param t table<K,  V>
 ---@param value_getter (fun(o: V): R?)?
----@return R|V[]
 function this.values(t, value_getter)
     local ret = {}
     for _, o_value in pairs(t) do
@@ -482,7 +483,7 @@ end
 ---@param index1 integer
 ---@param index2 integer
 ---@param strict boolean?
----@return T[]?
+---@return T[]
 function this.slice(t, index1, index2, strict)
     local ret = {}
     for i = index1, index2 do
@@ -490,6 +491,7 @@ function this.slice(t, index1, index2, strict)
     end
 
     if strict and this.empty(ret) then
+        ---@diagnostic disable-next-line: missing-return-value
         return
     end
     return ret
@@ -857,6 +859,21 @@ end
 function this.make_key(...)
     local t = { ... }
     return table.concat(t, ".")
+end
+
+---@param ... number[]
+---@return number
+function this.sum(...)
+    local ts = { ... }
+    local ret = 0
+
+    for _, t in pairs(ts) do
+        for _, n in pairs(t) do
+            ret = ret + n
+        end
+    end
+
+    return ret
 end
 
 return this

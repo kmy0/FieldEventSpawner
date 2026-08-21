@@ -13,6 +13,7 @@
 ---@field is_invalid boolean
 ---@field option_tag integer?
 ---@field is_reward_max boolean?
+---@field invalid_rewards GuiRewardData[]?
 
 ---@class (exact) MonsterEventFactoryOptionalArgs : AreaEventFactoryOptionalArgs
 ---@field spoffer_unique_index integer?
@@ -24,6 +25,7 @@
 ---@field is_village_boost boolean?
 ---@field is_yummy boolean?
 ---@field is_reward_max boolean?
+---@field invalid_rewards GuiRewardData[]?
 
 --[[ app.cExFieldEvent_PopEnemy
     _FreeValue0 = app.EnemyDef.ID_Fixed
@@ -103,6 +105,7 @@ function this:new(monster_data, stage, time, monster_role, pop_em_type, legendar
     o.is_invalid = opts.difficulty
             and helpers.is_invalid_em2(monster_data, opts.difficulty, o.monster_role)
         or false
+    o.invalid_rewards = opts.invalid_rewards
 
     o._area_array = monster_data:get_area_array(
         stage,
@@ -148,12 +151,24 @@ function this:build()
         return mod.enum.spawn_result.NO_DIFFICULTY
     end
 
-    local spoffer_rewards = (self.rewards and self.spoffer_unique_index)
-            and self:_get_edited_reward_data()
-        or nil
+    ---@type EditedRewardData?
+    local spoffer_rewards
+    if self.rewards and self.spoffer_unique_index then
+        spoffer_rewards = self:_get_edited_reward_data(self.rewards)
+    elseif self.invalid_rewards and self.spoffer_unique_index then
+        spoffer_rewards = self:_get_edited_reward_data(self.invalid_rewards)
+    end
+
     local reward_data = self:_get_reward_data(self.difficulty)
 
-    if not reward_data or (self.rewards and self.spoffer_unique_index and not spoffer_rewards) then
+    if
+        not reward_data
+        or (
+            (self.invalid_rewards or self.rewards)
+            and self.spoffer_unique_index
+            and not spoffer_rewards
+        )
+    then
         return mod.enum.spawn_result.NO_REWARDS
     end
 
@@ -270,8 +285,10 @@ end
 ---@return EditedRewardData?
 function this:_get_reward_data(difficulty_guid)
     local ret
-    if self.rewards and not self.spoffer_unique_index then
-        ret = self:_get_edited_reward_data()
+    if self.invalid_rewards and not self.spoffer_unique_index then
+        ret = self:_get_edited_reward_data(self.invalid_rewards)
+    elseif self.rewards and not self.spoffer_unique_index then
+        ret = self:_get_edited_reward_data(self.rewards)
     else
         local reward_data = self:_get_game_reward_data(difficulty_guid)
         ---@cast reward_data EditedRewardData
@@ -283,12 +300,13 @@ function this:_get_reward_data(difficulty_guid)
 end
 
 ---@protected
+---@param rewards GuiRewardData[]
 ---@return EditedRewardData?
-function this:_get_edited_reward_data()
+function this:_get_edited_reward_data(rewards)
     ---@type EditedRewardData?
     local ret
-    if self.rewards then
-        local reward_fac = reward_factory:new(self.rewards, self.stage)
+    if rewards then
+        local reward_fac = reward_factory:new(rewards, self.stage)
         ret = reward_fac:build()
     end
     return ret

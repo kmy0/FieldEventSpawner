@@ -12,6 +12,7 @@ local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
 local types = require("FieldEventSpawner.util.ref.types")
 local util_game = require("FieldEventSpawner.util.game.init")
+local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
@@ -23,6 +24,22 @@ local function mark_invalid_for_roles(map_data, roles, guid_str)
     for _, role in pairs(roles) do
         util_table.set_nested_value(map_data.difficulty_invalid, { role, guid_str }, true)
     end
+end
+
+---@param id app.MissionIDList.ID
+---@return app.cActiveQuestData?
+local function get_active_quest_data(id)
+    local missman = s.get("app.MissionManager")
+    local quest_data = missman:getQuestData(id)
+    if not quest_data then
+        return
+    end
+
+    local ret = util_ref.ctor("app.cActiveQuestData", true)
+    local is_recommended = false
+    ret:call(".ctor(app.user_data.QuestData, System.Boolean)", quest_data, is_recommended)
+
+    return ret
 end
 
 ---@param monster_data MonsterData
@@ -551,6 +568,97 @@ function this.get_lower_upper_difficulties(monster_data)
     end
 
     return lower_valid_dif.guid_str, upper_valid_dif.guid_str
+end
+
+---@param monster_data MonsterData[]
+---@param merge_rewards boolean
+function this.add_invalid_rewards(monster_data, merge_rewards)
+    local various_data_manager = s.get("app.VariousDataManager")
+    local various_data_manager_setting = various_data_manager:get_Setting()
+    local quest_reward_setting = various_data_manager_setting:get_QuestRewardSetting()
+    local common_reward_data = various_data_manager_setting:get_CommonQuestRewardData()
+
+    local by_em = util_table.map_array(monster_data, function(o)
+        return o.id
+    end) --[[@as table<app.EnemyDef.ID, MonsterData>]]
+    local ids = util_table.keys(e.get_noexact("app.MissionIDList.ID").enum_to_field)
+    table.sort(ids)
+
+    for _, id in ipairs(ids) do
+        local quest_data = get_active_quest_data(id)
+
+        if not quest_data then
+            goto continue
+        end
+
+        local title_msg = quest_data:get_TitleText()
+        local title_str = m.createQuestTitleMessage(title_msg)
+        local title = game_lang.replace_tags(title_str)
+        local quest_reward_data =
+            quest_reward_setting:getDataByFixedId(e.to_fixed("app.MissionIDList.ID_Fixed", id))
+
+        if not quest_reward_data then
+            goto continue
+        end
+
+        local table_id = quest_reward_data:get_commonRewardTableId()
+        local lot_data = m.getRewardItemDataList(common_reward_data, table_id)
+        ---@type {
+        ---    id: app.ItemDef.ID,
+        ---    num: integer,
+        ---    prob: number,
+        ---    name: string,
+        ---  }[]
+        local items = {}
+
+        util_game.do_something(lot_data:get_RewardLotsDatas(), function(_, _, value)
+            local item_id = value:get_ItemId()
+
+            table.insert(items, {
+                id = item_id,
+                num = value:get_RewardNum(),
+                prob = value:get_Probability(),
+                name = ace.item.by_id[item_id].name_local,
+            })
+        end)
+
+        table.sort(items, function(a, b)
+            if a.name ~= b.name then
+                return a.name < b.name
+            end
+
+            if a.num ~= b.num then
+                return a.num < b.num
+            end
+
+            return a.prob < b.prob
+        end)
+
+        if merge_rewards then
+            for _, em in pairs(monster_data) do
+                em.invalid_rewards[id] = {
+                    title = title,
+                    rank = quest_data:getQuestLv(),
+                    items = util_table.deep_copy(items),
+                }
+            end
+        else
+            util_game.do_something(quest_data:getTargetEmId(), function(_, _, em_id)
+                local mon_data = by_em[em_id]
+                if not mon_data then
+                    return
+                end
+
+                mon_data.invalid_rewards[id] = {
+                    title = title,
+                    rank = quest_data:getQuestLv(),
+                    items = util_table.deep_copy(items),
+                }
+            end)
+        end
+
+        ::continue::
+    end
 end
 
 ---@param monster_data MonsterData[]

@@ -26,6 +26,8 @@
 ---@field add_missing_monsters boolean
 ---@field add_invalid_monsters boolean
 ---@field add_nerscylla_clone boolean
+---@field add_invalid_rewards boolean
+---@field merge_invalid_rewards boolean
 ---
 ---@field event_type integer
 ---@field event integer
@@ -41,6 +43,8 @@
 ---@field em_option_tag integer
 ---@field em_option_tags table<string, integer>
 ---@field em_option_em integer
+---@field em_invalid_reward integer
+---@field em_invalid_reward_slot integer
 ---
 ---@field em_size integer
 ---@field time integer
@@ -81,6 +85,8 @@ return {
         add_missing_monsters = false,
         add_invalid_monsters = false,
         add_nerscylla_clone = false,
+        add_invalid_rewards = false,
+        merge_invalid_rewards = false,
         --
         event = 1,
         event_type = 1,
@@ -96,6 +102,8 @@ return {
         em_option_tag = 1,
         em_option_tags = {},
         em_option_em = -1,
+        em_invalid_reward = 1,
+        em_invalid_reward_slot = 1,
         --
         time = 30,
         swarm_count = 2,
