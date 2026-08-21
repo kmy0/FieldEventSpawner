@@ -10,6 +10,7 @@ local state = require("FieldEventSpawner.gui.state")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {}
+local reward = ace.reward
 
 ---@return boolean
 function this.is_battlefield_monster()
@@ -46,9 +47,8 @@ end
 ---@return boolean
 function this.is_swarm_count_disabled()
     local em_param = state.combo.em_param:get()
-    local ret = (em_param ~= "swarm" and em_param ~= "boss")
-    if ret then
-        return ret
+    if em_param ~= "swarm" and em_param ~= "boss" then
+        return true
     end
 
     if em_param == "legendary" then
@@ -74,7 +74,9 @@ end
 
 ---@return boolean
 function this.is_yummy_disabled()
-    return mod.is_in_quest() or state.combo.quest_rewards:get() == "user_defined"
+    return mod.is_in_quest()
+        or state.combo.quest_rewards:get() == "user_defined"
+        or state.combo.quest_rewards:get() == "specific_quest"
 end
 
 ---@return boolean
@@ -360,6 +362,32 @@ function this.get_swarm_count()
     return ret - 1
 end
 
+---@return boolean
+function this.is_invalid_rewards_disabled()
+    local config_mod = config.current.mod
+    return not config_mod.add_invalid_rewards
+        or state.combo.quest_rewards:get() ~= "specific_quest"
+        or state.combo.em_invalid_reward:empty()
+end
+
+---@return GuiRewardData[]?
+function this.get_invalid_rewards()
+    if this.is_invalid_rewards_disabled() then
+        return
+    end
+    print(state.combo.em_invalid_reward:get())
+    print(
+        reward.mission.get_rewards(
+            state.combo.em_invalid_reward:get(),
+            config.current.mod.em_invalid_reward_slot
+        )
+    )
+    return reward.mission.get_rewards(
+        state.combo.em_invalid_reward:get(),
+        config.current.mod.em_invalid_reward_slot
+    )
+end
+
 function this.spawn()
     local combo = state.combo
     local config_mod = config.current.mod
@@ -390,6 +418,7 @@ function this.spawn()
                     spoffer_swarm = this.get_is_spoffer_swarm(),
                     option_tag = combo.em_option_tag:get(),
                     is_reward_max = this.is_reward_max(),
+                    invalid_rewards = this.get_invalid_rewards(),
                 }
             )
         elseif this.is_battlefield_monster_current_stage() then
@@ -409,6 +438,7 @@ function this.spawn()
                     size = this.get_em_size(),
                     option_tag = combo.em_option_tag:get(),
                     is_reward_max = this.is_reward_max(),
+                    invalid_rewards = this.get_invalid_rewards(),
                 }
             )
         else
@@ -431,6 +461,7 @@ function this.spawn()
                     size = this.get_em_size(),
                     option_tag = combo.em_option_tag:get(),
                     is_reward_max = this.is_reward_max(),
+                    invalid_rewards = this.get_invalid_rewards(),
                 }
             )
         end

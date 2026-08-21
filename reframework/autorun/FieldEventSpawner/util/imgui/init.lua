@@ -375,6 +375,15 @@ function this.get_something_with_button_width(button_label)
     return total_width - button_width - ITEM_SPACING_X
 end
 
+---@param width number
+---@return number
+function this.get_something_with_any_width(width)
+    local FRAME_PADDING_X = 4.0
+    local total_width = imgui.calc_item_width()
+    local button_width = width + FRAME_PADDING_X * 2
+    return total_width - button_width
+end
+
 ---@param label string
 ---@param offset number?
 function this.set_label(label, offset)

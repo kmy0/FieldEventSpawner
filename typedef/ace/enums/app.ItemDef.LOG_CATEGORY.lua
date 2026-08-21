@@ -1,0 +1,33 @@
+---@meta
+
+---@class (exact) Enum.app.ItemDef.LOG_CATEGORY : Enum<app.ItemDef.LOG_CATEGORY>
+---@field EX_ADD app.ItemDef.LOG_CATEGORY
+---@field TARGET app.ItemDef.LOG_CATEGORY
+---@field MISSION app.ItemDef.LOG_CATEGORY
+---@field QUEST app.ItemDef.LOG_CATEGORY
+---@field QUEST_ADD app.ItemDef.LOG_CATEGORY
+---@field SPECIAL_ITEM app.ItemDef.LOG_CATEGORY
+---@field JUDGE_BOX app.ItemDef.LOG_CATEGORY
+---@field PLAYER app.ItemDef.LOG_CATEGORY
+---@field OTOMO app.ItemDef.LOG_CATEGORY
+---@field ADVISOR app.ItemDef.LOG_CATEGORY
+---@field ["EX_ADD"] app.ItemDef.LOG_CATEGORY
+---@field ["TARGET"] app.ItemDef.LOG_CATEGORY
+---@field ["MISSION"] app.ItemDef.LOG_CATEGORY
+---@field ["QUEST"] app.ItemDef.LOG_CATEGORY
+---@field ["QUEST_ADD"] app.ItemDef.LOG_CATEGORY
+---@field ["SPECIAL_ITEM"] app.ItemDef.LOG_CATEGORY
+---@field ["JUDGE_BOX"] app.ItemDef.LOG_CATEGORY
+---@field ["PLAYER"] app.ItemDef.LOG_CATEGORY
+---@field ["OTOMO"] app.ItemDef.LOG_CATEGORY
+---@field ["ADVISOR"] app.ItemDef.LOG_CATEGORY
+---@field [0] "EX_ADD"
+---@field [1] "TARGET"
+---@field [2] "MISSION"
+---@field [3] "QUEST"
+---@field [4] "QUEST_ADD"
+---@field [5] "SPECIAL_ITEM"
+---@field [6] "JUDGE_BOX"
+---@field [7] "PLAYER"
+---@field [8] "OTOMO"
+---@field [9] "ADVISOR"

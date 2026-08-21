@@ -4,6 +4,7 @@
 ---@class (exact) GuiComboData
 ---@field event_type string[]
 ---@field rewards string[]
+---@field invalid_rewards string
 ---@field em_param string[]
 ---@field em_param_mod string[]
 
@@ -16,6 +17,7 @@ local this = {
             "animal",
         },
         rewards = { "disabled", "user_defined", "random_max" },
+        invalid_rewards = "specific_quest",
         em_param = {
             "legendary",
             "frenzy",
