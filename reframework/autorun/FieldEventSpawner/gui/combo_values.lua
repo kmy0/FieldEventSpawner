@@ -16,6 +16,7 @@
 ---@field em_role app.EnemyDef.ROLE_ID
 ---@field em_option_tag integer
 ---@field spoffer_swarm boolean
+---@field add_invalid_rewards boolean
 
 ---@class (exact) ChangedData
 ---@field event boolean
@@ -30,10 +31,12 @@
 ---@field area boolean
 ---@field em_role boolean
 ---@field spoffer_swarm boolean
+---@field add_invalid_rewards boolean
 
 local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
 local e = require("FieldEventSpawner.util.game.enum")
+local gui = require("FieldEventSpawner.data.gui")
 local helpers = require("FieldEventSpawner.gui.helpers")
 local m = require("FieldEventSpawner.util.ref.methods")
 local mod = require("FieldEventSpawner.data.mod")
@@ -56,6 +59,7 @@ local this = {
         em_role = -1,
         em_option_tag = -1,
         spoffer_swarm = false,
+        add_invalid_rewards = false,
     },
     initialized = false,
 }
@@ -327,6 +331,37 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
         config_mod.swarm_count = index
     end
 
+    if dirty then
+        local items = util_table.deep_copy(gui.combo.rewards)
+        if current_data.add_invalid_rewards then
+            table.insert(items, gui.combo.invalid_rewards)
+        end
+
+        dirty = sync_combo(
+            dirty,
+            combo.quest_rewards,
+            util_table.map_array(items),
+            "rewards",
+            current_data,
+            changed,
+            config_mod
+        )
+    end
+
+    if dirty then
+        dirty = sync_combo(
+            dirty,
+            combo.em_invalid_reward,
+            util_table.map_table(event and event.invalid_rewards or {}, nil, function(o)
+                return string.format("%s%s %s", o.rank, config.lang:tr("misc.text_star"), o.title)
+            end),
+            "em_invalid_reward",
+            current_data,
+            changed,
+            config_mod
+        )
+    end
+
     config_mod.spoffer = helpers.swap_with_disabled(
         combo.spoffer,
         util_table.map_array(util_table.values(mod.state.spoffer), function(o)
@@ -358,6 +393,7 @@ function this.update()
         em_role = combo.em_role:get() or -1,
         em_option_tag = combo.em_option_tag:get() or -1,
         spoffer_swarm = config_mod.is_spoffer_swarm,
+        add_invalid_rewards = config_mod.add_invalid_rewards,
     }
     ---@type ChangedData
     ---@diagnostic disable-next-line: missing-fields
@@ -391,7 +427,7 @@ function this.update()
         swap_area_array(event, current_data, changed, environ)
     end
 
-    dirty = dirty or changed.spoffer_swarm
+    dirty = dirty or changed.spoffer_swarm or changed.add_invalid_rewards
     if current_data.event_type == "monster" then
         ---@cast event MonsterData
         update_monster_fields(event, current_data, changed, dirty, environ)
@@ -399,6 +435,10 @@ function this.update()
 
     this.old_data = current_data
     this.initialized = true
+
+    if dirty then
+        config:save() --TODO: check sa v e
+    end
 end
 
 return this

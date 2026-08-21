@@ -1,8 +1,16 @@
+local cache = require("FieldEventSpawner.util.misc.cache")
+local game_util = require("FieldEventSpawner.util.game.util")
+local util_misc = require("FieldEventSpawner.util.misc.init")
 ---@class MethodUtil
 local m = require("FieldEventSpawner.util.ref.methods")
 
 m.getMessageLocal = m.wrap(m.get("via.gui.message.get(System.Guid, via.Language)")) --[[@as fun(guid: System.Guid, lang: via.Language): System.String]]
 m.getGuidByName = m.wrap(m.get("via.gui.message.getGuidByName(System.String)")) --[[@as fun(guid_name: System.String): System.Guid]]
+m.messageTagReplace =
+    m.wrap(m.get("app.cGUIMessageTagReplacer.messageTagReplace(System.String, System.String)")) --[[@as fun(tag_type: System.String, tag: System.String): System.String]]
+m.ExtractTags = m.wrap(m.get("via.relib.GUI.MessageTag.ExtractTags(System.String)")) --[[@as fun(str: System.String): System.Array<System.String>]]
+m.ExtractTagName = m.wrap(m.get("via.relib.GUI.MessageTag.ExtractTagName(System.String)")) --[[@as fun(tag: System.String): System.String]]
+m.ExtractTagArg = m.wrap(m.get("via.relib.GUI.MessageTag.ExtractTagArg(System.String)")) --[[@as fun(tag: System.String): System.String]]
 
 local this = {}
 local msg_id = {
@@ -10,6 +18,39 @@ local msg_id = {
     strip_pattern = "(<REF.->)",
     bad_pattern = "#Rejected#",
 }
+
+---@param str string
+---@return string
+function this.replace_tags(str)
+    local tags = m.ExtractTags(str)
+    ---@type table<string, string>
+    local replace = {}
+    local lang = this.get_language()
+
+    game_util.do_something(tags, function(_, _, value)
+        local tag = m.ExtractTagName(value)
+        local arg = m.ExtractTagArg(value)
+        local text = m.messageTagReplace(tag, arg)
+
+        if text == "" then
+            util_misc.try(function()
+                text = this.get_message_local_from_name(
+                    value:match(msg_id.extract_pattern),
+                    lang,
+                    true
+                )
+            end)
+        end
+
+        replace[value] = text
+    end)
+
+    for tag, msg in pairs(replace) do
+        str = str:gsub(tag, msg)
+    end
+
+    return str
+end
 
 ---@param guid_name string
 ---@param lang via.Language
@@ -61,5 +102,7 @@ function this.get_language()
         "get_MessageLanguage()"
     )
 end
+
+this.get_language = cache.memoize(this.get_language)
 
 return this

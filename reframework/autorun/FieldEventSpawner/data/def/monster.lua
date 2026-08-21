@@ -62,6 +62,16 @@
 ---@field crown MonsterCrown
 ---@field is_exclusive boolean
 ---@field option_tag table<integer, string>
+---@field invalid_rewards table<app.MissionIDList.ID, {
+---  rank: integer,
+---  title: string,
+---  items: {
+---    id: app.ItemDef.ID,
+---    num: integer,
+---    prob: number,
+---    name: string,
+---  }[],
+--- }>
 
 local area_event_base = require("FieldEventSpawner.data.def.area_event_base")
 local helpers = require("FieldEventSpawner.data.ace.event.helpers")
@@ -93,6 +103,7 @@ function this:new(id, name_english, name_local, type, crown, is_exclusive, optio
     o.is_exclusive = is_exclusive
     o.map = {}
     o.option_tag = option_tag
+    o.invalid_rewards = {}
     o.__type = "__MonsterData"
     return o
 end

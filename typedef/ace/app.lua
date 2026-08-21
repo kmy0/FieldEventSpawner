@@ -25,6 +25,8 @@
 ---@class app.cExFieldEvent_EmReward : app.cExFieldEventBase
 ---@class app.cExFieldEvent_SpOfferMore : app.cExFieldEvent_SpecialOfferBase
 ---@class app.savedata.cBoss_ContextSaveParam_KeepQuest : ace.cSaveDataParam
+---@class app.user_data.QuestGeneralRewardData : ace.user_data.ExcelUserData
+---@class app.user_data.QuestData : via.UserData
 
 -- some pop_param inheritance things are wrong, not sure if this mess can be translated properly to luals
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base : app.cParamByEnvBase
@@ -125,6 +127,8 @@
 ---@class app.user_data.VariousDataManagerSetting : via.UserData
 ---@field get_ExQuestRewardSetting fun(self: app.user_data.VariousDataManagerSetting): app.user_data.ExQuestRewardSetting
 ---@field get_ExFieldParam fun(self: app.user_data.VariousDataManagerSetting): app.user_data.ExFieldParam
+---@field get_QuestRewardSetting fun(self: app.user_data.VariousDataManagerSetting): app.user_data.QuestRewardSetting
+---@field get_CommonQuestRewardData fun(self: app.user_data.VariousDataManagerSetting): app.user_data.QuestGeneralRewardData
 
 ---@class app.VariousDataManager : ace.GAElement
 ---@field get_Setting fun(self: app.VariousDataManager) : app.user_data.VariousDataManagerSetting
@@ -315,6 +319,7 @@
 ---@field get_IsActiveQuest fun(self: app.MissionManager): System.Boolean
 ---@field getBossZakoLayoutData fun(self: app.MissionManager, id: app.MissionIDList.ID): app.user_data.EnemyLayoutDataBossZako
 ---@field reflectStreamQuestListCache fun(self: app.MissionManager)
+---@field getQuestData fun(self: app.MissionManager, mission_id: app.MissionIDList.ID): app.user_data.QuestData
 
 ---@class app.cExSpOfferFactory.cSpOfferByStage : via.clr.ManagedObject
 ---@field get_SpOfferList fun(self: app.cExSpOfferFactory.cSpOfferByStage): System.Array<app.cExSpOfferFactory.SpOfferInfo>
@@ -423,6 +428,9 @@
 
 ---@class app.cActiveQuestData : via.clr.ManagedObject
 ---@field get_KeepQuestData fun(self: app.cActiveQuestData): app.cKeepQuestData
+---@field get_TitleText fun(self: app.cActiveQuestData): ace.cGUIMessageInfo
+---@field getQuestLv fun(self: app.cActiveQuestData): System.Byte
+---@field getTargetEmId fun(self: app.cActiveQuestData): System.Array<app.EnemyDef.ID>
 
 ---@class app.user_data.ExQuestRewardSetting.ParamByEmBase : via.clr.ManagedObject
 ---@field isMatch fun(self: app.user_data.ExQuestRewardSetting.ParamByEmBase, em_id: app.EnemyDef.ID, role_id: app.EnemyDef.ROLE_ID, legendary_id: app.EnemyDef.LEGENDARY_ID, difficulty_guid: System.Guid, quest_rank: app.QuestDef.EM_REWARD_RANK): System.Boolean
@@ -541,3 +549,27 @@
 
 ---@class app.cBossContextSaver_KeepQuest : via.clr.ManagedObject
 ---@field save fun(self: app.cBossContextSaver_KeepQuest, ctx_holder: app.cEnemyContextHolder, ctx_keep_ptr: app.savedata.cBoss_ContextSaveParam_KeepQuest|integer)
+
+---@class app.user_data.QuestRewardSetting : ace.user_data.ExcelUserData
+---@field getDataByFixedId fun(self: app.user_data.QuestRewardSetting, id: app.MissionIDList.ID_Fixed): app.user_data.QuestRewardSetting.cData
+
+---@class app.user_data.QuestRewardSetting.cData : ace.user_data.ExcelUserData.cData
+---@field get_commonRewardTableId fun(self: app.user_data.QuestRewardSetting.cData): System.UInt32
+
+---@class app.RewardLotsData : via.clr.ManagedObject
+---@field get_Probability fun(self: app.RewardLotsData): System.Int32
+---@field get_RewardNum fun(self: app.RewardLotsData): System.Int16
+---@field get_ItemId fun(self: app.RewardLotsData): app.ItemDef.ID
+
+---@class app.QuestGeneralRewardUtil.QuestRewardLotsData : via.clr.ManagedObject
+---@field get_RewardLotsDatas fun(self: app.QuestGeneralRewardUtil.QuestRewardLotsData): System.Array<app.RewardLotsData>
+
+---@class app.cGUIRewardItems : via.clr.ManagedObject
+---@field get_Category fun(self: app.cGUIRewardItems): app.ItemDef.LOG_CATEGORY
+---@field get_ItemInfoList fun(self: app.cGUIRewardItems): System.Array<app.cSendItemInfo>
+
+---@class app.cSendItemInfo : app.cReceiveItemInfo
+
+---@class app.cReceiveItemInfo : via.clr.ManagedObject
+---@field get_ItemId fun(self: app.cReceiveItemInfo): app.ItemDef.ID
+---@field get_Num fun(self: app.cReceiveItemInfo): System.Int16
