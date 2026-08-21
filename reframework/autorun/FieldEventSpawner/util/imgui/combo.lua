@@ -60,7 +60,7 @@ end
 ---@param key_to_value table
 ---@param current_index integer?
 ---@param disabled_keys any[]?
----@return integer?
+---@return integer
 function this:swap(key_to_value, current_index, disabled_keys)
     self.disabled = {}
     local ret = 1
