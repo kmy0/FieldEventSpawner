@@ -79,7 +79,6 @@ function this:build()
 
     local event_data = leader_data.event_data
     if self.legendary_id > 0 then
-        --FIXME: TU2 change
         event_data._FreeMiniValue0 = event_data._FreeMiniValue0 | (0x80 * self.legendary_id)
     end
 

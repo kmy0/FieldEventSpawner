@@ -4,6 +4,7 @@ local config = require("FieldEventSpawner.config.init")
 local game_lang = require("FieldEventSpawner.util.game.lang")
 local m = require("FieldEventSpawner.util.ref.methods")
 local s = require("FieldEventSpawner.util.ref.singletons")
+local util_game = require("FieldEventSpawner.util.game.init")
 local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_ref = require("FieldEventSpawner.util.ref.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
@@ -221,6 +222,23 @@ function this.get_ex_reward_setting()
     local various_data_manager = s.get("app.VariousDataManager")
     local various_data_manager_setting = various_data_manager:get_Setting()
     return various_data_manager_setting:get_ExQuestRewardSetting()
+end
+
+---@return app.savedata.cQuestParam
+function this.get_last_keep_quest()
+    local user_save = util_ref.singletons.get("app.SaveDataManager"):getCurrentUserSaveData()
+    local quests = user_save:get_Quest()
+    local timestamp = 0
+    local ret
+
+    util_game.do_something(quests, function(_, _, value)
+        if value.CreatedDate > timestamp and value.CreatedDate ~= -1 and value.RemainingNum > 0 then
+            ret = value
+            timestamp = value.CreatedDate
+        end
+    end)
+
+    return ret
 end
 
 this.get_ex_reward_setting = cache.memoize(this.get_ex_reward_setting)

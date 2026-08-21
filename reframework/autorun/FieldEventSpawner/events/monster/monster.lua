@@ -166,7 +166,6 @@ function this:build()
     event_data._FreeValue3 = util_game.hash_guid(route_guid)
     event_data._FreeValue4 = reward_data.reward_id1
     event_data._FreeValue5 = reward_data.reward_id2
-    --FIXME: after TU2 game auto xors (0x80 * self.legendary_id) for tempered monsters that can be also swarm
     event_data._FreeMiniValue0 = (
         (self.is_village_boost and not self.spoffer_unique_index) and 0x5C or 0x1C
     ) | ((self.is_yummy or reward_data.reward_id2 ~= -1) and 1 or 0)

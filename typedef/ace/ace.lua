@@ -7,6 +7,7 @@
 ---@class ace.user_data.ExcelUserData.cData : via.clr.ManagedObject
 ---@class ace.cSaveDataBase : via.clr.ManagedObject
 ---@class ace.cSaveDataParam : ace.cSaveDataBase
+---@class ace.cSaveDataMain : ace.cSaveDataBase
 
 ---@class ace.GimmickBase<T> : ace.GimmickBaseCore
 ---@field changeState fun(self: ace.GimmickBase, state: ace.GimmickDef.BASE_STATE)

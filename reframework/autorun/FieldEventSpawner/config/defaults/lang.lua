@@ -30,6 +30,8 @@ return {
             tooltip_add_invalid_monsters = "Requires the AllMonstersAllMaps file and a Script Reset. Adds Gogmazios, Zoh Shia, Jin Dahaad, and Omega Planetes to all maps.\nQuests that have them as a main target may not be completable",
             add_nerscylla_clone = "Add Nerscylla Clone",
             tooltip_add_nerscylla_clone = "Adds DLC3 Monster Param to Nerscylla",
+            is_spoffer_size_save = "Always Save Monster Size",
+            tooltip_is_spoffer_size_save = "Keeps monster sizes when saving Multi Monster Quest investigation. Works on current stage only.",
         },
         language = {
             name = "Language",

@@ -53,6 +53,7 @@
 ---@field is_allow_invalid_quest boolean
 ---@field is_allow_exclusive_em boolean
 ---@field is_spoffer_swarm boolean
+---@field is_spoffer_size_save boolean
 
 local version = require("FieldEventSpawner.config.version")
 
@@ -107,5 +108,6 @@ return {
         is_allow_invalid_quest = false,
         is_allow_exclusive_em = false,
         is_spoffer_swarm = false,
+        is_spoffer_size_save = false,
     },
 }

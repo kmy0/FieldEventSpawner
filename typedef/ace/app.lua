@@ -24,6 +24,7 @@
 ---@class app.cExSpOfferInfo_forView : via.clr.ManagedObject
 ---@class app.cExFieldEvent_EmReward : app.cExFieldEventBase
 ---@class app.cExFieldEvent_SpOfferMore : app.cExFieldEvent_SpecialOfferBase
+---@class app.savedata.cBoss_ContextSaveParam_KeepQuest : ace.cSaveDataParam
 
 -- some pop_param inheritance things are wrong, not sure if this mess can be translated properly to luals
 ---@class app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base : app.cParamByEnvBase
@@ -512,3 +513,31 @@
 ---@class app.user_data.ExQuestRewardSetting.cRewardSlotTable.cRewardSlotData : via.clr.ManagedObject
 ---@field get_Weight fun(self: app.user_data.ExQuestRewardSetting.cRewardSlotTable.cRewardSlotData): System.Byte
 ---@field get_SlotNum fun(self: app.user_data.ExQuestRewardSetting.cRewardSlotTable.cRewardSlotData): System.Byte
+
+---@class app.SaveDataManager : ace.GAElement
+---@field getCurrentUserSaveData app.savedata.cUserSaveData\
+
+---@class app.savedata.cUserSaveData : ace.cSaveDataMain
+---@field get_Quest fun(): System.Array<app.savedata.cQuestParam>
+
+---@class app.savedata.cQuestParam : ace.cSaveDataParam
+---@field StageType app.FieldDef.STAGE
+---@field CreatedDate System.Int64
+---@field RemainingNum System.SByte
+---@field EmSet_UniqueIndex System.Array<System.Int32>
+---@field get_ExField fun(self: app.savedata.cQuestParam): app.savedata.cQuestExParam
+---@field get_ContextSaveParam fun(self: app.savedata.cQuestParam): app.savedata.cContextSaveParam_KeepQuest
+
+---@class app.savedata.cContextSaveParam_KeepQuest : ace.cSaveDataParam
+---@field Boss_SavedCount System.Int32
+---@field get_Boss_ContextSaveParam fun(self: app.savedata.cContextSaveParam_KeepQuest): System.Array<app.savedata.cBoss_ContextSaveParam_KeepQuest>
+
+---@class app.savedata.cQuestExParam : ace.cSaveDataParam
+---@field get_EventList fun(self: app.savedata.cQuestExParam): app.savedata.cExFieldEvent[]
+
+---@class app.savedata.cExFieldEvent : ace.cSaveDataParam
+---@field UniqueIndex System.Int32
+---@field EventType System.Byte
+
+---@class app.cBossContextSaver_KeepQuest : via.clr.ManagedObject
+---@field save fun(self: app.cBossContextSaver_KeepQuest, ctx_holder: app.cEnemyContextHolder, ctx_keep_ptr: app.savedata.cBoss_ContextSaveParam_KeepQuest|integer)

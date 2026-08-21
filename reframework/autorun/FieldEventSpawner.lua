@@ -38,6 +38,8 @@ m.createActiveQuestData_Instant = m.wrap(
         "app.QuestUtil.createActiveQuestData_Instant(app.cExFieldEvent_PopEnemy, app.FieldDef.STAGE)"
     )
 ) --[[@as fun(pop_em: app.cExFieldEvent_PopEnemy, stage: app.FieldDef.STAGE): app.cActiveQuestData]]
+m.createBossContextSaveParam_Keep =
+    m.wrap(m.get("app.savedata.cBoss_ContextSaveParam_KeepQuest.create()")) --[[@as fun(): app.savedata.cBoss_ContextSaveParam_KeepQuest]]
 
 m.hook(
     "app.QuestCheckUtil.checkExQuest(System.Int32, app.cKeepQuestData)",
@@ -198,6 +200,11 @@ m.hook(
     "app.cExFieldDirector.findExecutedPopEms(System.Boolean, System.Boolean)",
     nil,
     sched.hook.force_spoffer_swarm_em_post
+)
+m.hook(
+    "app.QuestUtil.createKeepQuest(app.cExSpOfferInfo_forView)",
+    nil,
+    sched.hook.save_spoffer_em_sizes_post
 )
 
 re.on_draw_ui(function()

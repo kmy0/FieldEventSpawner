@@ -11,6 +11,7 @@
 ---@class System.Enum : integer, System.ValueType
 ---@class System.Object : via.clr.ManagedObject
 ---@class System.Single : integer, System.ValueType
+---@class System.SByte : integer, System.ValueType
 
 ---@class System.Guid : System.ValueType
 ---@field mData1 System.UInt32

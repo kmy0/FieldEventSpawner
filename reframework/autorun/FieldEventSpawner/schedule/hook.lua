@@ -575,11 +575,80 @@ function this.stop_em_combat_post(_)
 end
 
 function this.force_em_size_post(_)
-    --FIXME: for whatever reason game does not call lotteryModelRandomSize for the last member of the swarm
-    -- when leader is an alpha...
     if flags.spawn and actions.force_size then
         return actions.force_size
     end
+end
+
+function this.save_spoffer_em_sizes_post(_)
+    if not config.current.mod.is_spoffer_size_save then
+        return
+    end
+
+    local quest_param = helpers.get_last_keep_quest()
+    local ctx_save_keep = quest_param:get_ContextSaveParam()
+    if ctx_save_keep.Boss_SavedCount > 0 or quest_param.StageType ~= mod.state.stage then
+        return
+    end
+
+    local _, schedule_timeline = mod.get_field_director()
+    local boss_ctx_save = ctx_save_keep:get_Boss_ContextSaveParam()
+    local ctx_save_helper = util_ref.ctor("app.cBossContextSaver_KeepQuest")
+    local ex_field = quest_param:get_ExField()
+    local index = 0
+    local index_max = boss_ctx_save:get_Count() - 1
+    ---@type table<integer, boolean>
+    local targets = {}
+    ---@type table<integer, app.cEnemyContextHolder>
+    local ctxs = {}
+
+    util_game.do_something(quest_param.EmSet_UniqueIndex, function(_, _, value)
+        if value ~= -1 then
+            targets[value] = true
+        end
+    end)
+
+    util_game.do_something(ex_field:get_EventList(), function(_, _, value)
+        if value.EventType ~= e.get("app.EX_FIELD_EVENT_TYPE").POP_EM then
+            return
+        end
+
+        local pop_em = schedule_timeline:findKeyFromUniqueIndex(value.UniqueIndex) --[[@as app.cExFieldEvent_PopEnemy]]
+        local ctx_holder = pop_em:call("findEm()") --[[@as app.cEnemyContextHolder?]]
+        if not ctx_holder then
+            return
+        end
+
+        ctxs[value.UniqueIndex] = ctx_holder
+    end)
+
+    local keys = util_table.keys(ctxs)
+    table.sort(keys, function(a, b)
+        if targets[a] and not targets[b] then
+            return true
+        elseif targets[b] and not targets[a] then
+            return false
+        end
+
+        return false
+    end)
+
+    for _, unique_index in ipairs(keys) do
+        local ctx_holder = ctxs[unique_index]
+
+        local ctx_keep = m.createBossContextSaveParam_Keep()
+        ctx_keep:add_ref_permanent()
+        ctx_save_helper:save(ctx_holder, ctx_keep:get_address())
+
+        boss_ctx_save:set_Item(index, ctx_keep)
+        index = index + 1
+
+        if index > index_max then
+            break
+        end
+    end
+
+    ctx_save_keep.Boss_SavedCount = boss_ctx_save:get_Count()
 end
 
 function this.pause_schedule_pre(args)
