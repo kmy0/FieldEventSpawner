@@ -160,7 +160,7 @@ m.hook(
     nil,
     sched.hook.create_spoffer_swarm_post
 )
-m.hook("app.cExFieldDirector.init()", nil, data.ace.load_invalid_difficulties)
+m.hook("app.cExFieldDirector.init()", nil, data.ace.load_invalid_options)
 m.hook(
     "app.QuestUtil.getKeepQuestCost(app.QuestDef.EM_REWARD_RANK, app.EnemyDef.LEGENDARY_ID)",
     nil,
@@ -216,6 +216,33 @@ m.hook(
     "app.QuestUtil.createKeepQuest(app.cExSpOfferInfo_forView)",
     nil,
     sched.hook.save_spoffer_em_sizes_post
+)
+m.hook(
+    "app.user_data.ExFieldParam_LayoutData.getLegendaryPopParam(app.EnemyDef.ID, app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary[])",
+    sched.hook.spoof_em_id_spoffer_swarm_pop_param_pre
+)
+m.hook(
+    "app.user_data.ExFieldParam.getFieldLayout(app.FieldDef.STAGE)",
+    sched.hook.spoof_stage_id_spoffer_swarm_pre
+)
+m.hook(
+    "app.user_data.ExQuestRewardSetting.tryGetSwarmSpOfferRewardByEm(app.user_data.ExQuestRewardSetting.cSwarmSpOfferRewardByEm, app.EnemyDef.ID)",
+    sched.hook.spoof_em_id_spoffer_swarm_rewards_pre
+)
+m.hook(
+    "app.user_data.ExQuestRewardSetting.cRewardItemTable.tryGetWeightedRewardItem(ace.cLimitedArray`1<app.savedata.cItemWork>, ace.cLimitedArray`1<System.Boolean>, System.Byte[], ace.cLimitedArray`1<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>, System.Byte)",
+    nil,
+    sched.hook.spoffer_swarm_ignore_empty_reward_post
+)
+m.hook(
+    "app.cExMoreTargetSpOfferFactory.tryCreateSwarmSpOfferProc(app.cExFieldEvent_SpOfferMore, app.cExFieldEvent_SpOfferMore_Target, ace.cLimitedArray`1<app.cExFieldEvent_EmReward>, ace.cLimitedArray`1<app.cExFieldEvent_PopEnemy>, ace.cLimitedArray`1<app.savedata.cItemWork>, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Int32, app.EnemyDef.ID, app.FieldDef.STAGE)",
+    sched.hook.spoffer_swarm_flag_pre,
+    sched.hook.spoffer_swarm_flag_post
+)
+m.hook(
+    "app.cExFieldEvent_PopEnemy.executeProc(System.Int32)",
+    nil,
+    sched.hook.request_spoffer_swarm_post
 )
 
 re.on_draw_ui(function()

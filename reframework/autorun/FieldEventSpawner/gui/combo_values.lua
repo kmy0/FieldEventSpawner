@@ -300,10 +300,14 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
         end
     end
 
-    if dirty then
+    if dirty or changed.em_role then
         local current_value = state.swarm_count_array[config_mod.swarm_count]
 
-        if current_data.em_param == "swarm" or current_data.em_param == "boss" then
+        if
+            current_data.em_param == "swarm"
+            or current_data.em_param == "boss"
+            or current_data.em_role == e.get_noexact("app.EnemyDef.ROLE_ID").INVALID_SWARM
+        then
             state.swarm_count_array = {}
             local swarm_pack = event and event.map[current_data.stage].swarm_pack
 
@@ -311,9 +315,8 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
                 local min = current_data.spoffer_swarm and swarm_pack.min_spoffer or swarm_pack.min
                 local max = current_data.spoffer_swarm and swarm_pack.max_spoffer or swarm_pack.max
 
-                table.insert(state.swarm_count_array, min)
-                if min ~= max then
-                    table.insert(state.swarm_count_array, max)
+                for i = min, max do
+                    table.insert(state.swarm_count_array, i)
                 end
             end
 
@@ -331,7 +334,7 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
         config_mod.swarm_count = index
     end
 
-    if dirty then
+    if dirty or changed.add_invalid_rewards then
         local items = util_table.deep_copy(gui.combo.rewards)
         if current_data.add_invalid_rewards then
             table.insert(items, gui.combo.invalid_rewards)
@@ -427,7 +430,6 @@ function this.update()
         swap_area_array(event, current_data, changed, environ)
     end
 
-    dirty = dirty or changed.spoffer_swarm or changed.add_invalid_rewards
     if current_data.event_type == "monster" then
         ---@cast event MonsterData
         update_monster_fields(event, current_data, changed, dirty, environ)
@@ -437,7 +439,7 @@ function this.update()
     this.initialized = true
 
     if dirty then
-        config:save() --TODO: check sa v e
+        config:save()
     end
 end
 

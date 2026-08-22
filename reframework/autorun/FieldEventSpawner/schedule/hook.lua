@@ -10,6 +10,7 @@
 ---@field spawn boolean
 ---@field done boolean
 ---@field spoffer boolean
+---@field spoffer_swarm boolean
 ---@field ex_instant boolean
 ---@field reward_max boolean
 
@@ -19,7 +20,7 @@
 ---@field force_spoffer {pop_index_first: integer, pop_index_second: integer, rewards: EditedRewardData?}?
 ---@field force_area HookForceArea
 ---@field force_village_boost boolean
----@field force_spoffer_swarm {rewards: EditedRewardData?, pop_index: integer[], request: boolean}?
+---@field force_spoffer_swarm {rewards: EditedRewardData?, pop_index: integer[], spoofed_id: app.EnemyDef.ID?, spoofed_stage: app.FieldDef.STAGE? }?
 
 ---@class (excat) HookForceArea
 ---@field once {pop_index: integer, area: integer}?
@@ -51,6 +52,7 @@ local this = {
             spoffer = false,
             ex_instant = false,
             reward_max = false,
+            spoffer_swarm = false,
         },
         actions = {
             force_area = { ongoing = {} },
@@ -204,7 +206,8 @@ function this.set_em_args(em_args)
         actions.force_spoffer_swarm = {
             rewards = em_args.spoffer_rewards,
             pop_index = em_args.swarm_indexes,
-            request = true,
+            spoofed_id = em_args.swarm_spoofed_id,
+            spoofed_stage = em_args.swarm_spoofed_stage,
         }
     end
 end
@@ -241,16 +244,6 @@ function this.ex_director_update_pre(args)
         -- same story as above
         exanimalman:unloadAllExEventSet()
         flags.clear = false
-    elseif actions.force_spoffer_swarm and actions.force_spoffer_swarm.request then
-        local field_director, schedule_timeline = mod.get_field_director()
-        local pop_em = schedule_timeline:findKeyFromUniqueIndex(
-            util_table.pick_random_value(actions.force_spoffer_swarm.pop_index)
-        ) --[[@as app.cExFieldEvent_PopEnemy]]
-        local spoffer_fac = field_director._SpOfferFactory
-        local spoffer_more_fac = spoffer_fac._MoreTargetSpOfferFactory
-
-        spoffer_more_fac:requestSwarmSpOffer(mod.state.stage, pop_em)
-        actions.force_spoffer_swarm.request = false
     end
 end
 
@@ -367,6 +360,53 @@ function this.create_spoffer_swarm_post(_)
     end
 end
 
+function this.spoof_em_id_spoffer_swarm_pop_param_pre(args)
+    if
+        flags.spawn
+        and flags.spoffer_swarm
+        and actions.force_spoffer_swarm
+        and actions.force_spoffer_swarm.spoofed_id
+    then
+        args[3] = sdk.to_ptr(actions.force_spoffer_swarm.spoofed_id)
+    end
+end
+
+function this.spoof_stage_id_spoffer_swarm_pre(args)
+    if
+        flags.spawn
+        and flags.spoffer_swarm
+        and actions.force_spoffer_swarm
+        and actions.force_spoffer_swarm.spoofed_stage
+    then
+        args[3] = sdk.to_ptr(actions.force_spoffer_swarm.spoofed_stage)
+    end
+end
+
+function this.spoof_em_id_spoffer_swarm_rewards_pre(args)
+    if
+        flags.spawn
+        and flags.spoffer_swarm
+        and actions.force_spoffer_swarm
+        and actions.force_spoffer_swarm.spoofed_id
+    then
+        args[4] = sdk.to_ptr(actions.force_spoffer_swarm.spoofed_id)
+    end
+end
+
+function this.spoffer_swarm_ignore_empty_reward_post(_)
+    if flags.spawn and flags.spoffer_swarm and actions.force_spoffer_swarm then
+        return true
+    end
+end
+
+function this.spoffer_swarm_flag_pre(_)
+    flags.spoffer_swarm = true
+end
+
+function this.spoffer_swarm_flag_post(_)
+    flags.spoffer_swarm = false
+end
+
 function this.force_check_spoffer_pre(args)
     if flags.spawn and actions.force_spoffer then
         local spoffer_stage = sdk.to_managed_object(args[3])
@@ -377,14 +417,14 @@ function this.force_check_spoffer_pre(args)
 end
 
 function this.force_lot_spoffer_post(_)
-    if flags.spawn and actions.force_spoffer then
-        return true
+    if flags.spawn then
+        return actions.force_spoffer ~= nil
     end
 end
 
 function this.force_lot_spoffer_swarm_post(_)
-    if flags.spawn and actions.force_spoffer_swarm then
-        return true
+    if flags.spawn then
+        return actions.force_spoffer_swarm ~= nil
     end
 end
 
@@ -779,6 +819,19 @@ function this.force_spoffer_swarm_em_post(retval)
         for _, pop_em in pairs(pop_ems) do
             array:AddWithResize(pop_em)
         end
+    end
+end
+
+function this.request_spoffer_swarm_post(_)
+    if flags.spawn and actions.force_spoffer_swarm then
+        local field_director, schedule_timeline = mod.get_field_director()
+        -- picking member, it has to be a popem with SWARM pop_em_type
+        local pop_em =
+            schedule_timeline:findKeyFromUniqueIndex(actions.force_spoffer_swarm.pop_index[2]) --[[@as app.cExFieldEvent_PopEnemy]]
+        local spoffer_fac = field_director._SpOfferFactory
+        local spoffer_more_fac = spoffer_fac._MoreTargetSpOfferFactory
+
+        spoffer_more_fac:requestSwarmSpOffer(mod.state.stage, pop_em)
     end
 end
 

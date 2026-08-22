@@ -46,6 +46,11 @@ end
 
 ---@return boolean
 function this.is_swarm_count_disabled()
+    local em_role = state.combo.em_role:get()
+    if em_role == e.get_noexact("app.EnemyDef.ROLE_ID").INVALID_SWARM then
+        return false
+    end
+
     local em_param = state.combo.em_param:get()
     if em_param ~= "swarm" and em_param ~= "boss" then
         return true
@@ -95,12 +100,20 @@ end
 ---@return boolean
 function this.is_spoffer_swarm_disabled()
     local em_param = state.combo.em_param:get()
+    local em_role = state.combo.em_role:get()
+    local config_mod = config.current.mod
 
     return mod.is_in_quest()
         or not mod.is_spoffer_unlocked(mod.state.stage)
-        or (em_param ~= "swarm" and em_param ~= "boss")
+        or (em_param ~= "swarm" and em_param ~= "boss" and em_role ~= e.get_noexact(
+            "app.EnemyDef.ROLE_ID"
+        ).INVALID_SWARM)
         or state.swarm_count_array[config:get("mod.swarm_count")] < 2
-        or config.current.mod.spawn_delay > 0
+        or config_mod.spawn_delay > 0
+        or (
+            em_role == e.get_noexact("app.EnemyDef.ROLE_ID").INVALID_SWARM
+            and not config_mod.allow_any_spoffer
+        )
 end
 
 ---@return boolean
@@ -348,6 +361,11 @@ end
 
 ---@return app.ExDef.POP_EM_TYPE_Fixed
 function this.get_pop_em_type()
+    local em_role = state.combo.em_role:get()
+    if em_role == e.get_noexact("app.EnemyDef.ROLE_ID").INVALID_SWARM then
+        return e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM
+    end
+
     local em_param = state.combo.em_param:get()
     local pop_em_type = gui.map.em_param_to_pop_em[em_param]
     return e.get("app.ExDef.POP_EM_TYPE_Fixed")[pop_em_type]

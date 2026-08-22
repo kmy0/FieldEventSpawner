@@ -90,6 +90,10 @@ function this:new(monster_data, stage, time, monster_role, pop_em_type, legendar
     setmetatable(o, self)
     ---@cast o MonsterEventFactory
 
+    if monster_role < 0 then
+        monster_role = e.get("app.EnemyDef.ROLE_ID").NORMAL
+    end
+
     o.monster_role = monster_role
     o.legendary_id = legendary_id
     o.is_village_boost = opts.is_village_boost
@@ -224,11 +228,11 @@ end
 function this:_get_route_data(other_ems, environ_type)
     local function fetch_route_info(role)
         local array = self._field_director:getRoutePatternList(
-            self.event_data:get_em_id_for_route(self.stage),
+            self.event_data:get_em_id_for_route(self.stage, self.pop_em_type),
             role,
             self.legendary_id,
             self.pop_em_type,
-            self.stage,
+            self.event_data:get_stage_id_for_route(self.stage, self.pop_em_type),
             environ_type,
             other_ems,
             1
@@ -268,14 +272,16 @@ end
 ---@protected
 ---@return app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base
 function this:_get_em_pop_param()
-    local field_layout = ace.ex_field_param:getFieldLayout(self.stage)
+    local field_layout = ace.ex_field_param:getFieldLayout(
+        self.event_data:get_stage_id_for_param(self.stage, self.pop_em_type)
+    )
     local pop_param_by_hr = field_layout:getEmPopParamByHR(999, self.pop_em_type)
     local field_name =
         ace.map.pop_em_to_param_field[e.get("app.ExDef.POP_EM_TYPE_Fixed")[self.pop_em_type]]
     local pop_param_array = pop_param_by_hr:get_field(field_name)
     ---@cast pop_param_array  System.Array<app.user_data.ExFieldParam_LayoutData.cEmPopParam_Base>
     return field_layout:getPopParamByEmID(
-        self.event_data.spoofed_id or self.event_data.id,
+        self.event_data:get_em_id_for_param(self.stage, self.pop_em_type),
         pop_param_array
     )
 end
@@ -314,8 +320,11 @@ end
 
 ---@protected
 ---@param difficulty_guid System.Guid
+---@param _depth integer?
 ---@return System.Array<app.savedata.cItemWork>, System.Array<System.Boolean>
-function this:_get_reward_array(difficulty_guid)
+function this:_get_reward_array(difficulty_guid, _depth)
+    _depth = _depth or 0
+
     local out_item_work_array_vt = util_ref.value_type("app.savedata.cItemWork[]")
     local out_bool_array_vt = util_ref.value_type("System.Boolean[]")
     self._field_director:createRewardData(
@@ -332,9 +341,10 @@ function this:_get_reward_array(difficulty_guid)
         util_ref.deref_ptr((out_item_work_array_vt --[[@as ValueType]]):address())
     ) --[[@as System.Array<app.savedata.cItemWork>]]
 
-    if item_work_array:get_Count() == 0 and self.is_invalid then
+    if item_work_array:get_Count() == 0 and self.is_invalid and _depth < 3 then
         return self:_get_reward_array(
-            util_game.parse_guid(ace.map.replace_em_rank_guid[self.legendary_id])
+            util_game.parse_guid(ace.map.replace_em_rank_guid[self.legendary_id]),
+            _depth + 1
         )
     end
 

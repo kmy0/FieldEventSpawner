@@ -10,6 +10,8 @@
 ---@field is_battlefield_slay boolean?
 ---@field option_tag integer?
 ---@field swarm_indexes integer[]?
+---@field swarm_spoofed_id app.EnemyDef.ID?
+---@field swarm_spoofed_stage app.FieldDef.STAGE?
 
 ---@class (exact) ScheduledEvent
 ---@field event_data app.cExFieldScheduleExportData.cEventData

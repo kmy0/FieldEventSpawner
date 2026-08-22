@@ -44,7 +44,8 @@ this.name = mod_name
 this.default_config_path = config_path
 this.my_events_path = util_misc.join_paths(this.name, "data", "my_events.json")
 this.event_data_path = util_misc.join_paths(this.name, "data", "event_data.json")
-this.current_thread_path = util_misc.join_paths(this.name, "data", "current_thread")
+this.event_data_base_path = util_misc.join_paths(this.name, "data", "event_data_base.json")
+this.event_data_options_path = util_misc.join_paths(this.name, "data", "event_data_options.json")
 
 this.max_em_exit_time = 90
 this.display_cheat_timer = 30
