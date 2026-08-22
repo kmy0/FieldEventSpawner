@@ -212,6 +212,10 @@ end
 ---@param is_yummy boolean
 ---@param is_spoffer boolean
 function this.make_item_num_max(reward_type, item, em_infos, is_yummy, is_spoffer)
+    if not item then
+        return
+    end
+
     local max_num = item.Num
     local item_id = item:get_ItemId()
 
@@ -253,6 +257,10 @@ function this.make_item_num_max_spoffer_swarm(reward_table, items)
     local max_nums = {}
 
     util_game.do_something(items, function(_, _, item)
+        if not item then
+            return
+        end
+
         local item_id = item:get_ItemId()
 
         if max_nums[item_id] then
