@@ -781,7 +781,7 @@ function this.force_spoffer_swarm_em_post(retval)
         end
     end
 end
-
+--TODO: flag spoffer more and run those hooks only when its spawning
 -- app.cExMoreTargetSpOfferFactory.tryCreateSwarmSpOfferProc(app.cExFieldEvent_SpOfferMore, app.cExFieldEvent_SpOfferMore_Target, ace.cLimitedArray`1<app.cExFieldEvent_EmReward>, ace.cLimitedArray`1<app.cExFieldEvent_PopEnemy>, ace.cLimitedArray`1<app.savedata.cItemWork>, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Int32, app.EnemyDef.ID, app.FieldDef.STAGE)
 m.hook(
     "app.user_data.ExFieldParam_LayoutData.getLegendaryPopParam(app.EnemyDef.ID, app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary[])",
