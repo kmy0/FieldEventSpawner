@@ -251,6 +251,11 @@ end
 ---@return integer[]
 function this.get_spoffer_disabled_keys()
     local ret = {}
+
+    if config.current.mod.allow_any_spoffer then
+        return ret
+    end
+
     local difficulties = this.get_monster_all_difficulties()
     if not difficulties then
         return ret
