@@ -23,22 +23,20 @@ end
 -- JIN DAHAAD
 -- phase progression
 m.hook("app.cEm0162_00Extend.doUpdateBegin()", function(args)
-    if get_stage() == jindahaad_stage then
-        return
-    end
+    if get_stage() ~= jindahaad_stage then
+        local o = sdk.to_managed_object(args[2])
+        local phase = o._QuestPhase
 
-    local o = sdk.to_managed_object(args[2])
-    local phase = o._QuestPhase
+        local char = o:get_Character()
+        local health_manager = char:get_HealthMgr()
+        local health = health_manager:get_HealthNormalized()
 
-    local char = o:get_Character()
-    local health_manager = char:get_HealthMgr()
-    local health = health_manager:get_HealthNormalized()
-
-    for _, p in ipairs(jindahaad_phases) do
-        if health <= p[1] and phase < p[2] then
-            o:changeQuestPhase(p[2])
-        elseif phase >= p[2] then
-            break
+        for _, p in ipairs(jindahaad_phases) do
+            if health <= p[1] and phase < p[2] then
+                o:changeQuestPhase(p[2])
+            elseif phase >= p[2] then
+                break
+            end
         end
     end
 end)
@@ -78,21 +76,19 @@ end)
 -- nerscylla does not exist, spawns barrier at players pos and finishes nuke timer
 m.hook("app.cEm0166_00Extend.updateSpAtkCharge()", function(args)
     if get_stage() ~= jindahaad_stage then
-        return
-    end
+        local o = sdk.to_managed_object(args[2])
+        if not o._IsSpAtkCharge then
+            return
+        end
 
-    local o = sdk.to_managed_object(args[2])
-    if not o._IsSpAtkCharge then
-        return
-    end
+        local timer_charge = o._SpAtkChargeTimer
+        if timer_charge._Timer > 0 and timer_charge._Timer < timer_charge._Limit then
+            local master_player = s.get("app.PlayerManager"):getMasterPlayer()
+            local char = master_player:get_Character()
+            local pos = char:get_Pos()
 
-    local timer_charge = o._SpAtkChargeTimer
-    if timer_charge._Timer > 0 and timer_charge._Timer < timer_charge._Limit then
-        local master_player = s.get("app.PlayerManager"):getMasterPlayer()
-        local char = master_player:get_Character()
-        local pos = char:get_Pos()
-
-        o:requestCreateBarrier(pos, Quaternion.new())
-        o._SpAtkChargeTimer = timer_charge._Limit
+            o:requestCreateBarrier(pos, Quaternion.new())
+            o._SpAtkChargeTimer = timer_charge._Limit
+        end
     end
 end)
