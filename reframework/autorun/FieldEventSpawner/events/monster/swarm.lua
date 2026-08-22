@@ -139,7 +139,7 @@ end
 ---@return SpawnResult, ScheduledEvent[]?, ScheduledEvent?
 function this:_build_member(swarm_data)
     self.monster_role = e.get("app.EnemyDef.ROLE_ID").NORMAL
-    self.pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM
+    -- self.pop_em_type = e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM
     self.is_village_boost = false
     self.is_yummy = false
 

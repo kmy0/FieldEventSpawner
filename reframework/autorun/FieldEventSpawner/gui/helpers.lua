@@ -402,7 +402,7 @@ function this.spawn()
     if event_type == "monster" then
         ---@cast event MonsterData
 
-        if this.get_swarm_count() > 0 then
+        if true then
             return spawner.swarm(
                 event,
                 mod.state.stage,
@@ -410,7 +410,7 @@ function this.spawn()
                 combo.em_role:get(),
                 this.get_pop_em_type(),
                 this.get_legendary_id(),
-                this.get_swarm_count(),
+                5,
                 {
                     spawn_delay = this.get_spawn_delay(),
                     is_village_boost = this.get_is_village_boost(),
@@ -420,7 +420,7 @@ function this.spawn()
                     difficulty = this.get_difficulty(),
                     environ = event:get_environ(mod.state.stage, combo.em_param:get()),
                     size = this.get_em_size(),
-                    spoffer_swarm = this.get_is_spoffer_swarm(),
+                    spoffer_swarm = true,
                     option_tag = combo.em_option_tag:get(),
                     is_reward_max = this.is_reward_max(),
                     invalid_rewards = this.get_invalid_rewards(),

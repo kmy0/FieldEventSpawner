@@ -218,6 +218,8 @@ m.hook(
     sched.hook.save_spoffer_em_sizes_post
 )
 
+--TODO: check why spoffer does not spawn sometimes, seregios + 5star or something similar, might be reward table thing?
+
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then
         local gui_main = config.gui.current.gui.main

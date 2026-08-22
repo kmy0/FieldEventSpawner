@@ -782,4 +782,39 @@ function this.force_spoffer_swarm_em_post(retval)
     end
 end
 
+-- app.cExMoreTargetSpOfferFactory.tryCreateSwarmSpOfferProc(app.cExFieldEvent_SpOfferMore, app.cExFieldEvent_SpOfferMore_Target, ace.cLimitedArray`1<app.cExFieldEvent_EmReward>, ace.cLimitedArray`1<app.cExFieldEvent_PopEnemy>, ace.cLimitedArray`1<app.savedata.cItemWork>, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Collections.Generic.List`1<app.cExFieldEvent_PopEnemy>, System.Int32, app.EnemyDef.ID, app.FieldDef.STAGE)
+m.hook(
+    "app.user_data.ExFieldParam_LayoutData.getLegendaryPopParam(app.EnemyDef.ID, app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary[])",
+    function(args)
+        -- util_ref.thread_store(args)
+        -- print(util_ref.to_byte(args[3]))
+        args[3] = sdk.to_ptr(16)
+    end,
+    function(retval)
+        -- if flags.spawn then
+        --     local args = util_ref.thread_get()
+        --     local o = sdk.to_managed_object(args[2])
+        --     return sdk.to_ptr(o._SwarmPopParamsByHR)
+        -- end
+    end
+)
+m.hook("app.user_data.ExFieldParam.getFieldLayout(app.FieldDef.STAGE)", function(args)
+    args[3] = sdk.to_ptr(0)
+end)
+m.hook(
+    "app.user_data.ExQuestRewardSetting.tryGetSwarmSpOfferRewardByEm(app.user_data.ExQuestRewardSetting.cSwarmSpOfferRewardByEm, app.EnemyDef.ID)",
+    function(args)
+        print(1)
+        args[4] = sdk.to_ptr(16)
+    end
+)
+
+m.hook(
+    "app.user_data.ExQuestRewardSetting.cRewardItemTable.tryGetWeightedRewardItem(ace.cLimitedArray`1<app.savedata.cItemWork>, ace.cLimitedArray`1<System.Boolean>, System.Byte[], ace.cLimitedArray`1<app.ExQuestRewardUtil.EM_INFO_FOR_REWARD>, System.Byte)",
+    nil,
+    function(retval)
+        return true
+    end
+)
+
 return this
