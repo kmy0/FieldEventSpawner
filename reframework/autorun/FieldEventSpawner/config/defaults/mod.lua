@@ -28,6 +28,7 @@
 ---@field add_nerscylla_clone boolean
 ---@field add_invalid_rewards boolean
 ---@field merge_invalid_rewards boolean
+---@field allow_any_spoffer boolean
 ---
 ---@field event_type integer
 ---@field event integer
@@ -87,6 +88,7 @@ return {
         add_nerscylla_clone = false,
         add_invalid_rewards = false,
         merge_invalid_rewards = false,
+        allow_any_spoffer = false,
         --
         event = 1,
         event_type = 1,
