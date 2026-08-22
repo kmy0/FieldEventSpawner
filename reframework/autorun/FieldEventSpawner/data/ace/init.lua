@@ -251,6 +251,96 @@ local function get_garkveld_em_stage_string()
     return table.concat(stage_str, ", ")
 end
 
+---@param type_name string
+---@param enum_names string[]
+local function add_custom_enum(type_name, enum_names)
+    local index = this.map.custom_enum_index
+    local enum = e.get_noexact(type_name)
+    for i, name in ipairs(enum_names) do
+        enum:add(name, index - i)
+    end
+end
+
+---@return EventDataOptions
+local function make_event_data_options()
+    local config_mod = config.current.mod
+
+    ---@type EventDataOptions
+    return {
+        current_thread = thread.get_hash(),
+        add_invalid_difficulties = config_mod.add_invalid_difficulties,
+        merge_invalid_difficulties = config_mod.add_invalid_difficulties
+            and config_mod.merge_invalid_difficulties,
+        add_guardian_arkveld = config_mod.add_guardian_arkveld,
+        add_missing_monsters = config_mod.add_missing_monsters,
+        add_invalid_monsters = config_mod.add_invalid_monsters,
+        add_nerscylla_clone = config_mod.add_nerscylla_clone,
+        add_invalid_rewards = config_mod.add_invalid_rewards,
+        merge_invalid_rewards = config_mod.add_invalid_rewards and config_mod.merge_invalid_rewards,
+        add_invalid_swarm = config_mod.add_invalid_swarm,
+    }
+end
+
+---comment
+---@param path string
+---@param options_path string
+---@param options EventDataOptions
+---@param full_match boolean
+---@return EventDataByType?
+local function try_load_cache(path, options_path, options, full_match)
+    local cached_options = json.load_file(options_path)
+    if not cached_options then
+        return
+    end
+
+    if full_match then
+        if
+            util_table.any(options, function(k, v)
+                return v ~= cached_options[k]
+            end)
+        then
+            return
+        end
+    else
+        if cached_options.current_thread ~= options.current_thread then
+            return
+        end
+    end
+
+    return event_data_serializer:from_file(path) --[[@as EventDataByType?]]
+end
+
+---@return EventDataByType?
+local function load_event_cache()
+    return try_load_cache(
+        config.event_data_path,
+        config.event_data_options_path,
+        make_event_data_options(),
+        true
+    )
+end
+
+---@return EventDataByType?
+local function load_event_cache_base()
+    return try_load_cache(
+        config.event_data_base_path,
+        config.event_data_options_path,
+        make_event_data_options(),
+        false
+    )
+end
+
+local function dump_event_cache()
+    event_data_serializer:dump_file(config.event_data_path, this.event.by_type)
+    json.dump_file(config.event_data_options_path, make_event_data_options())
+end
+
+---@param cache EventDataByType
+---@return EventDataBy
+local function make_event_from_cache(cache)
+    return { by_type = cache, by_stage = {} }
+end
+
 ---@diagnostic disable-next-line: unused-local
 local function get_enemyappearancestagedata_user_3_map()
     local stages = {}
@@ -298,19 +388,12 @@ local function get_enemyappearancestagedata_user_3_map()
     json.dump_file("FieldEventSpawner/em_appearance.json", ret)
 end
 
-function this.load_invalid_difficulties()
-    if this.invalid_difficulties_loaded then
+function this.load_invalid_options()
+    if this.invalid_options_loaded then
         return
     end
 
     local config_mod = config.current.mod
-    local lowest_dif, highest_dif =
-        data_monster.get_lower_upper_difficulties(this.event.by_type.monster)
-    this.map.replace_em_rank_guid = {
-        [e.get("app.EnemyDef.LEGENDARY_ID").NONE] = lowest_dif,
-        [e.get("app.EnemyDef.LEGENDARY_ID").NORMAL] = highest_dif,
-        [e.get("app.EnemyDef.LEGENDARY_ID").KING] = highest_dif,
-    }
 
     if config_mod.add_guardian_arkveld then
         local guardian_arkveld_id = e.get("app.EnemyDef.ID").EM0160_50_0
@@ -408,7 +491,14 @@ function this.load_invalid_difficulties()
         )
     end
 
-    this.invalid_difficulties_loaded = true
+    if config_mod.add_invalid_swarm then
+        local doshaguma = e.get("app.EnemyDef.ID").EM0150_00_0
+        local windward_plains = e.get("app.FieldDef.STAGE").ST101
+        data_monster.add_invalid_swarm(this.event.by_type.monster, doshaguma, windward_plains)
+    end
+
+    this.invalid_options_loaded = true
+    dump_event_cache()
 end
 
 ---@return boolean
@@ -432,10 +522,13 @@ function this.init()
             e.new("app.EnemyDef.ID")
             e.new("app.cQuestDirector.TIME_RANK")
             e.new("app.ItemDef.LOG_CATEGORY")
+            e.new("app.FieldDef.STAGE")
         end)
     then
         return false
     end
+
+    add_custom_enum("app.EnemyDef.ROLE_ID", this.map.custom_role_ids)
 
     this.map.legendary_to_key = {
         [e.get("app.EnemyDef.LEGENDARY_ID").NONE] = "none",
@@ -448,11 +541,17 @@ function this.init()
     local dataman_settting = dataman:get_Setting()
     this.ex_field_param = dataman_settting:get_ExFieldParam()
 
-    local current_thread = tostring(thread.get_hash())
-    local dumped_thread = fs.read(config.current_thread_path)
-
-    if current_thread == dumped_thread then
-        this.event = event_data_serializer:from_file(config.event_data_path) --[[@as EventDataBy]]
+    if config.current.mod.use_cache then
+        local cache = load_event_cache()
+        if cache then
+            this.event = make_event_from_cache(cache)
+            this.invalid_options_loaded = true
+        else
+            local base_cache = load_event_cache_base()
+            if base_cache then
+                this.event = make_event_from_cache(base_cache)
+            end
+        end
     end
 
     if not this.event then
@@ -464,9 +563,17 @@ function this.init()
                 gimmick = data_gimmick.get_data(this.ex_field_param),
             },
         }
-        event_data_serializer:dump_file(config.event_data_path, this.event)
-        fs.write(config.current_thread_path, current_thread)
+
+        event_data_serializer:dump_file(config.event_data_base_path, this.event.by_type)
     end
+
+    local lowest_dif, highest_dif =
+        data_monster.get_lower_upper_difficulties(this.event.by_type.monster)
+    this.map.replace_em_rank_guid = {
+        [e.get("app.EnemyDef.LEGENDARY_ID").NONE] = lowest_dif,
+        [e.get("app.EnemyDef.LEGENDARY_ID").NORMAL] = highest_dif,
+        [e.get("app.EnemyDef.LEGENDARY_ID").KING] = highest_dif,
+    }
 
     -- get_enemyappearancestagedata_user_3_map()
 
@@ -488,7 +595,7 @@ function this.init()
     this.map.garkveld_em_stage_string = get_garkveld_em_stage_string()
 
     if s.get("app.GameFlowManager"):get_IsPlayableScene() then
-        this.load_invalid_difficulties()
+        this.load_invalid_options()
     end
 
     this.initialized = true

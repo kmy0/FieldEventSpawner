@@ -29,6 +29,8 @@
 ---@field add_invalid_rewards boolean
 ---@field merge_invalid_rewards boolean
 ---@field allow_any_spoffer boolean
+---@field use_cache boolean
+---@field add_invalid_swarm  boolean
 ---
 ---@field event_type integer
 ---@field event integer
@@ -89,6 +91,8 @@ return {
         add_invalid_rewards = false,
         merge_invalid_rewards = false,
         allow_any_spoffer = false,
+        use_cache = true,
+        add_invalid_swarm = false,
         --
         event = 1,
         event_type = 1,

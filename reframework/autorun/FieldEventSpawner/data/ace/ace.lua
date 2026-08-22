@@ -5,9 +5,9 @@
 ---@field map AceMap
 ---@field reward RewardHelper
 ---@field initialized boolean
----@field invalid_difficulties_loaded boolean
+---@field invalid_options_loaded boolean
 ---@field init fun(): boolean
----@field load_invalid_difficulties fun()
+---@field load_invalid_options fun()
 ---@field restore_em_stage_appearance fun()
 
 ---@class (exact) EventDataByType
@@ -46,6 +46,20 @@
 ---@field missing_em_stage_string string
 ---@field garkveld_em_stage_string string
 ---@field is_all_em_all_stage boolean
+---@field custom_role_ids table<string, integer>
+---@field custom_enum_index integer
+
+---@class (exact) EventDataOptions
+---@field current_thread integer
+---@field merge_invalid_difficulties boolean
+---@field add_invalid_difficulties boolean
+---@field add_guardian_arkveld boolean
+---@field add_missing_monsters boolean
+---@field add_invalid_monsters boolean
+---@field add_nerscylla_clone boolean
+---@field add_invalid_rewards boolean
+---@field merge_invalid_rewards boolean
+---@field add_invalid_swarm boolean
 
 ---@class AceData
 local this = {
@@ -112,9 +126,13 @@ local this = {
         missing_em_stage_string = "",
         garkveld_em_stage_string = "",
         is_all_em_all_stage = false,
+        custom_role_ids = {
+            "INVALID_SWARM",
+        },
+        custom_enum_index = -10000,
     },
     initialized = false,
-    invalid_difficulties_loaded = false,
+    invalid_options_loaded = false,
 }
 
 return this

@@ -86,6 +86,12 @@ function this:build()
     leader_data.cache_base.children = {}
     leader_data.args.swarm_indexes = { event_data._UniqueIndex }
 
+    if self.is_invalid then
+        leader_data.args.swarm_spoofed_id = self.event_data.map[self.stage].spoofed_id_for_swarm
+        leader_data.args.swarm_spoofed_stage =
+            self.event_data.map[self.stage].spoofed_stage_for_swarm
+    end
+
     local member_data, member_rewards
     for _ = 1, self.swarm_count do
         res, member_rewards, member_data = self:_build_member(swarm_data)

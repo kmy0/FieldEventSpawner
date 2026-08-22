@@ -128,8 +128,15 @@ end
 
 ---@param monster_data MonsterData
 ---@param stage app.FieldDef.STAGE
-local function make_all_params_invalid(monster_data, stage)
+---@param no_clear boolean?
+local function make_all_params_invalid(monster_data, stage, no_clear)
     local map_data = monster_data.map[stage]
+
+    if map_data.is_all_param_invalid then
+        return
+    end
+
+    local clear = no_clear == false
 
     add_invalid_param(monster_data, stage)
 
@@ -141,20 +148,22 @@ local function make_all_params_invalid(monster_data, stage)
         end
     end
 
-    clear_except_invalid(map_data.area_by_param)
-    clear_except_invalid(map_data.param)
-    clear_except_invalid(map_data.role_by_param)
+    if clear then
+        clear_except_invalid(map_data.area_by_param)
+        clear_except_invalid(map_data.param)
+        clear_except_invalid(map_data.role_by_param)
 
-    for _, by_param in pairs(map_data.area_by_env_by_param) do
-        clear_except_invalid(by_param)
-    end
+        for _, by_param in pairs(map_data.area_by_env_by_param) do
+            clear_except_invalid(by_param)
+        end
 
-    for _, mon_param in pairs(map_data.param_by_env) do
-        clear_except_invalid(mon_param)
-    end
+        for _, mon_param in pairs(map_data.param_by_env) do
+            clear_except_invalid(mon_param)
+        end
 
-    for _, by_param in pairs(map_data.difficulty_by_env_by_param) do
-        clear_except_invalid(by_param)
+        for _, by_param in pairs(map_data.difficulty_by_env_by_param) do
+            clear_except_invalid(by_param)
+        end
     end
 
     for param_key, mon_dif in pairs(map_data.difficulty_by_param) do
@@ -165,7 +174,11 @@ local function make_all_params_invalid(monster_data, stage)
         end
     end
 
-    clear_except_invalid(map_data.difficulty_by_param)
+    if clear then
+        clear_except_invalid(map_data.difficulty_by_param)
+    end
+
+    map_data.is_all_param_invalid = true
 end
 
 ---@param em_id app.EnemyDef.ID
@@ -846,6 +859,36 @@ function this.add_invalid_role_id(monster_data, role_id, maps)
                 for param_mod, grade, rank, guid in monster_data:iter_difficulties(mon_dif) do
                     add_invalid_difficulty(monster_data, stage, param_mod, grade, rank, guid, role)
                 end
+            end
+        end
+    end
+end
+
+---@param monster_data MonsterData[]
+---@param em app.EnemyDef.ID
+---@param stage app.FieldDef.STAGE
+function this.add_invalid_swarm(monster_data, em, stage)
+    for _, em_data in pairs(monster_data) do
+        for _, map in pairs(em_data.map) do
+            if not map.is_all_param_invalid then
+                make_all_params_invalid(em_data, stage, true)
+            end
+
+            if not map.swarm_pack then
+                map.spoofed_id_for_swarm = em
+                map.spoofed_stage_for_swarm = stage
+
+                map.swarm_pack = {
+                    min = 2,
+                    max = 5,
+                    min_spoffer = 3,
+                    max_spoffer = 5,
+                }
+
+                table.insert(
+                    map.role_by_param.invalid,
+                    e.get_noexact("app.EnemyDef.ROLE_ID").INVALID_SWARM
+                )
             end
         end
     end

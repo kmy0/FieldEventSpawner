@@ -48,6 +48,9 @@
 ---@field difficulty_invalid table<app.EnemyDef.ROLE_ID, table<string, boolean>> guid_str
 ---@field role_by_param table<string, app.EnemyDef.ROLE_ID[]>
 ---@field spoofed_id_for_route app.EnemyDef.ID?
+---@field is_all_param_invalid boolean?
+---@field spoofed_id_for_swarm app.EnemyDef.ID?
+---@field spoofed_stage_for_swarm app.FieldDef.STAGE?
 ---@field swarm_pack {
 --- min: integer,
 --- max: integer,
@@ -74,6 +77,7 @@
 --- }>
 
 local area_event_base = require("FieldEventSpawner.data.def.area_event_base")
+local e = require("FieldEventSpawner.util.game.enum")
 local helpers = require("FieldEventSpawner.data.ace.event.helpers")
 ---@module"FieldEventSpawner.data.mod"
 local mod = require("FieldEventSpawner.util.misc.init").lazy_require("FieldEventSpawner.data.mod")
@@ -375,15 +379,55 @@ function this:iter_difficulties(mon_dif)
 end
 
 ---@param stage app.FieldDef.STAGE
+---@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
 ---@return app.EnemyDef.ID
-function this:get_em_id_for_route(stage)
+function this:get_em_id_for_route(stage, pop_em_type)
     local map = self.map[stage]
+
+    if
+        map
+        and map.spoofed_id_for_swarm
+        and pop_em_type == e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM
+    then
+        return map.spoofed_id_for_swarm
+    end
 
     if map and map.spoofed_id_for_route then
         return map.spoofed_id_for_route
     end
 
     return self.spoofed_id or self.id
+end
+
+---@param stage app.FieldDef.STAGE
+---@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
+---@return app.FieldDef.STAGE
+function this:get_stage_id_for_route(stage, pop_em_type)
+    local map = self.map[stage]
+
+    if
+        map
+        and map.spoofed_stage_for_swarm
+        and pop_em_type == e.get("app.ExDef.POP_EM_TYPE_Fixed").SWARM
+    then
+        return map.spoofed_stage_for_swarm
+    end
+
+    return stage
+end
+
+---@param stage app.FieldDef.STAGE
+---@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
+---@return app.EnemyDef.ID
+function this:get_em_id_for_param(stage, pop_em_type)
+    return self:get_em_id_for_route(stage, pop_em_type)
+end
+
+---@param stage app.FieldDef.STAGE
+---@param pop_em_type app.ExDef.POP_EM_TYPE_Fixed
+---@return app.FieldDef.STAGE
+function this:get_stage_id_for_param(stage, pop_em_type)
+    return self:get_stage_id_for_route(stage, pop_em_type)
 end
 
 return this
