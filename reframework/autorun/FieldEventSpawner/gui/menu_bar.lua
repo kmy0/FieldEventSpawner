@@ -50,10 +50,21 @@ local function draw_mod_menu()
     set:menu_item(util_gui.tr("mod.box_ignore_environ"), "mod.is_ignore_environ")
     util_imgui.tooltip(config.lang:tr("mod.tooltip_ignore_environ"))
     set:menu_item(util_gui.tr("mod.box_allow_invalid_quest"), "mod.is_allow_invalid_quest")
+    set:menu_item(util_gui.tr("menu.config.allow_any_spoffer"), "mod.allow_any_spoffer")
+    util_imgui.tooltip(config.lang:tr("menu.config.tooltip_allow_any_spoffer"))
     set:menu_item(util_gui.tr("menu.config.is_spoffer_size_save"), "mod.is_spoffer_size_save")
     util_imgui.tooltip(config.lang:tr("menu.config.tooltip_is_spoffer_size_save"))
 
     imgui.separator()
+    imgui.separator()
+    imgui.separator()
+
+    set:menu_item(util_gui.tr("menu.config.allow_any_spoffer"), "mod.allow_any_spoffer")
+    util_imgui.tooltip(config.lang:tr("menu.config.tooltip_allow_any_spoffer"))
+
+    imgui.separator()
+    imgui.separator()
+
     set:menu_item(
         util_gui.tr("menu.config.add_invalid_difficulties"),
         "mod.add_invalid_difficulties"
@@ -65,6 +76,10 @@ local function draw_mod_menu()
         not config.current.mod.add_invalid_difficulties
     )
     util_imgui.tooltip(config.lang:tr("menu.config.tooltip_merge_invalid_difficulties"))
+
+    imgui.separator()
+    imgui.separator()
+
     set:menu_item(util_gui.tr("menu.config.add_invalid_rewards"), "mod.add_invalid_rewards")
     util_imgui.tooltip(config.lang:tr("menu.config.tooltip_add_invalid_rewards"))
     set:menu_item(
@@ -73,6 +88,10 @@ local function draw_mod_menu()
         not config.current.mod.add_invalid_rewards
     )
     util_imgui.tooltip(config.lang:tr("menu.config.tooltip_merge_invalid_rewards"))
+
+    imgui.separator()
+    imgui.separator()
+
     set:menu_item(util_gui.tr("menu.config.add_missing_monsters"), "mod.add_missing_monsters")
     util_imgui.tooltip(
         config.lang:tr("menu.config.tooltip_add_missing_monsters")

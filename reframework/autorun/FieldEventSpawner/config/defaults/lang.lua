@@ -36,6 +36,8 @@ return {
             tooltip_add_invalid_rewards = "Requires Script Reset. Adds Specific Quest option to Quest Rewards.",
             merge_invalid_rewards = "Merge Invalid Rewards",
             tooltip_merge_invalid_rewards = "Requires Script Reset. Makes all quest rewards avaialable for all monsters.",
+            allow_any_spoffer = "Allow Any Multi Monster Quest",
+            tooltip_allow_any_spoffer = "Allows for any Multi Monster combination, some combinations might not work, some combination might generate no rewards.",
         },
         language = {
             name = "Language",

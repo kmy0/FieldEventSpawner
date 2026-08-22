@@ -35,6 +35,7 @@
 ---@field spawn_button_state SpawnState.*
 
 local ace = require("FieldEventSpawner.data.ace.init")
+local config = require("FieldEventSpawner.config.init")
 local e = require("FieldEventSpawner.util.game.enum")
 local helpers = require("FieldEventSpawner.data.helpers")
 local s = require("FieldEventSpawner.util.ref.singletons")
@@ -205,11 +206,14 @@ function this.update_spoffer()
         local em_id = pop_em:get_EmID()
 
         if
-            em_global_param:isExclusiveEm(em_id)
-            or not pop_em:get_EnableSpOfferTarget()
-            or not pop_em:get_EnableKeepQuestTarget()
-            or pop_em:get_IsBattlefieldEm()
-            or helpers.is_invalid_em(pop_em)
+            not config.current.mod.allow_any_spoffer
+            and (
+                em_global_param:isExclusiveEm(em_id)
+                or not pop_em:get_EnableSpOfferTarget()
+                or not pop_em:get_EnableKeepQuestTarget()
+                or pop_em:get_IsBattlefieldEm()
+                or helpers.is_invalid_em(pop_em)
+            )
         then
             goto continue
         end
