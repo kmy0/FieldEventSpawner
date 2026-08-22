@@ -354,8 +354,14 @@ function this.fake_combo(text, label, width, disabled)
     draw_list:add_rect_filled({ pos.x, pos.y }, { pos.x + width, pos.y + height }, color_rect, 0, 0)
 
     text = util_misc.split_string(text, "##")[1]
-    draw_list:add_text({ pos.x + 4, pos.y + 3 }, color_text, text)
 
+    local text_size = imgui.calc_text_size(text)
+    while text_size.x > width - 3 and #text > 0 do
+        text = text:sub(1, -2)
+        text_size = imgui.calc_text_size(text)
+    end
+
+    draw_list:add_text({ pos.x + 4, pos.y + 3 }, color_text, text)
     this.dummy_button3("##" .. uuid.generate(), { width, height })
 
     if label then
