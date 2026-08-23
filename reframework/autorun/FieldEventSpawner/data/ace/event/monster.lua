@@ -616,12 +616,7 @@ function this.add_invalid_rewards(monster_data, merge_rewards)
 
         local table_id = quest_reward_data:get_commonRewardTableId()
         local lot_data = m.getRewardItemDataList(common_reward_data, table_id)
-        ---@type {
-        ---    id: app.ItemDef.ID,
-        ---    num: integer,
-        ---    prob: number,
-        ---    name: string,
-        ---  }[]
+        ---@type SpecificQuestRewardsItem[]
         local items = {}
 
         util_game.do_something(lot_data:get_RewardLotsDatas(), function(_, _, value)

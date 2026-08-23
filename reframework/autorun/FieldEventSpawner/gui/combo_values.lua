@@ -35,6 +35,7 @@
 
 local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
+local data_helpers = require("FieldEventSpawner.data.helpers")
 local e = require("FieldEventSpawner.util.game.enum")
 local gui = require("FieldEventSpawner.data.gui")
 local helpers = require("FieldEventSpawner.gui.helpers")
@@ -365,6 +366,16 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
             changed,
             config_mod
         )
+
+        if event then
+            config_mod.em_invalid_reward = state.combo.em_invalid_reward:filter(
+                data_helpers.filter_specific_quest(
+                    event.invalid_rewards,
+                    config_mod.reward_config.filter
+                ),
+                config_mod.em_invalid_reward
+            )
+        end
     end
 
     config_mod.spoffer = helpers.swap_with_disabled(

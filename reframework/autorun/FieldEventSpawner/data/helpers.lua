@@ -33,12 +33,12 @@ function this.is_spoffer_pair(first, second)
 end
 
 ---@param query string
----@return table<string, string>
+---@return string[]
 function this.filter_item_rewards(query)
     local ret = {}
 
     if query == "" then
-        return ace.map.item_key_to_name_local
+        return ret
     end
 
     local number = tonumber(query)
@@ -52,9 +52,43 @@ function this.filter_item_rewards(query)
         return name_lower:find(query_lower) ~= nil
     end
 
-    for k, v in pairs(ace.map.item_key_to_name_local) do
+    for k, _ in pairs(ace.map.item_key_to_name_local) do
         if predicate(k) then
-            ret[k] = v
+            table.insert(ret, k)
+        end
+    end
+
+    return ret
+end
+
+---@param rewards table<app.MissionIDList.ID, SpecificQuestRewards>
+---@param query string
+---@return app.MissionIDList.ID[]
+function this.filter_specific_quest(rewards, query)
+    local ret = {}
+
+    if query == "" then
+        return ret
+    end
+
+    local number = tonumber(query)
+    local query_lower = query:lower()
+
+    local predicate = function(quest_rewards)
+        for _, v in pairs(quest_rewards.items) do
+            if number and v.id == number then
+                return true
+            end
+
+            if v.name:lower():find(query_lower) ~= nil then
+                return true
+            end
+        end
+    end
+
+    for k, v in pairs(rewards) do
+        if predicate(v) then
+            table.insert(ret, k)
         end
     end
 

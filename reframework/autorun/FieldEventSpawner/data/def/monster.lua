@@ -58,6 +58,17 @@
 --- max_spoffer: integer,
 --- }?
 
+---@class (exact) SpecificQuestRewardsItem
+---@field id app.ItemDef.ID
+---@field num integer
+---@field prob number
+---@field name string
+
+---@class (exact) SpecificQuestRewards
+---@field rank integer
+---@field title string
+---@field items SpecificQuestRewardsItem[],
+
 ---@class (exact) MonsterData : AreaEventData
 ---@field id app.EnemyDef.ID
 ---@field spoofed_id app.EnemyDef.ID?
@@ -65,16 +76,7 @@
 ---@field crown MonsterCrown
 ---@field is_exclusive boolean
 ---@field option_tag table<integer, string>
----@field invalid_rewards table<app.MissionIDList.ID, {
----  rank: integer,
----  title: string,
----  items: {
----    id: app.ItemDef.ID,
----    num: integer,
----    prob: number,
----    name: string,
----  }[],
---- }>
+---@field invalid_rewards table<app.MissionIDList.ID, SpecificQuestRewards>
 
 local area_event_base = require("FieldEventSpawner.data.def.area_event_base")
 local e = require("FieldEventSpawner.util.game.enum")

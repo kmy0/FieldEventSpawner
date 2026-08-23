@@ -13,7 +13,6 @@ local spawn_button = require("FieldEventSpawner.gui.spawn_button")
 local state = require("FieldEventSpawner.gui.state")
 local util_gui = require("FieldEventSpawner.gui.util")
 local util_imgui = require("FieldEventSpawner.util.imgui.init")
-local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {
     window = {
@@ -40,56 +39,6 @@ local function combo_with_disabled(combo, name, config_key)
     imgui.end_disabled()
 
     return changed
-end
-
-local function draw_invalid_rewards()
-    local drag_width = config.lang.font_size * (50 / 16)
-    local combo_width = util_imgui.get_something_with_any_width(drag_width)
-    local disabled = helpers.is_invalid_rewards_disabled()
-
-    imgui.begin_disabled(disabled)
-
-    if #state.combo.em_invalid_reward.values <= 1 then
-        util_imgui.fake_combo(
-            #state.combo.em_invalid_reward.values == 1 and state.combo.em_invalid_reward.values[1]
-                or "",
-            nil,
-            combo_width,
-            disabled
-        )
-    else
-        imgui.set_next_item_width(combo_width)
-        set:combo(
-            "##combo_invalid_rewards",
-            "mod.em_invalid_reward",
-            state.combo.em_invalid_reward.values
-        )
-    end
-
-    local event = helpers.get_current_event()
-    if event then
-        ---@cast event MonsterData
-        local rewards = event.invalid_rewards[state.combo.em_invalid_reward:get()]
-        if rewards then
-            local txt = util_table.values(rewards.items, function(o)
-                return string.format("%s x%s", o.name, o.num)
-            end)
-
-            util_imgui.tooltip(table.concat(txt, "\n"))
-        end
-    end
-
-    imgui.same_line()
-    imgui.set_next_item_width(drag_width)
-    set:drag_int(
-        util_gui.tr("mod.em_invalid_reward_slot"),
-        "mod.em_invalid_reward_slot",
-        0.1,
-        1,
-        10
-    )
-    util_imgui.tooltip(config.lang:tr("mod.tooltip_em_invalid_reward_slot"))
-    imgui.end_disabled()
 end
 
 local function draw_cheat()
@@ -247,6 +196,10 @@ function this.draw()
     imgui.end_disabled()
     util_imgui.tooltip(config.lang:tr("mod.tooltip_spawn_delay"), true)
 
+    if helpers.is_edit_rewards_disabled() then
+        gui_reward.is_opened = false
+    end
+
     if state.combo.event_type:get() == "monster" then
         util_imgui.separator_text(config.lang:tr("mod.tooltip_category_difficulty"))
 
@@ -369,14 +322,11 @@ function this.draw()
         )
         util_imgui.tooltip(config.lang:tr("mod.tooltip_combo_rewards"), true)
 
-        if config_mod.add_invalid_rewards then
-            draw_invalid_rewards()
-        end
-
-        imgui.begin_disabled(state.combo.quest_rewards:get() ~= "user_defined")
+        imgui.begin_disabled(helpers.is_edit_rewards_disabled())
         if imgui.button(util_gui.tr("mod.button_open_rewards_builder")) then
             gui_reward.is_opened = true
         end
+        util_imgui.tooltip(helpers.build_edit_rewards_tooltip())
         imgui.end_disabled()
 
         imgui.begin_disabled(helpers.is_yummy_disabled())

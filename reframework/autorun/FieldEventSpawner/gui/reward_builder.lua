@@ -5,6 +5,7 @@
 
 local ace = require("FieldEventSpawner.data.ace.init")
 local config = require("FieldEventSpawner.config.init")
+local gui_helpers = require("FieldEventSpawner.gui.helpers")
 local helpers = require("FieldEventSpawner.data.helpers")
 local set = require("FieldEventSpawner.util.imgui.config_set"):new(config)
 local state = require("FieldEventSpawner.gui.state")
@@ -17,6 +18,8 @@ local this = {
         flags = 0,
         condition = 1 << 1,
     },
+    ---@type string?
+    type = nil,
 }
 
 local function draw_reward_table()
@@ -70,41 +73,33 @@ local function draw_reward_table()
     end
 end
 
-function this.draw()
-    local gui_reward = config.gui.current.gui.reward_builder
+local function draw_user_defined()
     local config_mod = config.current.mod
 
-    imgui.set_next_window_pos(
-        Vector2f.new(gui_reward.pos_x, gui_reward.pos_y),
-        this.window.condition
-    )
-    imgui.set_next_window_size(
-        Vector2f.new(gui_reward.size_x, gui_reward.size_y),
-        this.window.condition
-    )
-
-    gui_reward.is_opened = imgui.begin_window(
-        util_gui.tr("mod.window_reward_builder"),
-        gui_reward.is_opened,
-        this.window.flags
-    )
-
-    imgui.spacing()
-    imgui.indent(3)
-
-    if set:input_text(util_gui.tr("mod.input_reward_filter"), "mod.reward_config.filter") then
-        config_mod.reward_config.reward = state.combo.item_rewards:swap(
+    if
+        set:input_text(util_gui.tr("mod.input_reward_filter"), "mod.reward_config.filter")
+        or this.type ~= "user_defined"
+    then
+        config_mod.reward_config.reward = state.combo.item_rewards:filter(
             helpers.filter_item_rewards(config_mod.reward_config.filter),
             config_mod.reward_config.reward
-        ) --[[@as number]]
+        )
+        this.type = "user_defined"
     end
 
     util_imgui.tooltip(config.lang:tr("mod.tooltip_reward_filter"))
-    set:combo(
-        util_gui.tr("mod.combo_reward"),
-        "mod.reward_config.reward",
-        state.combo.item_rewards.values
-    )
+    if #state.combo.item_rewards.values <= 1 then
+        util_imgui.fake_combo(
+            #state.combo.item_rewards.values == 1 and state.combo.item_rewards.values[1] or "",
+            util_gui.tr("mod.combo_reward")
+        )
+    else
+        set:combo(
+            util_gui.tr("mod.combo_reward"),
+            "mod.reward_config.reward",
+            state.combo.item_rewards.values
+        )
+    end
 
     imgui.set_next_item_width(
         util_imgui.get_something_with_button_width(util_gui.tr("mod.button_add_reward"))
@@ -139,6 +134,91 @@ function this.draw()
     util_imgui.set_label(util_gui.tr("mod.slider_reward_count"))
 
     draw_reward_table()
+end
+
+local function draw_specific_quest()
+    local config_mod = config.current.mod
+
+    if
+        set:input_text(util_gui.tr("mod.input_reward_filter"), "mod.reward_config.filter")
+        or this.type ~= "specific_quest"
+    then
+        local event = gui_helpers.get_current_event() --[[@as MonsterData]]
+        config_mod.em_invalid_reward = state.combo.em_invalid_reward:filter(
+            helpers.filter_specific_quest(event.invalid_rewards, config_mod.reward_config.filter),
+            config_mod.em_invalid_reward
+        )
+        this.type = "specific_quest"
+    end
+
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_reward_filter"))
+
+    local drag_width = config.lang.font_size * (50 / 16)
+    local combo_width = util_imgui.get_something_with_any_width(drag_width)
+
+    if #state.combo.em_invalid_reward.values <= 1 then
+        util_imgui.fake_combo(
+            #state.combo.em_invalid_reward.values == 1 and state.combo.em_invalid_reward.values[1]
+                or "",
+            nil,
+            combo_width
+        )
+    else
+        imgui.set_next_item_width(combo_width)
+        set:combo(
+            "##combo_invalid_rewards",
+            "mod.em_invalid_reward",
+            state.combo.em_invalid_reward.values
+        )
+    end
+
+    util_imgui.tooltip(gui_helpers.build_invalid_reward_tooltip())
+
+    imgui.same_line()
+    imgui.set_next_item_width(drag_width)
+    set:drag_int(
+        util_gui.tr("mod.em_invalid_reward_slot"),
+        "mod.em_invalid_reward_slot",
+        0.1,
+        1,
+        10
+    )
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_em_invalid_reward_slot"))
+end
+
+function this.draw()
+    local gui_reward = config.gui.current.gui.reward_builder
+
+    imgui.set_next_window_pos(
+        Vector2f.new(gui_reward.pos_x, gui_reward.pos_y),
+        this.window.condition
+    )
+    imgui.set_next_window_size(
+        Vector2f.new(gui_reward.size_x, gui_reward.size_y),
+        this.window.condition
+    )
+
+    gui_reward.is_opened = imgui.begin_window(
+        util_gui.tr("mod.window_reward_builder"),
+        gui_reward.is_opened,
+        this.window.flags
+    )
+
+    imgui.spacing()
+    imgui.indent(3)
+    local quest_rewards = state.combo.quest_rewards:get()
+    local event = gui_helpers.get_current_event() --[[@as MonsterData]]
+
+    if quest_rewards ~= this.type or event.id ~= this.id then
+        this.type = nil
+        this.id = event.id
+    end
+
+    if quest_rewards == "user_defined" then
+        draw_user_defined()
+    elseif quest_rewards == "specific_quest" then
+        draw_specific_quest()
+    end
 
     util_imgui.set_win_state(gui_reward)
 
