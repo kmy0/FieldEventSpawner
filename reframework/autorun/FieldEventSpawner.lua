@@ -249,6 +249,11 @@ m.hook(
     nil,
     sched.hook.spoffer_is_candidate_post
 )
+m.hook(
+    "app.QuestUtil.getKeepQuestCost(app.cExFieldEvent_PopEnemy[])",
+    nil,
+    sched.hook.get_keep_quest_post
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then
