@@ -244,6 +244,11 @@ m.hook(
     nil,
     sched.hook.request_spoffer_swarm_post
 )
+m.hook(
+    m.get_by_regex("app.cExSpOfferFactory", "^<createSpOffer>g__isCandidate") --[[@as REMethodDefinition]],
+    nil,
+    sched.hook.spoffer_is_candidate_post
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then
