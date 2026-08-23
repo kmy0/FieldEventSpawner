@@ -2,7 +2,6 @@
 ---@field ref MainConfig
 
 local lang_base = require("FieldEventSpawner.util.misc.lang_base")
-local old_map = require("FieldEventSpawner.config.defaults.old_lang_map")
 local util_misc = require("FieldEventSpawner.util.misc.init")
 local util_table = require("FieldEventSpawner.util.misc.table")
 
@@ -49,11 +48,6 @@ end
 ---@return string
 function this:tr(key)
     local ret = util_table.get_by_key(self.current, key)
-
-    if not ret and old_map[key] then
-        ret = util_table.get_by_key(self.current, old_map[key])
-    end
-
     if not ret and self.ref.current.mod.lang.fallback then
         ret = util_table.get_by_key(self.default, key)
     end
