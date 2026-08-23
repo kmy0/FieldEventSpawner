@@ -19,6 +19,7 @@
 ---@field item_rewards Combo
 ---@field em_invalid_reward Combo
 
+local ace = require("FieldEventSpawner.data.ace.init")
 local combo = require("FieldEventSpawner.util.imgui.combo")
 local config = require("FieldEventSpawner.config.init")
 local data = require("FieldEventSpawner.data.init")
@@ -355,9 +356,7 @@ end
 
 function this.init()
     this.combo.event_type:swap(util_table.map_array(gui.combo.event_type))
-    this.combo.item_rewards:swap(
-        helpers.filter_item_rewards(config.current.mod.reward_config.filter)
-    )
+    this.combo.item_rewards:swap(ace.map.item_key_to_name_local)
     this.translate_combo()
 end
 

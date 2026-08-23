@@ -409,6 +409,52 @@ function this.get_invalid_rewards()
     )
 end
 
+---@return boolean
+function this.is_edit_rewards_disabled()
+    local quest_rewards = state.combo.quest_rewards:get()
+    local event_type = state.combo.event_type:get()
+    return quest_rewards ~= "user_defined" and quest_rewards ~= "specific_quest"
+        or event_type ~= "monster"
+end
+
+---@return string
+function this.build_invalid_reward_tooltip()
+    local event = this.get_current_event()
+    if event then
+        ---@cast event MonsterData
+        local rewards = event.invalid_rewards[state.combo.em_invalid_reward:get()]
+        if rewards then
+            local txt = util_table.values(rewards.items, function(o)
+                return string.format("%s x%s", o.name, o.num)
+            end)
+
+            return table.concat(txt, "\n")
+        end
+    end
+
+    return ""
+end
+
+---@return string
+function this.build_edit_rewards_tooltip()
+    local quest_rewards = state.combo.quest_rewards:get()
+    local ret = {}
+
+    if quest_rewards == "user_defined" then
+        for _, item in ipairs(config.current.mod.reward_config.array) do
+            table.insert(ret, string.format("%s x%s", item.name, item.count))
+        end
+    elseif quest_rewards == "specific_quest" then
+        table.insert(
+            ret,
+            state.combo.em_invalid_reward:get_value(config.current.mod.em_invalid_reward)
+        )
+        table.insert(ret, this.build_invalid_reward_tooltip())
+    end
+
+    return table.concat(ret, "\n")
+end
+
 function this.spawn()
     local combo = state.combo
     local config_mod = config.current.mod
