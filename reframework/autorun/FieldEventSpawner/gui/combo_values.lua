@@ -330,8 +330,10 @@ local function update_monster_fields(event, current_data, changed, dirty, enviro
             state.swarm_count_array = { -1 }
         end
 
-        local index = util_table.index(state.swarm_count_array, current_value) or 1
-        config_mod.swarm_count = index
+        if this.initialized or #state.swarm_count_array == 1 then
+            local index = util_table.index(state.swarm_count_array, current_value) or 1
+            config_mod.swarm_count = index
+        end
     end
 
     if dirty or changed.add_invalid_rewards then
