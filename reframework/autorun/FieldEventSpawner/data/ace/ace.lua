@@ -51,6 +51,7 @@
 
 ---@class (exact) EventDataOptions
 ---@field current_thread integer
+---@field version string
 ---@field merge_invalid_difficulties boolean
 ---@field add_invalid_difficulties boolean
 ---@field add_guardian_arkveld boolean

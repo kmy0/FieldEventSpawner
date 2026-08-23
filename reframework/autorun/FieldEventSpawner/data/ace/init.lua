@@ -278,6 +278,7 @@ local function make_event_data_options()
         add_invalid_rewards = config_mod.add_invalid_rewards,
         merge_invalid_rewards = config_mod.add_invalid_rewards and config_mod.merge_invalid_rewards,
         add_invalid_swarm = config_mod.add_invalid_swarm,
+        version = config.version,
     }
 end
 
@@ -302,7 +303,10 @@ local function try_load_cache(path, options_path, options, full_match)
             return
         end
     else
-        if cached_options.current_thread ~= options.current_thread then
+        if
+            cached_options.current_thread ~= options.current_thread
+            or cached_options.version ~= options.version
+        then
             return
         end
     end
