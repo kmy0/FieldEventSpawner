@@ -255,6 +255,32 @@ function this:disable_all_items()
 end
 
 ---@param keys any[]
+---@param index integer?
+---@return integer
+function this:filter(keys, index)
+    local current_value = index and self.map[index]
+    local current_key = current_value and current_value.key
+
+    if util_table.empty(keys) then
+        self:enable_all_items()
+    else
+        self:disable_all_items()
+        for _, k in pairs(keys) do
+            self:enable_item(k)
+        end
+    end
+
+    local ret = 1
+    if current_key then
+        ret = util_table.index(self.map, function(o)
+            return o.key == current_key
+        end) or 1
+    end
+
+    return ret
+end
+
+---@param keys any[]
 function this:disable_items(keys)
     for _, key in pairs(keys) do
         self:disable_item(key)
