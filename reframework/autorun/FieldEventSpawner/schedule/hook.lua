@@ -835,4 +835,10 @@ function this.request_spoffer_swarm_post(_)
     end
 end
 
+function this.spoffer_is_candidate_post(_)
+    if flags.spawn and actions.force_spoffer then
+        return true
+    end
+end
+
 return this
