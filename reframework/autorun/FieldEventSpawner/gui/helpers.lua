@@ -382,7 +382,11 @@ end
 ---@return integer
 function this.get_swarm_count()
     local ret = state.swarm_count_array[config.current.mod.swarm_count]
-    return ret - 1
+    if ret then
+        return ret - 1
+    end
+
+    return -1
 end
 
 ---@return boolean
