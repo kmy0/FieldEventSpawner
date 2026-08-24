@@ -1,4 +1,4 @@
 return {
-    version = "0.2.9",
-    commit = "0.2.9",
+    version = "1.0.0",
+    commit = "1.0.0",
 }
