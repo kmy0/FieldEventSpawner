@@ -362,7 +362,7 @@ function this.fake_combo(text, label, width, disabled)
     end
 
     draw_list:add_text({ pos.x + 4, pos.y + 3 }, color_text, text)
-    this.dummy_button3("##" .. uuid.generate(), { width, height })
+    this.dummy_button3("##" .. uuid.generate(), { width == 0 and 1 or width, height })
 
     if label then
         this.set_label(label, -1)
@@ -378,7 +378,9 @@ function this.get_something_with_button_width(button_label)
     local total_width = imgui.calc_item_width()
     local button_width = imgui.calc_text_size(util_misc.split_string(button_label, "##")[1]).x
         + FRAME_PADDING_X * 2
-    return total_width - button_width - ITEM_SPACING_X
+
+    local ret = total_width - button_width - ITEM_SPACING_X
+    return ret <= 0 and 0 or ret
 end
 
 ---@param width number
@@ -387,7 +389,8 @@ function this.get_something_with_any_width(width)
     local FRAME_PADDING_X = 4.0
     local total_width = imgui.calc_item_width()
     local button_width = width + FRAME_PADDING_X * 2
-    return total_width - button_width
+    local ret = total_width - button_width
+    return ret <= 0 and 0 or ret
 end
 
 ---@param label string
