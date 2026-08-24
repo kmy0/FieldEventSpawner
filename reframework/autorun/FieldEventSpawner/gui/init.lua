@@ -41,6 +41,26 @@ local function combo_with_disabled(combo, name, config_key)
     return changed
 end
 
+local function draw_quest_rewards()
+    local gui_reward = config.gui.current.gui.reward_builder
+
+    imgui.set_next_item_width(
+        util_imgui.get_something_with_button_width(util_gui.tr("mod.button_open_rewards_builder"))
+    )
+    combo_with_disabled(state.combo.quest_rewards, "##.combo_quest_rewards", "mod.rewards")
+    imgui.same_line()
+
+    imgui.begin_disabled(helpers.is_edit_rewards_disabled())
+    if imgui.button(util_gui.tr("mod.button_open_rewards_builder")) then
+        gui_reward.is_opened = true
+    end
+    util_imgui.tooltip(helpers.build_edit_rewards_tooltip())
+    imgui.end_disabled()
+
+    util_imgui.set_label(util_gui.tr("mod.combo_rewards"))
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_combo_rewards"), true)
+end
+
 local function draw_cheat()
     local message = hook.get_cheat_message()
     if message then
@@ -315,20 +335,7 @@ function this.draw()
 
         util_imgui.separator_text(config.lang:tr("mod.tooltip_category_rewards"))
 
-        combo_with_disabled(
-            state.combo.quest_rewards,
-            util_gui.tr("mod.combo_rewards"),
-            "mod.rewards"
-        )
-        util_imgui.tooltip(config.lang:tr("mod.tooltip_combo_rewards"), true)
-
-        imgui.begin_disabled(helpers.is_edit_rewards_disabled())
-        if imgui.button(util_gui.tr("mod.button_open_rewards_builder")) then
-            gui_reward.is_opened = true
-        end
-        util_imgui.tooltip(helpers.build_edit_rewards_tooltip())
-        imgui.end_disabled()
-
+        draw_quest_rewards()
         imgui.begin_disabled(helpers.is_yummy_disabled())
         set:checkbox(util_gui.tr("mod.box_yummy"), "mod.is_yummy")
         imgui.end_disabled()
