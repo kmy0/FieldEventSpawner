@@ -10,6 +10,7 @@ return {
         text_hp = "HP",
         text_parts_vital = "Parts Vital",
         text_all_monsters = "All Monsters",
+        text_slot = "Slot",
     },
     menu = {
         config = {
@@ -144,7 +145,6 @@ return {
         input_reward_filter = "Filter",
         tooltip_reward_filter = "Filter by item name or ID",
         combo_reward = "Reward",
-        slider_reward_count = "Amount",
         button_add_reward = "Add",
         table_reward_headers = {
             header_reward = "Reward",
@@ -174,5 +174,7 @@ return {
         tooltip_spoffer = "Does not work while Spawn Delay is enabled, or when Difficulty Param is set to Invalid",
         tooltip_em_invalid_reward_slot = "Reward Slot Count",
         em_invalid_reward_slot = "Specific Quest Rewards",
+        tooltip_combo_em_invalid_reward = "Rewards below are chosen randomly until the specified number of slots is filled",
+        tooltip_reward_count = "Amount",
     },
 }

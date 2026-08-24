@@ -200,6 +200,26 @@ function this.values(t, value_getter)
     return ret
 end
 
+---@generic T, R
+---@overload fun(t: T[], value_getter: fun(o: T): R): R[]
+---@overload fun(t: T[]): T[]
+---@param t T[]
+---@param value_getter (fun(o: T): R?)?
+function this.values_sorted(t, value_getter)
+    local ret = {}
+    for _, o_value in ipairs(t) do
+        local value = o_value
+        if value_getter then
+            value = value_getter(o_value)
+        end
+
+        if value then
+            table.insert(ret, value)
+        end
+    end
+    return ret
+end
+
 ---@generic K, V
 ---@param t table<K, V>
 ---@return K[]

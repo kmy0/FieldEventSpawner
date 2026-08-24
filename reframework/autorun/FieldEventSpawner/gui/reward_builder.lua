@@ -22,9 +22,13 @@ local this = {
     type = nil,
 }
 
-local function draw_reward_table()
-    local confg_reward = config.current.mod.reward_config
+---@param rewards GuiRewardData[]
+---@param is_static boolean
+---@return boolean, GuiRewardData[]
+local function draw_reward_table(rewards, is_static)
+    local ret = rewards
     local flags = imgui.TableFlags.BordersInnerV | imgui.TableFlags.SizingFixedFit --[[@as ImGuiTableFlags]]
+    local changed = false
 
     if imgui.begin_table("reward_info", 4, flags) then
         imgui.table_setup_column("##1")
@@ -33,24 +37,27 @@ local function draw_reward_table()
         imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_reward"), 1 << 3)
 
         imgui.table_headers_row()
-        local rewards = confg_reward.array
         local filtered = {}
         for row = 1, #rewards do
             local reward = rewards[row]
-            local changed = false
             imgui.table_next_row()
             imgui.table_set_column_index(0)
             imgui.text(row .. ".")
 
             imgui.table_set_column_index(1)
+            imgui.begin_disabled(is_static)
             if not imgui.button(util_gui.tr("mod.button_remove_reward", tostring(row))) then
                 table.insert(filtered, reward)
             end
+            imgui.end_disabled()
 
             imgui.table_set_column_index(2)
             imgui.set_next_item_width(config.lang.font_size * 4)
+            imgui.begin_disabled(is_static)
             ---@diagnostic disable-next-line: param-type-mismatch
-            changed, reward.count = imgui.drag_int("##" .. row, reward.count, 1, 1, 255)
+            changed, reward.count = imgui.drag_int("##" .. row, reward.count, 0.5, 1, 255)
+            imgui.end_disabled()
+
             if reward.count > 255 then
                 reward.count = 255
             elseif reward.count < 1 then
@@ -65,12 +72,14 @@ local function draw_reward_table()
             imgui.text(reward.name)
         end
 
-        confg_reward.array = filtered
         if not util_table.empty(filtered) then
-            config:save()
+            ret = filtered
+            changed = true
         end
         imgui.end_table()
     end
+
+    return changed, ret
 end
 
 local function draw_user_defined()
@@ -88,28 +97,26 @@ local function draw_user_defined()
     end
 
     util_imgui.tooltip(config.lang:tr("mod.tooltip_reward_filter"))
+
+    local drag_width = config.lang.font_size * (50 / 16)
+    local combo_width =
+        util_imgui.get_something_with_button_width(util_gui.tr("mod.button_add_reward"), drag_width)
+
     if #state.combo.item_rewards.values <= 1 then
         util_imgui.fake_combo(
             #state.combo.item_rewards.values == 1 and state.combo.item_rewards.values[1] or "",
-            util_gui.tr("mod.combo_reward")
+            nil,
+            combo_width
         )
     else
-        set:combo(
-            util_gui.tr("mod.combo_reward"),
-            "mod.reward_config.reward",
-            state.combo.item_rewards.values
-        )
+        imgui.set_next_item_width(combo_width)
+        set:combo("##combo_reward", "mod.reward_config.reward", state.combo.item_rewards.values)
     end
 
-    imgui.set_next_item_width(
-        util_imgui.get_something_with_button_width(util_gui.tr("mod.button_add_reward"))
-    )
-    set:slider_int(
-        "##" .. util_gui.tr("mod.slider_reward_count"),
-        "mod.reward_config.count",
-        1,
-        255
-    )
+    imgui.same_line()
+    imgui.set_next_item_width(drag_width)
+    set:drag_int("##drag_int_user_defined", "mod.reward_config.count", 0.5, 1, 255)
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_reward_count"))
 
     imgui.begin_disabled(
         #config_mod.reward_config.array >= 10 or not state.combo.item_rewards:get()
@@ -131,9 +138,15 @@ local function draw_user_defined()
     end
     imgui.end_disabled()
 
-    util_imgui.set_label(util_gui.tr("mod.slider_reward_count"))
+    util_imgui.set_label(util_gui.tr("mod.combo_reward"))
 
-    draw_reward_table()
+    local changed = false
+    changed, config_mod.reward_config.array =
+        draw_reward_table(config_mod.reward_config.array, false)
+
+    if changed then
+        config:save()
+    end
 end
 
 local function draw_specific_quest()
@@ -172,7 +185,7 @@ local function draw_specific_quest()
         )
     end
 
-    util_imgui.tooltip(gui_helpers.build_invalid_reward_tooltip())
+    util_imgui.tooltip(config.lang:tr("mod.tooltip_combo_em_invalid_reward"))
 
     imgui.same_line()
     imgui.set_next_item_width(drag_width)
@@ -184,6 +197,8 @@ local function draw_specific_quest()
         10
     )
     util_imgui.tooltip(config.lang:tr("mod.tooltip_em_invalid_reward_slot"))
+
+    draw_reward_table(gui_helpers.build_invalid_reward_gui_data(), true)
 end
 
 function this.draw()

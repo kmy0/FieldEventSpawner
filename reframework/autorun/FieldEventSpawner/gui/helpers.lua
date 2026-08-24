@@ -424,7 +424,7 @@ function this.build_invalid_reward_tooltip()
         ---@cast event MonsterData
         local rewards = event.invalid_rewards[state.combo.em_invalid_reward:get()]
         if rewards then
-            local txt = util_table.values(rewards.items, function(o)
+            local txt = util_table.values_sorted(rewards.items, function(o)
                 return string.format("%s x%s", o.name, o.num)
             end)
 
@@ -435,20 +435,45 @@ function this.build_invalid_reward_tooltip()
     return ""
 end
 
+---@return GuiRewardData[]
+function this.build_invalid_reward_gui_data()
+    ---@type GuiRewardData[]
+    local ret = {}
+    local event = this.get_current_event()
+    if event then
+        ---@cast event MonsterData
+        local rewards = event.invalid_rewards[state.combo.em_invalid_reward:get()]
+        if rewards then
+            for _, item in ipairs(rewards.items) do
+                table.insert(ret, { id = item.id, name = item.name, count = item.num })
+            end
+        end
+    end
+
+    return ret
+end
+
 ---@return string
 function this.build_edit_rewards_tooltip()
+    local config_mod = config.current.mod
     local quest_rewards = state.combo.quest_rewards:get()
     local ret = {}
 
     if quest_rewards == "user_defined" then
-        for _, item in ipairs(config.current.mod.reward_config.array) do
+        for _, item in ipairs(config_mod.reward_config.array) do
             table.insert(ret, string.format("%s x%s", item.name, item.count))
         end
     elseif quest_rewards == "specific_quest" then
+        table.insert(ret, state.combo.em_invalid_reward:get_value(config_mod.em_invalid_reward))
         table.insert(
             ret,
-            state.combo.em_invalid_reward:get_value(config.current.mod.em_invalid_reward)
+            string.format(
+                "%s x%s",
+                config.lang:tr("misc.text_slot"),
+                config_mod.em_invalid_reward_slot
+            )
         )
+        table.insert(ret, "----")
         table.insert(ret, this.build_invalid_reward_tooltip())
     end
 
