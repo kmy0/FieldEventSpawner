@@ -37,7 +37,7 @@ return {
             tooltip_is_spoffer_size_save = "Keeps monster sizes when saving Multi Monster Quest investigation. Works on current stage only.",
             add_invalid_rewards = "Add Invalid Quest Rewards",
             tooltip_add_invalid_rewards = "Requires Script Reset. Adds Specific Quest option to Quest Rewards.",
-            merge_invalid_rewards = "Merge Invalid Rewards",
+            merge_invalid_rewards = "Merge Invalid Quest Rewards",
             tooltip_merge_invalid_rewards = "Requires Script Reset. Makes all quest rewards avaialable for all monsters.",
             allow_any_spoffer = "Allow Any Multi Monster Quest",
             tooltip_allow_any_spoffer = "Allows for any Multi Monster combination, some combinations might not work, some combination might generate no rewards.",
