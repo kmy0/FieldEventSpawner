@@ -866,7 +866,7 @@ function this.add_invalid_swarm(monster_data, em, stage)
     for _, em_data in pairs(monster_data) do
         for _, map in pairs(em_data.map) do
             if not map.is_all_param_invalid then
-                make_all_params_invalid(em_data, stage, true)
+                make_all_params_invalid(em_data, map.stage, true)
             end
 
             if not map.swarm_pack then
