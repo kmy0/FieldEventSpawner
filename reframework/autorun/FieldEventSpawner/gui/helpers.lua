@@ -464,17 +464,19 @@ function this.build_edit_rewards_tooltip()
             table.insert(ret, string.format("%s x%s", item.name, item.count))
         end
     elseif quest_rewards == "specific_quest" then
-        table.insert(ret, state.combo.em_invalid_reward:get_value(config_mod.em_invalid_reward))
-        table.insert(
-            ret,
-            string.format(
-                "%s x%s",
-                config.lang:tr("misc.text_slot"),
-                config_mod.em_invalid_reward_slot
+        if not state.combo.em_invalid_reward:empty() then
+            table.insert(ret, state.combo.em_invalid_reward:get_value(config_mod.em_invalid_reward))
+            table.insert(
+                ret,
+                string.format(
+                    "%s x%s",
+                    config.lang:tr("misc.text_slot"),
+                    config_mod.em_invalid_reward_slot
+                )
             )
-        )
-        table.insert(ret, "----")
-        table.insert(ret, this.build_invalid_reward_tooltip())
+            table.insert(ret, "----")
+            table.insert(ret, this.build_invalid_reward_tooltip())
+        end
     end
 
     return table.concat(ret, "\n")
