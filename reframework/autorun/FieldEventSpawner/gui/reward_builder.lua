@@ -11,7 +11,6 @@ local set = require("FieldEventSpawner.util.imgui.config_set"):new(config)
 local state = require("FieldEventSpawner.gui.state")
 local util_gui = require("FieldEventSpawner.gui.util")
 local util_imgui = require("FieldEventSpawner.util.imgui.init")
-local util_table = require("FieldEventSpawner.util.misc.table")
 
 local this = {
     window = {
@@ -26,7 +25,6 @@ local this = {
 ---@param is_static boolean
 ---@return boolean, GuiRewardData[]
 local function draw_reward_table(rewards, is_static)
-    local ret = rewards
     local flags = imgui.TableFlags.BordersInnerV | imgui.TableFlags.SizingFixedFit --[[@as ImGuiTableFlags]]
     local changed = false
 
@@ -37,7 +35,8 @@ local function draw_reward_table(rewards, is_static)
         imgui.table_setup_column(util_gui.tr("mod.table_reward_headers.header_reward"), 1 << 3)
 
         imgui.table_headers_row()
-        local filtered = {}
+        ---@type integer?
+        local to_remove
         for row = 1, #rewards do
             local reward = rewards[row]
             imgui.table_next_row()
@@ -46,8 +45,8 @@ local function draw_reward_table(rewards, is_static)
 
             imgui.table_set_column_index(1)
             imgui.begin_disabled(is_static)
-            if not imgui.button(util_gui.tr("mod.button_remove_reward", tostring(row))) then
-                table.insert(filtered, reward)
+            if imgui.button(util_gui.tr("mod.button_remove_reward", tostring(row))) then
+                to_remove = row
             end
             imgui.end_disabled()
 
@@ -72,14 +71,14 @@ local function draw_reward_table(rewards, is_static)
             imgui.text(reward.name)
         end
 
-        if not util_table.empty(filtered) then
-            ret = filtered
+        if to_remove then
+            table.remove(rewards, to_remove)
             changed = true
         end
         imgui.end_table()
     end
 
-    return changed, ret
+    return changed, rewards
 end
 
 local function draw_user_defined()
