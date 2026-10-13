@@ -75,13 +75,13 @@ function this:swap(key_to_value, current_index, disabled_keys)
             self:translate()
         end
 
+        self:disable_items(disabled_keys or {})
+
         if current_key then
             ret = util_table.index(self.map, function(o)
                 return o.key == current_key
             end) or 1
         end
-
-        self:disable_items(disabled_keys or {})
     else
         self:_map(key_to_value)
         self:disable_items(disabled_keys or {})
