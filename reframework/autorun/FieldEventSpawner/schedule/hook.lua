@@ -334,6 +334,18 @@ function this.create_spoffer_pre(args)
     end
 end
 
+function this.ignore_spoffer_pre(_)
+    if flags.spawn and actions.force_spoffer then
+        return sdk.PreHookResult.SKIP_ORIGINAL
+    end
+end
+
+function this.ignore_spoffer_swarm_pre(_)
+    if flags.spawn and actions.force_spoffer_swarm then
+        return sdk.PreHookResult.SKIP_ORIGINAL
+    end
+end
+
 function this.create_spoffer_post(_)
     if flags.spawn and actions.force_spoffer then
         if actions.force_spoffer.rewards then

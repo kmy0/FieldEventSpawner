@@ -254,6 +254,14 @@ m.hook(
     nil,
     sched.hook.get_keep_quest_post
 )
+m.hook(
+    "app.cExSpOfferFactory.requestCreateSpOffer(app.FieldDef.STAGE, System.Int32, System.Boolean, System.Boolean, app.cExFieldEvent_PopEnemy)",
+    sched.hook.ignore_spoffer_pre
+)
+m.hook(
+    "app.cExSpOfferFactory.requestCreateSwarmSpOffer(app.FieldDef.STAGE, app.cExFieldEvent_PopEnemy)",
+    sched.hook.ignore_spoffer_swarm_pre
+)
 
 re.on_draw_ui(function()
     if imgui.button(string.format("%s %s", config.name, config.commit)) and init.ok then
