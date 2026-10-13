@@ -534,9 +534,9 @@ function this.allow_invalid_quests_post(retval)
     end
 end
 
-function this.force_pop_many_spawn_pre(args)
+function this.force_pop_many_spawn_pre(_)
     if flags.spawn then
-        util_ref.thread_store(args)
+        return sdk.PreHookResult.SKIP_ORIGINAL
     end
 end
 
@@ -545,16 +545,7 @@ end
 -- not sure if its by design or an oversight
 function this.force_pop_many_spawn_post(_)
     if flags.spawn then
-        local args = util_ref.thread_get()
-        local out_pop_em = sdk.to_managed_object(util_ref.deref_ptr(args[3])) --[[@as app.cExFieldEvent_PopEnemy?]]
-        local in_pop_em = sdk.to_managed_object(args[4]) --[[@as app.cExFieldEvent_PopEnemy]]
-
-        if out_pop_em then
-            out_pop_em:call(
-                "importData(app.cExFieldScheduleExportData.cEventData)",
-                in_pop_em:exportData()
-            )
-        end
+        return false
     end
 end
 
