@@ -171,6 +171,7 @@
 ---@field importSchedule fun(self: app.cExFieldDirector.cScheduleTimeline, schedule: app.cExFieldScheduleExportData, dont_reset_current_index: System.Boolean)
 
 ---@class app.cExFieldDirector : via.clr.ManagedObject
+---@field _IsCreatedEmInFrame System.Boolean
 ---@field _ScheduleTimeline app.cExFieldDirector.cScheduleTimeline
 ---@field _SpOfferFactory app.cExSpOfferFactory
 -- bool doesnt seem to do anything?

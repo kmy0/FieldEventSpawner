@@ -256,7 +256,9 @@ function this.ex_director_save_sched_pre(args)
 end
 
 function this.ex_director_update_post(_)
-    if flags.done then
+    local field_director, schedule_timeline = mod.get_field_director()
+
+    if flags.done and not field_director._IsCreatedEmInFrame then
         flags.spawn = false
         flags.done = false
         flags.reward_max = false
@@ -273,7 +275,6 @@ function this.ex_director_update_post(_)
     end
 
     -- monsters that cannot spawn normally on the current map linger forever after their event ends
-    local _, schedule_timeline = mod.get_field_director()
     local events = schedule_timeline._KeyList
 
     util_game.do_something(events, function(_, _, event)
