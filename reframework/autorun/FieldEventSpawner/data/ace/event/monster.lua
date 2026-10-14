@@ -327,7 +327,16 @@ end
 ---@param em_param MonsterParamModifier
 ---@param pop_param_by_env app.user_data.ExFieldParam_LayoutData.cEmPopParamByEnv_Base?
 ---@param diff_array System.Array<app.user_data.ExFieldParam_LayoutData.cDifficultyWeight>
-local function add_params(monster_data, stage, param_key, em_param, pop_param_by_env, diff_array)
+---@param roles app.EnemyDef.ROLE_ID[]?
+local function add_params(
+    monster_data,
+    stage,
+    param_key,
+    em_param,
+    pop_param_by_env,
+    diff_array,
+    roles
+)
     ---@type table<string, table<integer, table<app.QuestDef.EM_REWARD_RANK, System.Guid[]>>>
     local em_difficulty = {}
     for param_mod, bool in pairs(em_param) do
@@ -339,15 +348,28 @@ local function add_params(monster_data, stage, param_key, em_param, pop_param_by
         end
     end
 
+    roles = util_table.deep_copy(roles or {})
+    table.insert(roles, param_key_to_role(param_key))
+
     local md = monster_data.map[stage]
-    local role = param_key_to_role(param_key)
     for env, areas in pairs(md.area_by_env) do
         if not environment_check(pop_param_by_env, env) then
             goto continue
         end
 
         for param_mod, grade, rank, guid in monster_data:iter_difficulties(em_difficulty) do
-            monster_data:add_difficulty(param_key, param_mod, stage, env, grade, rank, guid, role)
+            for _, role in ipairs(roles) do
+                monster_data:add_difficulty(
+                    param_key,
+                    param_mod,
+                    stage,
+                    env,
+                    grade,
+                    rank,
+                    guid,
+                    role
+                )
+            end
         end
 
         helpers.add_param_areas(monster_data, param_key, stage, env, areas)
@@ -368,6 +390,16 @@ local function add_param_data(monster_data)
 
             if not pop_param then
                 goto continue
+            end
+
+            ---@type app.EnemyDef.ROLE_ID[]
+            local roles = {}
+            if param_key == "normal" or param_key == "legendary" then
+                ---@cast pop_param app.user_data.ExFieldParam_LayoutData.cEmPopParam_Normal | app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary
+
+                if pop_param:get_BossProbability() > 0 then
+                    table.insert(roles, e.get("app.EnemyDef.ROLE_ID").BOSS)
+                end
             end
 
             local leg_prob = pop_param:get_LegendaryProbability()
@@ -412,7 +444,15 @@ local function add_param_data(monster_data)
                 md.swarm_pack.max_spoffer = math.min(md.swarm_pack.max * swarm_num, max_spoffer)
             end
 
-            add_params(monster_data, stage, param_key, em_param, pop_param._ParamsByEnv, diff_array)
+            add_params(
+                monster_data,
+                stage,
+                param_key,
+                em_param,
+                pop_param._ParamsByEnv,
+                diff_array,
+                roles
+            )
             ::continue::
         end
 

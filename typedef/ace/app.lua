@@ -574,3 +574,9 @@
 ---@class app.cReceiveItemInfo : via.clr.ManagedObject
 ---@field get_ItemId fun(self: app.cReceiveItemInfo): app.ItemDef.ID
 ---@field get_Num fun(self: app.cReceiveItemInfo): System.Int16
+
+---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Normal : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
+---@field get_BossProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Normal): System.Single
+
+---@class app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary : app.user_data.ExFieldParam_LayoutData.cEmPopParam_Common
+---@field get_BossProbability fun(self: app.user_data.ExFieldParam_LayoutData.cEmPopParam_Legendary): System.Single
